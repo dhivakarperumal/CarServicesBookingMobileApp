@@ -1,98 +1,212 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
+import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
-
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }) {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <ScrollView style={styles.container}>
+      {/* HEADER */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.welcome}>Welcome 👋</Text>
+          <Text style={styles.title}>Car Care Service</Text>
+        </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <TouchableOpacity style={styles.notificationBtn}>
+          <Ionicons name="notifications-outline" size={22} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      {/* QUICK STATS */}
+      <View style={styles.statsRow}>
+        <View style={[styles.statCard, styles.totalCard]}>
+          <Text style={styles.statLabel}>Total Bookings</Text>
+          <Text style={[styles.statValue, { color: "#06b6d4" }]}>12</Text>
+        </View>
+
+        <View style={[styles.statCard, styles.completedCard]}>
+          <Text style={styles.statLabel}>Completed</Text>
+          <Text style={[styles.statValue, { color: "#16a34a" }]}>8</Text>
+        </View>
+      </View>
+
+      {/* SERVICES */}
+      <Text style={styles.sectionTitle}>Services</Text>
+
+      <View style={styles.serviceGrid}>
+        <ServiceCard
+          icon={<FontAwesome5 name="car" size={22} color="#06b6d4" />}
+          title="General Service"
+        />
+        <ServiceCard
+          icon={<MaterialIcons name="oil-barrel" size={22} color="#06b6d4" />}
+          title="Oil Change"
+        />
+        <ServiceCard
+          icon={<Ionicons name="snow-outline" size={22} color="#06b6d4" />}
+          title="AC Service"
+        />
+        <ServiceCard
+          icon={<FontAwesome5 name="car-side" size={22} color="#06b6d4" />}
+          title="Full Service"
+        />
+      </View>
+
+      {/* ACTIVE BOOKING */}
+      <Text style={styles.sectionTitle}>Active Booking</Text>
+
+      <View style={styles.activeCard}>
+        <Text style={styles.activeTitle}>Swift - TN 00 AB 1234</Text>
+        <Text style={styles.activeText}>General Service</Text>
+        <Text style={styles.activeStatus}>Status: Pending</Text>
+      </View>
+
+      {/* BOOK BUTTON */}
+      <TouchableOpacity
+        style={styles.bookBtn}
+        onPress={() => navigation.navigate("Booking")}
+      >
+        <Text style={styles.bookBtnText}>+ Book New Service</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+}
+
+function ServiceCard({ icon, title }) {
+  return (
+    <TouchableOpacity style={styles.serviceCard}>
+      {icon}
+      <Text style={styles.serviceText}>{title}</Text>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingTop: 40,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+
+  welcome: {
+    color: "#6b7280",
+    fontSize: 14,
+  },
+
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#000",
+  },
+
+  notificationBtn: {
+    backgroundColor: "#06b6d4",
+    padding: 12,
+    borderRadius: 50,
+  },
+
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 24,
+  },
+
+  statCard: {
+    width: "48%",
+    padding: 16,
+    borderRadius: 12,
+  },
+
+  totalCard: {
+    backgroundColor: "#cffafe",
+  },
+
+  completedCard: {
+    backgroundColor: "#dcfce7",
+  },
+
+  statLabel: {
+    color: "#6b7280",
+    marginBottom: 4,
+  },
+
+  statValue: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+
+  serviceGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+
+  serviceCard: {
+    width: "48%",
+    backgroundColor: "#f3f4f6",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+
+  serviceText: {
+    marginTop: 8,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
+  activeCard: {
+    backgroundColor: "#fef9c3",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+
+  activeTitle: {
+    fontWeight: "bold",
+    color: "#854d0e",
+  },
+
+  activeText: {
+    color: "#374151",
+  },
+
+  activeStatus: {
+    color: "#6b7280",
+  },
+
+  bookBtn: {
+    backgroundColor: "#06b6d4",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 40,
+  },
+
+  bookBtnText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });

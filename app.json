@@ -4,7 +4,7 @@
     "slug": "carservicesbooking",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo_no_bg.png",
     "scheme": "carservicesbooking",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -23,7 +23,7 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/logo_no_bg.png"
     },
     "plugins": [
       "expo-router",
@@ -43,6 +43,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0eeff531-768f-4c90-bd66-d12b74640185"
+      }
     }
   }
 }
