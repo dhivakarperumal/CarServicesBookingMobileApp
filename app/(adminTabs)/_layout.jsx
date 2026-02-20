@@ -48,82 +48,94 @@ function AdminHeader({ title }) {
 
 export default function AdminTabsLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        header: ({ options }) => (
-          <AdminHeader title={options.title} />
-        ),
-
-        tabBarActiveTintColor: "#06b6d4",
-        tabBarInactiveTintColor: "#6b7280",
-
-        tabBarStyle: {
-          height: 70,
-          paddingTop: 6,
-          paddingBottom: 40,
-        },
-
-        tabBarSafeAreaInsets: {
-          bottom: 20,
-        },
-
-        tabBarHideOnKeyboard: true,
-
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "600",
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="dashboard"
-        options={{
-          title: "Admin Dashboard",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="dashboard" size={size} color={color} />
+    <SafeAreaView edges={["bottom"]} style={{ flex: 1 }}>
+      <Tabs
+        screenOptions={{
+          header: ({ options }) => (
+            <AdminHeader title={options.title} />
           ),
-        }}
-      />
 
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: "Admin Home",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
-        }}
-      />
+          tabBarActiveTintColor: "#06b6d4",
+          tabBarInactiveTintColor: "#6b7280",
 
-      <Tabs.Screen
-        name="bookings"
-        options={{
-          title: "Manage Bookings",
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome5 name="clipboard-list" size={size} color={color} />
-          ),
-        }}
-      />
+          tabBarStyle: {
+            position: "absolute",
 
-      <Tabs.Screen
-        name="products"
-        options={{
-          title: "Manage Products",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="inventory" size={size} color={color} />
-          ),
-        }}
-      />
+            height: 65,
+            paddingBottom: 2,
 
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Admin Profile",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
-          ),
+            backgroundColor: "#ffffff",
+
+            borderRadius: 20,
+            marginHorizontal: 12,
+            marginBottom: 10,
+
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 6,
+
+            elevation: 12, // Android shadow
+          },
+
+          tabBarHideOnKeyboard: true,
+
+          tabBarLabelStyle: {
+            fontSize: 12,
+            fontWeight: "600",
+          },
         }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="dashboard"
+          options={{
+            title: "Dashboard",
+            tabBarIcon: ({ color, size }) => (
+              <MaterialIcons name="dashboard" size={size} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="home"
+          options={{
+            title: "Home",
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="home" size={size} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="bookings"
+          options={{
+            title: "Bookings",
+            tabBarIcon: ({ color, size }) => (
+              <FontAwesome5 name="clipboard-list" size={size} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="products"
+          options={{
+            title: "Products",
+            tabBarIcon: ({ color, size }) => (
+              <MaterialIcons name="inventory" size={size} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Profile",
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="person" size={size} color={color} />
+            ),
+          }}
+        />
+      </Tabs>
+    </SafeAreaView>
   );
 }
