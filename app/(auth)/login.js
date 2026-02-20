@@ -1,5 +1,21 @@
+<<<<<<< Updated upstream
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+=======
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../../firebase";
+import { doc, getDoc } from "firebase/firestore";
+>>>>>>> Stashed changes
 import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -21,7 +37,10 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+<<<<<<< Updated upstream
   const [showPassword, setShowPassword] = useState(false);
+=======
+>>>>>>> Stashed changes
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -31,28 +50,43 @@ export default function LoginScreen() {
 
     try {
       setLoading(true);
+<<<<<<< Updated upstream
       // 🔐 Firebase Auth login
+=======
+
+>>>>>>> Stashed changes
       const userCred = await signInWithEmailAndPassword(
         auth,
-        email,
+        email.trim(),
         password
       );
 
       const uid = userCred.user.uid;
 
-      // 🗄 Fetch user profile from Firestore
       const userRef = doc(db, "users", uid);
       const userSnap = await getDoc(userRef);
 
+<<<<<<< Updated upstream
       if (userSnap.exists()) {
         const userData = userSnap.data();
         console.log("User Data:", userData);
       } else {
         console.log("No user profile found in Firestore");
+=======
+      if (!userSnap.exists()) {
+        Alert.alert("Error", "User profile not found");
+        return;
+>>>>>>> Stashed changes
       }
 
-      // ✅ Navigate to tabs
-      router.replace("/(tabs)");
+      const role = userSnap.data().role;
+      console.log("User role:", role);
+
+      if (role === "admin") router.replace("/(adminTabs)/dashboard");
+      else if (role === "driver") router.replace("/(driverTabs)/home");
+      else if (role === "user") router.replace("/(tabs)/home");
+      else Alert.alert("Error", "Invalid user role");
+
     } catch (error) {
       Alert.alert("Login Failed", error.message);
     } finally {
@@ -61,6 +95,7 @@ export default function LoginScreen() {
   };
 
   return (
+<<<<<<< Updated upstream
     <ScrollView className="flex-1 bg-gray-50">
       {/* GRADIENT HEADER */}
       <LinearGradient
@@ -191,3 +226,88 @@ export default function LoginScreen() {
   );
 }
 
+=======
+    <View style={styles.container}>
+      <View style={styles.card}>
+        <Text style={styles.title}>Welcome Back 👋</Text>
+        <Text style={styles.subtitle}>Login to continue</Text>
+
+        <TextInput
+          placeholder="Email"
+          placeholderTextColor="#9ca3af"
+          value={email}
+          onChangeText={setEmail}
+          style={styles.input}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#9ca3af"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.input}
+        />
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Login</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f1f5f9",
+    justifyContent: "center",
+    padding: 20,
+  },
+  card: {
+    backgroundColor: "#ffffff",
+    padding: 24,
+    borderRadius: 20,
+    elevation: 6,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  subtitle: {
+    textAlign: "center",
+    color: "#6b7280",
+    marginBottom: 24,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 16,
+    backgroundColor: "#f9fafb",
+  },
+  button: {
+    backgroundColor: "#06b6d4",
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+});
+>>>>>>> Stashed changes
