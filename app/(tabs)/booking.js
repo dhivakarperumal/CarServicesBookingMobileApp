@@ -1,22 +1,21 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Alert,
-} from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { db } from "../../firebase";
 import {
-  collection,
-  addDoc,
-  doc,
-  runTransaction,
-  serverTimestamp,
+    addDoc,
+    collection,
+    doc,
+    runTransaction,
+    serverTimestamp,
 } from "firebase/firestore";
+import { useState } from "react";
+import {
+    Alert,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { db } from "../../firebase";
 
 const BOOKING_STATUS = {
   BOOKED: "Booked",
@@ -114,8 +113,8 @@ export default function BookingScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Book Service</Text>
+    <ScrollView className="flex-1 p-4 bg-white">
+      <Text className="text-2xl font-bold mb-4">Book Service</Text>
 
       {/* NAME */}
       <Input label="Full Name" value={formData.name} onChange={(v) => handleChange("name", v)} />
@@ -127,8 +126,8 @@ export default function BookingScreen() {
       <Input label="Email" value={formData.email} onChange={(v) => handleChange("email", v)} />
 
       {/* BRAND */}
-      <Text style={styles.label}>Car Brand</Text>
-      <View style={styles.picker}>
+      <Text className="text-sm mb-1.5 text-gray-700">Car Brand</Text>
+      <View className="border border-gray-300 rounded-2.5 mb-3.5">
         <Picker
           selectedValue={formData.brand}
           onValueChange={(v) => handleChange("brand", v)}
@@ -145,8 +144,8 @@ export default function BookingScreen() {
       <Input label="Car Model" value={formData.model} onChange={(v) => handleChange("model", v)} />
 
       {/* ISSUE */}
-      <Text style={styles.label}>Issue</Text>
-      <View style={styles.picker}>
+      <Text className="text-sm mb-1.5 text-gray-700">Issue</Text>
+      <View className="border border-gray-300 rounded-2.5 mb-3.5">
         <Picker
           selectedValue={formData.issue}
           onValueChange={(v) => handleChange("issue", v)}
@@ -180,11 +179,11 @@ export default function BookingScreen() {
 
       {/* BUTTON */}
       <TouchableOpacity
-        style={styles.button}
+        className="bg-cyan-500 py-4 rounded-3xl mt-2.5"
         onPress={handleBooking}
         disabled={loading}
       >
-        <Text style={styles.buttonText}>
+        <Text className="text-white text-center font-bold text-base">
           {loading ? "Booking..." : "Book Service"}
         </Text>
       </TouchableOpacity>
@@ -194,50 +193,14 @@ export default function BookingScreen() {
 
 function Input({ label, value, onChange, multiline = false }) {
   return (
-    <View style={{ marginBottom: 14 }}>
-      <Text style={styles.label}>{label}</Text>
+    <View className="mb-3.5">
+      <Text className="text-sm mb-1.5 text-gray-700">{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChange}
-        style={[styles.input, multiline && { height: 80 }]}
+        className={`border border-gray-300 rounded-2.5 p-3 ${multiline ? 'h-20' : ''}`}
         multiline={multiline}
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 16 },
-
-  label: { fontSize: 14, marginBottom: 6, color: "#374151" },
-
-  input: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    padding: 12,
-  },
-
-  picker: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    marginBottom: 14,
-  },
-
-  button: {
-    backgroundColor: "#06b6d4",
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 10,
-  },
-
-  buttonText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-});

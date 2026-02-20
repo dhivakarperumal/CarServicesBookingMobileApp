@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
-import { db } from "../../firebase";
 import { collection, onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { FlatList, Text, View } from "react-native";
+import { db } from "../../firebase";
 
 export default function Services() {
   const [services, setServices] = useState([]);
@@ -15,15 +15,15 @@ export default function Services() {
   }, []);
 
   const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.price}>₹ {item.price}</Text>
+    <View className="p-4 mb-3 bg-cyan-50 rounded-3xl">
+      <Text className="text-base font-semibold mb-1">{item.name}</Text>
+      <Text className="text-sm text-gray-700">₹ {item.price}</Text>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Services</Text>
+    <View className="flex-1 p-4 bg-white">
+      <Text className="text-xl font-bold mb-4">Services</Text>
 
       <FlatList
         data={services}
@@ -31,47 +31,9 @@ export default function Services() {
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No services available</Text>
+          <Text className="text-center mt-10 text-gray-400">No services available</Text>
         }
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#fff",
-  },
-
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
-  },
-
-  card: {
-    padding: 16,
-    marginBottom: 12,
-    backgroundColor: "#ecfeff",
-    borderRadius: 12,
-  },
-
-  name: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-
-  price: {
-    fontSize: 14,
-    color: "#374151",
-  },
-
-  emptyText: {
-    textAlign: "center",
-    marginTop: 40,
-    color: "#9ca3af",
-  },
-});

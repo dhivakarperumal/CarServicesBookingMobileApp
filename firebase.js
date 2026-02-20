@@ -1,10 +1,8 @@
 import { initializeApp } from "firebase/app";
 import {
-  initializeAuth,
-  getReactNativePersistence,
-  GoogleAuthProvider,
+    getAuth,
+    GoogleAuthProvider
 } from "firebase/auth";
-import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
 import { getFirestore } from "firebase/firestore";
 
 // 🔥 Your Firebase config
@@ -19,10 +17,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// ✅ THIS IS REQUIRED FOR REACT NATIVE
-export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(ReactNativeAsyncStorage),
-});
+// ✅ Use getAuth for React Native compatibility
+export const auth = getAuth(app);
 
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
