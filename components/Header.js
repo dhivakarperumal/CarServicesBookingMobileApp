@@ -1,74 +1,266 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Modal,
+  Pressable,
+} from "react-native";
+import { Ionicons, Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { auth } from "../firebase";
+import { signOut, onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function Header({ title = "Car Care", role = "user" }) {
-  const navigation = useNavigation();
+export default function MobileNavbar() {
+  const router = useRouter();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [userData, setUserData] = useState(null);
+
+  // 🔥 Auth Listener
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        setUserData(null);
+        return;
+      }
+
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (snap.exists()) {
+        setUserData(snap.data());
+      }
+    });
+
+    return () => unsub();
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    setDrawerOpen(false);
+    router.replace("/(auth)/login");
+  };
+
+  const links = [
+    { label: "Home", path: "/(tabs)/home" },
+    { label: "Services", path: "/services" },
+    { label: "Pricing", path: "/pricing" },
+    { label: "Products", path: "/products" },
+    { label: "About", path: "/about" },
+    { label: "Contact", path: "/contact" },
+  ];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.row}>
-        {/* Drawer Menu */}
-        <TouchableOpacity onPress={() => navigation.openDrawer()}>
-          <FontAwesome name="bars" size={22} color="white" />
-        </TouchableOpacity>
-
-        {/* Right Icons */}
-        <View style={styles.rightIcons}>
-          <TouchableOpacity onPress={() => navigation.navigate("Notifications")}>
-            <FontAwesome name="bell" size={20} color="white" />
+    <>
+      {/* HEADER */}
+      <SafeAreaView edges={["top"]} style={styles.safeArea}>
+        <View style={styles.header}>
+          {/* LOGO */}
+          <TouchableOpacity onPress={() => router.push("/(tabs)/home")}>
+            <Image
+              source={require("../assets/images/logo_no_bg.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
-            <FontAwesome name="user-circle" size={22} color="white" />
-          </TouchableOpacity>
+          {/* RIGHT SIDE */}
+          <View style={styles.rightSection}>
+            {/* Cart */}
+            <TouchableOpacity
+              onPress={() => router.push("/cart")}
+              style={styles.iconButton}
+            >
+              <Ionicons name="cart-outline" size={22} color="#0EA5E9" />
+            </TouchableOpacity>
+
+            {/* Avatar */}
+            {userData ? (
+              <TouchableOpacity
+                onPress={() => router.push("/account")}
+                style={styles.avatar}
+              >
+                <Text style={styles.avatarText}>
+                  {(userData.username || userData.email)
+                    ?.charAt(0)
+                    .toUpperCase()}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => router.push("/(auth)/login")}
+                style={styles.iconButton}
+              >
+                <Feather name="user" size={20} color="#0EA5E9" />
+              </TouchableOpacity>
+            )}
+
+            {/* Hamburger */}
+            <TouchableOpacity
+              onPress={() => setDrawerOpen(true)}
+              style={styles.iconButton}
+            >
+              <Ionicons name="menu" size={24} color="#0EA5E9" />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </SafeAreaView>
 
-      {/* ✅ Admin Only Button */}
-      {role === "admin" && (
-        <TouchableOpacity
-          style={styles.adminBtn}
-          onPress={() => navigation.navigate("AdminDashboard")}
-        >
-          <FontAwesome name="dashboard" size={16} color="white" />
-          <Text style={styles.adminText}> Admin Dashboard</Text>
-        </TouchableOpacity>
-      )}
-    </View>
+      {/* DRAWER */}
+      <Modal visible={drawerOpen} transparent animationType="slide">
+        <Pressable
+          style={styles.overlay}
+          onPress={() => setDrawerOpen(false)}
+        />
+
+        <View style={styles.drawer}>
+          <Text style={styles.drawerTitle}>Menu</Text>
+
+          {links.map((item) => (
+            <TouchableOpacity
+              key={item.label}
+              onPress={() => {
+                router.push(item.path);
+                setDrawerOpen(false);
+              }}
+              style={styles.drawerItem}
+            >
+              <Text style={styles.drawerText}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+
+          <View style={styles.divider} />
+
+          {/* Account */}
+          {userData && (
+            <TouchableOpacity
+              onPress={() => {
+                router.push("/account");
+                setDrawerOpen(false);
+              }}
+              style={styles.drawerItem}
+            >
+              <Text style={styles.drawerText}>Account</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Admin Panel */}
+          {userData?.role === "admin" && (
+            <TouchableOpacity
+              onPress={() => {
+                router.push("/admin");
+                setDrawerOpen(false);
+              }}
+              style={styles.drawerItem}
+            >
+              <Text style={[styles.drawerText, { color: "#FACC15" }]}>
+                Admin Panel
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Logout */}
+          {userData && (
+            <TouchableOpacity
+              onPress={handleLogout}
+              style={styles.drawerItem}
+            >
+              <Text style={[styles.drawerText, { color: "#EF4444" }]}>
+                Logout
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </Modal>
+    </>
   );
 }
 
+/* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 16,
-    paddingTop: 48,
-    paddingBottom: 16,
-    backgroundColor: "#005461",
-    elevation: 6,
+
+  safeArea: {
+    backgroundColor: "#000",
   },
-  row: {
+
+  header: {
+    height: 60,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(14,165,233,0.3)",
   },
-  rightIcons: {
+
+  logo: {
+    width: 120,
+    height: 40,
+  },
+
+  rightSection: {
     flexDirection: "row",
     alignItems: "center",
   },
-  adminBtn: {
-    marginTop: 14,
-    backgroundColor: "#007d8a",
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: "center",
-    flexDirection: "row",
+
+  iconButton: {
+    marginLeft: 15,
+  },
+
+  avatar: {
+    marginLeft: 15,
+    backgroundColor: "#0EA5E9",
+    width: 34,
+    height: 34,
+    borderRadius: 50,
     justifyContent: "center",
+    alignItems: "center",
   },
-  adminText: {
-    color: "white",
+
+  avatarText: {
+    color: "#000",
     fontWeight: "bold",
-    marginLeft: 6,
+  },
+
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+  },
+
+  drawer: {
+    position: "absolute",
+    right: 0,
+    top: 0,
+    width: 260,
+    height: "100%",
+    backgroundColor: "#0B1120",
+    paddingTop: 60,
+    paddingHorizontal: 20,
+  },
+
+  drawerTitle: {
+    color: "#0EA5E9",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+
+  drawerItem: {
+    paddingVertical: 12,
+  },
+
+  drawerText: {
+    color: "#fff",
+    fontSize: 15,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    marginVertical: 15,
   },
 });
-
