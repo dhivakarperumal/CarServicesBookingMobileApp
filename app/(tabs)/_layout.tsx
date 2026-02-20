@@ -6,7 +6,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        header: () => <Header />,   // 👈 GLOBAL HEADER
+        header: () => <Header />,
         tabBarActiveTintColor: "#06b6d4",
       }}
     >
@@ -15,7 +15,7 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="home" color={color} size={size} />
+            <FontAwesome name="dashboard" color={color} size={size} />
           ),
         }}
       />
@@ -25,7 +25,7 @@ export default function TabLayout() {
         options={{
           title: "Services",
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="wrench" color={color} size={size} />
+            <FontAwesome name="cogs" color={color} size={size} />
           ),
         }}
       />
@@ -35,7 +35,7 @@ export default function TabLayout() {
         options={{
           title: "Booking",
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="calendar" color={color} size={size} />
+            <FontAwesome name="clipboard" color={color} size={size} />
           ),
         }}
       />
@@ -45,7 +45,7 @@ export default function TabLayout() {
         options={{
           title: "Products",
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="shopping-cart" color={color} size={size} />
+            <FontAwesome name="shopping-bag" color={color} size={size} />
           ),
         }}
       />
@@ -55,11 +55,10 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="user" color={color} size={size} />
+            <FontAwesome name="id-badge" color={color} size={size} />
           ),
         }}
       />
     </Tabs>
   );
 }
-
