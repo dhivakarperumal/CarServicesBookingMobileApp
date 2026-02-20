@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-  Image,
+    ActivityIndicator,
+    FlatList,
+    Image,
+    Text,
+    View,
 } from "react-native";
 import { db } from "../../firebase";
-import { collection, onSnapshot } from "firebase/firestore";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -30,7 +29,7 @@ export default function Products() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
+      <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#06b6d4" />
       </View>
     );
@@ -40,42 +39,41 @@ export default function Products() {
     const inStock = item.totalStock > 0;
 
     return (
-      <View style={styles.card}>
+      <View className="flex-row bg-white p-3 rounded-3.5 mb-3 shadow-lg">
         {item.image && (
-          <Image source={{ uri: item.image }} style={styles.image} />
+          <Image source={{ uri: item.image }} className="w-22 h-22 rounded-2.5 mr-3" />
         )}
 
-        <View style={{ flex: 1 }}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.brand}>{item.brand}</Text>
+        <View className="flex-1">
+          <Text className="text-sm font-bold text-gray-900">{item.name}</Text>
+          <Text className="text-xs text-gray-500 mb-1">{item.brand}</Text>
 
           {/* PRICE SECTION */}
-          <View style={styles.priceRow}>
-            <Text style={styles.offerPrice}>₹ {item.offerPrice}</Text>
-            <Text style={styles.mrp}>₹ {item.mrp}</Text>
-            <Text style={styles.offer}>{item.offer}% OFF</Text>
+          <View className="flex-row items-center mb-1">
+            <Text className="text-base font-bold text-cyan-500 mr-2">₹ {item.offerPrice}</Text>
+            <Text className="text-xs text-gray-400 line-through mr-1.5">₹ {item.mrp}</Text>
+            <Text className="text-xs text-green-600 font-semibold">{item.offer}% OFF</Text>
           </View>
 
           {/* STOCK */}
           <Text
-            style={[
-              styles.stock,
-              { color: inStock ? "#16a34a" : "#ef4444" },
-            ]}
+            className={`text-xs font-semibold ${
+              inStock ? 'text-green-600' : 'text-red-500'
+            }`}
           >
             {inStock ? "In Stock" : "Out of Stock"}
           </Text>
 
           {/* RATING */}
-          <Text style={styles.rating}>⭐ {item.rating}</Text>
+          <Text className="text-xs text-amber-400 mt-0.5">⭐ {item.rating}</Text>
         </View>
       </View>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Car Products</Text>
+    <View className="flex-1 bg-slate-100 p-4">
+      <Text className="text-2xl font-bold mb-4 text-gray-900">Car Products</Text>
 
       <FlatList
         data={products}
@@ -86,96 +84,3 @@ export default function Products() {
     </View>
   );
 }
-
-
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f1f5f9",
-    padding: 16,
-  },
-
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 16,
-    color: "#111827",
-  },
-
-  card: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 14,
-    marginBottom: 12,
-
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 3,
-  },
-
-  image: {
-    width: 90,
-    height: 90,
-    borderRadius: 10,
-    marginRight: 12,
-  },
-
-  name: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#111827",
-  },
-
-  brand: {
-    fontSize: 12,
-    color: "#6b7280",
-    marginBottom: 4,
-  },
-
-  priceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-
-  offerPrice: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#06b6d4",
-    marginRight: 8,
-  },
-
-  mrp: {
-    fontSize: 13,
-    color: "#9ca3af",
-    textDecorationLine: "line-through",
-    marginRight: 6,
-  },
-
-  offer: {
-    fontSize: 12,
-    color: "#16a34a",
-    fontWeight: "600",
-  },
-
-  stock: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-
-  rating: {
-    fontSize: 12,
-    color: "#f59e0b",
-    marginTop: 2,
-  },
-
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
