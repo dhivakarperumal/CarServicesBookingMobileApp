@@ -1,11 +1,12 @@
 import { initializeApp } from "firebase/app";
 import {
-    getAuth,
-    GoogleAuthProvider
+  initializeAuth,
+  getReactNativePersistence,
+  GoogleAuthProvider,
 } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getFirestore } from "firebase/firestore";
 
-// 🔥 Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyAGwrctTbnK0L66bHmSAPbWlZWToQQ5NLQ",
   authDomain: "carservicebooking-e7a0e.firebaseapp.com",
@@ -17,10 +18,14 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// ✅ Use getAuth for React Native compatibility
-export const auth = getAuth(app);
+// ✅ Persistent Auth for React Native
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
 
+// Google Provider (works with Expo Google auth flow)
 export const googleProvider = new GoogleAuthProvider();
+
 export const db = getFirestore(app);
 
 export default app;
