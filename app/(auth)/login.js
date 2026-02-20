@@ -1,16 +1,21 @@
-import React, { useState } from "react";
+import { useRouter } from "expo-router";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator,
+  View,
 } from "react-native";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { Ionicons } from "@expo/vector-icons";
 import { auth, db } from "../../firebase";
-import { doc, getDoc } from "firebase/firestore";
-import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -18,6 +23,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [secure, setSecure] = useState(true);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -35,7 +41,6 @@ export default function LoginScreen() {
       );
 
       const uid = userCred.user.uid;
-
       const userRef = doc(db, "users", uid);
       const userSnap = await getDoc(userRef);
 
@@ -48,8 +53,7 @@ export default function LoginScreen() {
 
       if (role === "admin") router.replace("/(adminTabs)/dashboard");
       else if (role === "driver") router.replace("/(driverTabs)/home");
-      else if (role === "user") router.replace("/(tabs)/home");
-      else Alert.alert("Error", "Invalid user role");
+      else router.replace("/(tabs)/home");
     } catch (error) {
       Alert.alert("Login Failed", error.message);
     } finally {
@@ -58,79 +62,148 @@ export default function LoginScreen() {
   };
 
   return (
-    <View className="flex-1 bg-slate-100 justify-center px-6">
-      {/* Card */}
-      <View className="bg-white p-7 rounded-3xl shadow-xl">
-        {/* Title */}
-        <Text className="text-3xl font-extrabold text-center text-gray-900">
-          Welcome Back 👋
-        </Text>
-        <Text className="text-center text-gray-500 mt-1 mb-8">
-          Login to your account
-        </Text>
-
-        {/* Email */}
-        <View className="mb-4">
-          <Text className="text-gray-700 mb-2 font-semibold">Email</Text>
-          <TextInput
-            placeholder="Enter your email"
-            placeholderTextColor="#9ca3af"
-            value={email}
-            onChangeText={setEmail}
-            className="border border-gray-200 bg-gray-50 px-4 py-4 rounded-2xl text-gray-900"
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-        </View>
-
-        {/* Password */}
-        <View className="mb-6">
-          <Text className="text-gray-700 mb-2 font-semibold">Password</Text>
-          <TextInput
-            placeholder="Enter your password"
-            placeholderTextColor="#9ca3af"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            className="border border-gray-200 bg-gray-50 px-4 py-4 rounded-2xl text-gray-900"
-          />
-        </View>
-
-        {/* Login Button */}
-        <TouchableOpacity
-          onPress={handleLogin}
-          disabled={loading}
-          className={`p-4 rounded-2xl items-center ${
-            loading ? "bg-cyan-300" : "bg-cyan-500"
-          }`}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-white font-bold text-base">Login</Text>
-          )}
-        </TouchableOpacity>
-
-        {/* Divider */}
-        <View className="flex-row items-center my-6">
-          <View className="flex-1 h-[1px] bg-gray-200" />
-          <Text className="mx-3 text-gray-400 text-sm">OR</Text>
-          <View className="flex-1 h-[1px] bg-gray-200" />
-        </View>
-
-        {/* Register */}
-        <Text
-          onPress={() => router.push("/(auth)/register")}
-          className="text-center text-cyan-600 font-semibold"
-        >
-          Don’t have an account? Register
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      {/* Logo */}
+      <View style={styles.logoContainer}>
+        <Image
+          source={require("../../assets/images/logo_no_bg.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.title}>Car Service Login</Text>
+        <Text style={styles.subtitle}>
+          Sign in to manage services & bookings
         </Text>
       </View>
 
-      {/* Footer */}
-      <Text className="text-center text-gray-400 mt-6 text-xs">
-        Car Care App • Secure Login
+      {/* Email */}
+      <View style={styles.inputWrapper}>
+        <Ionicons name="mail-outline" size={20} color="#94A3B8" />
+        <TextInput
+          placeholder="Email or Username"
+          placeholderTextColor="#64748B"
+          value={email}
+          onChangeText={setEmail}
+          style={styles.input}
+          autoCapitalize="none"
+        />
+      </View>
+
+      {/* Password */}
+      <View style={styles.inputWrapper}>
+        <Ionicons name="lock-closed-outline" size={20} color="#94A3B8" />
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#64748B"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={secure}
+          style={styles.input}
+        />
+        <TouchableOpacity onPress={() => setSecure(!secure)}>
+          <Ionicons
+            name={secure ? "eye-off-outline" : "eye-outline"}
+            size={20}
+            color="#94A3B8"
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Sign In Button */}
+      <TouchableOpacity
+        style={styles.loginButton}
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.loginText}>Sign In</Text>
+        )}
+      </TouchableOpacity>
+
+      {/* Register */}
+      <Text
+        onPress={() => router.push("/(auth)/register")}
+        style={styles.registerText}
+      >
+        Don’t have an account?{" "}
+        <Text style={{ color: "#06B6D4" }}>Register</Text>
       </Text>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0B1120", // full dark card look
+    paddingHorizontal: 24,
+    justifyContent: "center",
+  },
+
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 40,
+  },
+
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 12,
+  },
+
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
+
+  subtitle: {
+    fontSize: 14,
+    color: "#94A3B8",
+    marginTop: 6,
+    textAlign: "center",
+  },
+
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#111827",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 15,
+    marginBottom: 18,
+  },
+
+  input: {
+    flex: 1,
+    color: "#FFFFFF",
+    marginLeft: 10,
+    fontSize: 15,
+  },
+
+  loginButton: {
+    backgroundColor: "#0EA5E9",
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    marginTop: 10,
+  },
+
+  loginText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  registerText: {
+    textAlign: "center",
+    color: "#94A3B8",
+    marginTop: 24,
+    fontSize: 14,
+  },
+});
