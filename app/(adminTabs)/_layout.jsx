@@ -65,17 +65,11 @@ export default function AdminTabsLayout() {
             paddingBottom: 2,
 
             backgroundColor: "#ffffff",
-
-            borderRadius: 20,
-            marginHorizontal: 12,
-            marginBottom: 10,
-
-            shadowColor: "#000",
+           
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.15,
-            shadowRadius: 6,
-
-            elevation: 12, // Android shadow
+            
+            elevation: 1, // Android shadow
           },
 
           tabBarHideOnKeyboard: true,
