@@ -323,21 +323,21 @@ export default function Settings() {
   return (
     <ScrollView style={styles.container}>
       <SettingCard
-        icon={<Ionicons name="person-outline" size={22} color="#2563eb" />}
+        icon={<Ionicons name="person-outline" size={22} color="#38bdf8" />}
         title="Profile Settings"
         desc="Update personal information and change password."
         path="/(admin-settings)/profile"
       />
 
       <SettingCard
-        icon={<Ionicons name="people-outline" size={22} color="#2563eb" />}
+        icon={<Ionicons name="people-outline" size={22} color="#38bdf8" />}
         title="User Management"
         desc="Manage user roles, permissions, and accounts."
         path="/(admin-settings)/users"
       />
 
       <SettingCard
-        icon={<FontAwesome5 name="star" size={20} color="#2563eb" />}
+        icon={<FontAwesome5 name="star" size={20} color="#38bdf8" />}
         title="Customer Reviews & Ratings"
         desc="View and manage customer feedback and service ratings."
         path="/(admin-settings)/review"
@@ -350,19 +350,24 @@ export default function Settings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    
+    backgroundColor: "#020617",
     padding: 16,
   },
 
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#0f172a",
     borderRadius: 14,
     padding: 16,
     marginBottom: 14,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
 
   left: {
@@ -373,25 +378,27 @@ const styles = StyleSheet.create({
   },
 
   iconBox: {
-    backgroundColor: "#dbeafe",
+    backgroundColor: "#020617",
     padding: 10,
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#38bdf8",
   },
 
   title: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
+    color: "#fff",
   },
 
   desc: {
     fontSize: 12,
-    color: "#6b7280",
+    color: "#94a3b8",
     marginTop: 2,
   },
 
   button: {
-    backgroundColor: "#15173D",
+    backgroundColor: "#2563eb",
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 8,
