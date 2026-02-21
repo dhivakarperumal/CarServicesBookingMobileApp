@@ -55,8 +55,7 @@ const STATUS_NORMALIZER = {
 export default function HomeScreen({ navigation }) {
   const router = useRouter();
   const [services, setServices] = useState([]);
-  const [bookings, setBookings] = useState([]);
-  const [activeBooking, setActiveBooking] = useState(null);
+  const [allBookings, setAllBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -83,7 +82,7 @@ export default function HomeScreen({ navigation }) {
     return () => unsub();
   }, []);
 
-  // Fetch active bookings
+  // Fetch all bookings
   useEffect(() => {
     if (!user) return;
 
@@ -103,14 +102,8 @@ export default function HomeScreen({ navigation }) {
         };
       });
 
-      // Filter: only show active bookings (not completed or cancelled)
-      const active = data.find(
-        (b) =>
-          b.normalizedStatus !== "SERVICE_COMPLETED" &&
-          b.normalizedStatus !== "CANCELLED"
-      );
-
-      setActiveBooking(active || null);
+      // Show all bookings (not filtered)
+      setAllBookings(data);
     });
 
     return () => unsub();
@@ -188,29 +181,34 @@ export default function HomeScreen({ navigation }) {
         </View>
 
         {/* ACTIVE BOOKING */}
-        {activeBooking && (
+        {allBookings.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Active Booking</Text>
+            <Text style={styles.sectionTitle}>My Bookings</Text>
 
-            <TouchableOpacity
-              style={styles.bookingCard}
-              onPress={() => setSelectedBooking(activeBooking)}
-            >
-              <View style={styles.bookingTop}>
-                <View>
-                  <Text style={styles.carName}>{activeBooking.brand} - {activeBooking.model}</Text>
-                  <Text style={styles.serviceName}>{activeBooking.issue}</Text>
-                </View>
-                <View style={styles.statusBadge}>
-                  <Text style={styles.statusText}>{STATUS_LABELS[activeBooking.normalizedStatus]}</Text>
-                </View>
-              </View>
+           <View style={styles.bookingsContainer}>
+              {allBookings.map((booking) => (
+                <TouchableOpacity
+                  key={booking.id}
+                  style={styles.bookingCard}
+                  onPress={() => setSelectedBooking(booking)}
+                >
+                  <View style={styles.bookingTop}>
+                    <View>
+                      <Text style={styles.carName}>{booking.brand} - {booking.model}</Text>
+                      <Text style={styles.serviceName}>{booking.issue}</Text>
+                    </View>
+                    <View style={styles.statusBadge}>
+                      <Text style={styles.statusText}>{STATUS_LABELS[booking.normalizedStatus]}</Text>
+                    </View>
+                  </View>
 
-              <View style={styles.bookingFooter}>
-                <Text style={styles.smallText}>ID: {activeBooking.bookingId}</Text>
-                <Text style={styles.smallText}>{activeBooking.name}</Text>
-              </View>
-            </TouchableOpacity>
+                  <View style={styles.bookingFooter}>
+                    <Text style={styles.smallText}>ID: {booking.bookingId}</Text>
+                    <Text style={styles.smallText}>{booking.name}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
 
             {selectedBooking && (
               <BookingDetailModal
@@ -528,12 +526,17 @@ const styles = StyleSheet.create({
     width: "100%",
   },
 
-  bookingCard: {
-    backgroundColor: "#111827",
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 16,
+  bookingsContainer: {
+    marginBottom: 20,
   },
+
+bookingCard: {
+  backgroundColor: "#111827",
+  borderRadius: 16,
+  padding: 18,
+  marginBottom: 16,
+  width: "100%",   // 👈 full width
+},
 
   bookingTop: {
     flexDirection: "row",
