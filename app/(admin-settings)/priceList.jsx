@@ -67,7 +67,7 @@ export default function PriceList() {
   /* 🔹 SEARCH FILTER */
   const filteredPackages = useMemo(() => {
     return packages.filter((pkg) =>
-      pkg.title?.toLowerCase().includes(search.toLowerCase())
+      pkg.title?.toLowerCase().includes(search.toLowerCase()),
     );
   }, [packages, search]);
 
@@ -78,11 +78,11 @@ export default function PriceList() {
       {/* 🔹 SEARCH */}
       <TextInput
         placeholder="Search package..."
+        placeholderTextColor="#64748b" // ✅ visible placeholder
         value={search}
         onChangeText={setSearch}
         style={styles.search}
       />
-
       {/* 🔹 GRID LIST */}
       <FlatList
         data={filteredPackages}
@@ -108,41 +108,35 @@ export default function PriceList() {
             ))}
 
             {item.features?.length > 2 && (
-              <Text style={styles.more}>
-                +{item.features.length - 2} more
-              </Text>
+              <Text style={styles.more}>+{item.features.length - 2} more</Text>
             )}
 
             {/* ACTIONS */}
             <View style={styles.actions}>
               <TouchableOpacity
                 onPress={() =>
-                  router.push(
-                    `/(admin-settings)/addprice?id=${item.id}`
-                  )
+                  router.push(`/(admin-settings)/addPrice?id=${item.id}`)
                 }
                 style={styles.iconBtn}
               >
-                <MaterialIcons name="edit" size={16} />
+                <MaterialIcons name="edit" size={16} color="#38bdf8" />
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => handleDelete(item.id)}
                 style={styles.iconBtn}
               >
-                <MaterialIcons name="delete" size={16} />
+                <MaterialIcons name="delete" size={16} color="#ef4444" />
               </TouchableOpacity>
             </View>
           </View>
         )}
-        ListEmptyComponent={
-          <Text style={styles.empty}>No packages found</Text>
-        }
+        ListEmptyComponent={<Text style={styles.empty}>No packages found</Text>}
       />
 
       {/* 🔹 FAB */}
       <TouchableOpacity
-        onPress={() => router.push("/(admin-settings)/addprice")}
+        onPress={() => router.push("/(admin-settings)/addPrice")}
         style={styles.fab}
         activeOpacity={0.85}
       >
@@ -154,70 +148,95 @@ export default function PriceList() {
 
 /* 🔹 STYLES */
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 12 },
+  container: {
+    flex: 1,
+    padding: 12,
+    backgroundColor: "#020617",
+  },
 
   search: {
     borderWidth: 1,
-    borderColor: "#ddd",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-    backgroundColor: "#fff",
+    borderColor: "#0b3b6f",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    backgroundColor: "#0f172a",
+    color: "#fff",
   },
 
   card: {
     width: cardWidth,
-    backgroundColor: "#fff",
+    backgroundColor: "#0f172a",
     padding: 12,
-    borderRadius: 12,
-    marginBottom: 12,
-    elevation: 3,
+    borderRadius: 14,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
   },
 
-  title: { fontWeight: "bold", fontSize: 14 },
-  price: { fontSize: 13, marginTop: 2, fontWeight: "600" },
+  title: {
+    fontWeight: "600",
+    fontSize: 14,
+    color: "#fff",
+  },
+
+  price: {
+    fontSize: 13,
+    marginTop: 4,
+    fontWeight: "700",
+    color: "#38bdf8",
+  },
 
   feature: {
     fontSize: 11,
-    color: "#6b7280",
-    marginTop: 2,
+    color: "#94a3b8",
+    marginTop: 3,
   },
 
   more: {
     fontSize: 11,
-    color: "#9ca3af",
-    marginTop: 2,
+    color: "#64748b",
+    marginTop: 3,
   },
 
   actions: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    marginTop: 6,
+    marginTop: 8,
   },
 
   iconBtn: {
     padding: 6,
     marginLeft: 6,
-    backgroundColor: "#f3f4f6",
-    borderRadius: 6,
+    backgroundColor: "#020617",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
 
   empty: {
     textAlign: "center",
     marginTop: 40,
-    color: "#6b7280",
+    color: "#64748b",
   },
 
   fab: {
     position: "absolute",
     right: 20,
     bottom: 20,
-    backgroundColor: "#000",
+    backgroundColor: "#2563eb",
     width: 60,
     height: 60,
     borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
-    elevation: 6,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
 });

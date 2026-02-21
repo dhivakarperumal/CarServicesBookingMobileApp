@@ -125,6 +125,7 @@ export default function AddPrice() {
       {/* TITLE */}
       <TextInput
         placeholder="Package Title"
+        placeholderTextColor="#64748b"
         value={title}
         onChangeText={setTitle}
         style={styles.input}
@@ -133,6 +134,7 @@ export default function AddPrice() {
       {/* PRICE */}
       <TextInput
         placeholder="Price ₹"
+        placeholderTextColor="#64748b"
         value={price}
         onChangeText={setPrice}
         keyboardType="numeric"
@@ -152,6 +154,7 @@ export default function AddPrice() {
         <View key={i} style={styles.row}>
           <TextInput
             placeholder={`Feature ${i + 1}`}
+            placeholderTextColor="#64748b"
             value={f}
             onChangeText={(v) => handleFeatureChange(i, v)}
             style={[styles.input, { flex: 1 }]}
@@ -179,40 +182,75 @@ export default function AddPrice() {
 
 /* ================= STYLES ================= */
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#f1f5f9" },
-  header: { fontSize: 20, fontWeight: "bold", marginBottom: 16 },
-  input: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#ddd",
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#020617",
   },
-  section: { fontWeight: "bold", fontSize: 15 },
+
+  header: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 18,
+    color: "#fff",
+  },
+
+  input: {
+    backgroundColor: "#0f172a",
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    color: "#fff",
+  },
+
+  section: {
+    fontWeight: "700",
+    fontSize: 15,
+    color: "#38bdf8",
+  },
+
   featureHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 10,
   },
+
   addBtn: {
-    backgroundColor: "#111827",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    backgroundColor: "#2563eb",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  row: { flexDirection: "row", alignItems: "center" },
-  remove: {
-    marginLeft: 10,
-    color: "red",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  submit: {
-    backgroundColor: "#111827",
-    padding: 14,
-    borderRadius: 12,
+
+  row: {
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: 10,
+  },
+
+  remove: {
+    marginLeft: 12,
+    color: "#ef4444",
+    fontWeight: "700",
+    fontSize: 18,
+  },
+
+  submit: {
+    backgroundColor: "#2563eb",
+    padding: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 40,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
 });

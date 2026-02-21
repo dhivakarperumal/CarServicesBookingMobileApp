@@ -411,7 +411,7 @@ const handleSave = async () => {
 
                 {/* SWITCHES */}
                 <View style={styles.switchRow}>
-                    <Text style={{ color: "black" }}>Featured</Text>
+                    <Text style={{ color: "#fff" }}>Featured</Text>
                     <Switch
                         value={product.isFeatured}
                         onValueChange={(v) =>
@@ -421,7 +421,7 @@ const handleSave = async () => {
                 </View>
 
                 <View style={styles.switchRow}>
-                    <Text style={{ color: "black" }}>Active</Text>
+                    <Text style={{ color: "#fff" }}>Active</Text>
                     <Switch
                         value={product.isActive}
                         onValueChange={(v) =>
@@ -459,14 +459,16 @@ const Input = ({ label, ...props }) => (
 
 /* 🎨 STYLES */
 const styles = StyleSheet.create({
-  /* 🔷 HEADER (GRAY 900) */
+  /* 🔷 HEADER */
   header: {
     height: 56,
-    backgroundColor: "#111827", // gray-900
+    backgroundColor: "#0f172a",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderColor: "#0b3b6f",
   },
 
   headerTitle: {
@@ -475,66 +477,60 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  /* 🔳 WHITE FORM CARD */
+  /* MAIN FORM */
   container: {
-    backgroundColor: "#ffffff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: "#020617",
     padding: 14,
     paddingBottom: 40,
   },
 
-  /* 🏷 LABEL */
   label: {
-    color: "#111827", // gray-900
+    color: "#cbd5f5",
     marginBottom: 4,
     fontSize: 13,
     fontWeight: "500",
   },
 
-  /* 🧾 INPUT */
   input: {
-    backgroundColor: "#f3f4f6", // gray-100
-    color: "#111827",
+    backgroundColor: "#0f172a",
+    color: "#fff",
     padding: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#e5e7eb", // gray-200
+    borderColor: "#0b3b6f",
   },
 
-  /* 📌 SECTION TITLE */
   section: {
-    color: "#111827",
+    color: "#38bdf8",
     marginTop: 18,
     marginBottom: 8,
     fontWeight: "700",
     fontSize: 14,
   },
 
-  /* 🧩 VARIANT CARD */
   variantCard: {
-    backgroundColor: "#f9fafb", // very light gray
+    backgroundColor: "#0f172a",
     padding: 12,
     borderRadius: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#0b3b6f",
   },
 
-  /* ❌ REMOVE TEXT */
   remove: {
     color: "#ef4444",
     marginTop: 6,
     fontWeight: "500",
   },
 
-  /* ➕ ADD VARIANT BUTTON */
   addBtn: {
-    backgroundColor: "#111827",
+    backgroundColor: "#1e3a8a",
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#38bdf8",
   },
 
   addText: {
@@ -542,15 +538,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  /* 🖼 IMAGE PICKER */
   imagePicker: {
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#0f172a",
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#38bdf8",
   },
 
   preview: {
@@ -559,7 +554,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
 
-  /* 🔘 SWITCH ROW */
   switchRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -567,18 +561,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  /* 💾 SAVE BUTTON */
   saveBtn: {
-    backgroundColor: "#2563eb", // blue-600
+    backgroundColor: "#2563eb",
     padding: 14,
     borderRadius: 12,
     alignItems: "center",
     marginTop: 20,
     marginBottom: 40,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 8,
   },
 
   saveText: {
