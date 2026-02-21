@@ -1,211 +1,461 @@
-import { useEffect, useState } from "react";
+// import { useEffect, useMemo, useState } from "react";
+// import {
+//   View,
+//   Text,
+//   FlatList,
+//   TouchableOpacity,
+//   ActivityIndicator,
+//   TextInput,
+// } from "react-native";
+// import {
+//   collection,
+//   onSnapshot,
+//   updateDoc,
+//   doc,
+//   serverTimestamp,
+// } from "firebase/firestore";
+// import { db } from "../../firebase";
+// import { Picker } from "@react-native-picker/picker";
+// import { useRouter } from "expo-router";
+
+// const BOOKING_STATUS = [
+//   "Approved",
+//   "Processing",
+//   "Waiting for Spare",
+//   "Service Going on",
+//   "Bill Pending",
+//   "Bill Completed",
+//   "Service Completed",
+// ];
+
+// export default function Services() {
+//   const router = useRouter();
+
+//   const [services, setServices] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [search, setSearch] = useState("");
+//   const [updatingId, setUpdatingId] = useState(null);
+
+//   useEffect(() => {
+//     const unsub = onSnapshot(collection(db, "allServices"), (snap) => {
+//       const data = snap.docs.map((d) => ({
+//         id: d.id,
+//         ...d.data(),
+//       }));
+//       setServices(data);
+//       setLoading(false);
+//     });
+
+//     return () => unsub();
+//   }, []);
+
+//   const handleStatusChange = async (service, newStatus) => {
+//     try {
+//       setUpdatingId(service.id);
+
+//       await updateDoc(doc(db, "allServices", service.id), {
+//         serviceStatus: newStatus,
+//         updatedAt: serverTimestamp(),
+//       });
+//     } catch (err) {
+//       console.log(err);
+//     } finally {
+//       setUpdatingId(null);
+//     }
+//   };
+
+//   const filteredServices = useMemo(() => {
+//     return services.filter((s) => {
+//       const text = `
+//         ${s.bookingId || ""}
+//         ${s.name || ""}
+//         ${s.phone || ""}
+//         ${s.brand || ""}
+//         ${s.model || ""}
+//       `.toLowerCase();
+
+//       return text.includes(search.toLowerCase());
+//     });
+//   }, [services, search]);
+
+//   const getStatusColor = (status) => {
+//     switch (status) {
+//       case "Approved":
+//         return "#6366f1";
+//       case "Processing":
+//         return "#9333ea";
+//       case "Waiting for Spare":
+//         return "#f59e0b";
+//       case "Service Going on":
+//         return "#f97316";
+//       case "Bill Pending":
+//         return "#ec4899";
+//       case "Bill Completed":
+//         return "#06b6d4";
+//       case "Service Completed":
+//         return "#16a34a";
+//       default:
+//         return "#6b7280";
+//     }
+//   };
+
+//   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
+
+//   return (
+//     <View style={{ flex: 1, padding: 12 }}>
+//       {/* SEARCH */}
+//       <TextInput
+//         placeholder="Search booking, name, phone, car"
+//         value={search}
+//         onChangeText={setSearch}
+//         style={{
+//           borderWidth: 1,
+//           borderColor: "#ddd",
+//           padding: 10,
+//           borderRadius: 10,
+//           marginBottom: 10,
+//         }}
+//       />
+
+//       <FlatList
+//         data={filteredServices}
+//         keyExtractor={(item) => item.id}
+//         renderItem={({ item }) => (
+//           <View
+//             style={{
+//               backgroundColor: "#fff",
+//               padding: 14,
+//               borderRadius: 12,
+//               marginBottom: 12,
+//               elevation: 3,
+//             }}
+//           >
+//             <Text style={{ fontWeight: "bold" }}>
+//               {item.bookingId || "No Booking"}
+//             </Text>
+
+//             <Text>{item.name}</Text>
+//             <Text>{item.phone}</Text>
+//             <Text>
+//               {item.brand} {item.model}
+//             </Text>
+
+//             {/* STATUS CHIP */}
+//             <View
+//               style={{
+//                 backgroundColor: getStatusColor(item.serviceStatus),
+//                 paddingVertical: 4,
+//                 paddingHorizontal: 10,
+//                 borderRadius: 20,
+//                 alignSelf: "flex-start",
+//                 marginTop: 6,
+//               }}
+//             >
+//               <Text style={{ color: "#fff", fontSize: 12 }}>
+//                 {item.serviceStatus}
+//               </Text>
+//             </View>
+
+//             {/* STATUS DROPDOWN */}
+//             {updatingId === item.id ? (
+//               <ActivityIndicator style={{ marginTop: 10 }} />
+//             ) : (
+//               <View
+//                 style={{
+//                   borderWidth: 1,
+//                   borderColor: "#ddd",
+//                   borderRadius: 8,
+//                   marginTop: 8,
+//                   overflow: "hidden",
+//                 }}
+//               >
+//                 <Picker
+//                   selectedValue={item.serviceStatus}
+//                   onValueChange={(value) =>
+//                     handleStatusChange(item, value)
+//                   }
+//                 >
+//                   {BOOKING_STATUS.map((status) => (
+//                     <Picker.Item
+//                       key={status}
+//                       label={status}
+//                       value={status}
+//                     />
+//                   ))}
+//                 </Picker>
+//               </View>
+//             )}
+
+//             {/* BILL BUTTON ONLY WHEN BILL PENDING */}
+//             {item.serviceStatus === "Bill Pending" && (
+//               <TouchableOpacity
+//                 onPress={() =>
+//                   router.push({
+//                     pathname: "/(serviceslist)/ServiceBillingScreen",
+//                     params: { id: item.id }, 
+//                   })
+//                 }
+//                 style={{
+//                   marginTop: 10,
+//                   backgroundColor: "black",
+//                   padding: 10,
+//                   borderRadius: 8,
+//                 }}
+//               >
+//                 <Text style={{ color: "#fff", textAlign: "center" }}>
+//                   Generate Bill
+//                 </Text>
+//               </TouchableOpacity>
+//             )}
+//           </View>
+//         )}
+//       />
+//     </View>
+//   );
+// }
+
+import { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   FlatList,
   TouchableOpacity,
-  ScrollView,
-  Alert,
+  ActivityIndicator,
+  TextInput,
 } from "react-native";
 import {
-  doc,
-  getDoc,
   collection,
-  getDocs,
-  addDoc,
-  serverTimestamp,
+  onSnapshot,
   updateDoc,
+  doc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../../firebase";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Picker } from "@react-native-picker/picker";
+import { useRouter } from "expo-router";
 
-export default function ServiceBilling() {
-  const { serviceId } = useLocalSearchParams();
+const BOOKING_STATUS = [
+  "Approved",
+  "Processing",
+  "Waiting for Spare",
+  "Service Going on",
+  "Bill Pending",
+  "Bill Completed",
+  "Service Completed",
+];
+
+export default function Services() {
   const router = useRouter();
 
-  const [service, setService] = useState(null);
-  const [parts, setParts] = useState([]);
-  const [labour, setLabour] = useState("");
-  const [gstPercent, setGstPercent] = useState("18");
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [updatingId, setUpdatingId] = useState(null);
 
+  /* 🔥 Realtime Fetch */
   useEffect(() => {
-    const loadService = async () => {
-      try {
-        const serviceRef = doc(db, "allServices", serviceId);
-        const serviceSnap = await getDoc(serviceRef);
+    const unsub = onSnapshot(collection(db, "allServices"), (snap) => {
+      const data = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }));
+      setServices(data);
+      setLoading(false);
+    });
 
-        if (!serviceSnap.exists()) {
-          Alert.alert("Error", "Service not found");
-          return;
-        }
+    return () => unsub();
+  }, []);
 
-        const serviceData = {
-          id: serviceSnap.id,
-          ...serviceSnap.data(),
-        };
-
-        setService(serviceData);
-
-        const partsSnap = await getDocs(
-          collection(db, "allServices", serviceId, "parts")
-        );
-
-        const partsData = partsSnap.docs.map((d) => {
-          const data = d.data();
-          return {
-            partName: data.partName,
-            qty: Number(data.qty || 0),
-            price: Number(data.price || 0),
-            total: Number(data.qty || 0) * Number(data.price || 0),
-          };
-        });
-
-        setParts(partsData);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    if (serviceId) loadService();
-  }, [serviceId]);
-
-  const partsTotal = parts.reduce((sum, p) => sum + p.total, 0);
-  const labourAmount = Number(labour || 0);
-  const gst = Number(gstPercent || 0);
-
-  const subTotal = partsTotal + labourAmount;
-  const gstAmount = (subTotal * gst) / 100;
-  const grandTotal = subTotal + gstAmount;
-
-  const generateBill = async () => {
-    if (!service) return;
-
-    if (grandTotal <= 0) {
-      Alert.alert("Error", "Invalid amount");
-      return;
-    }
-
+  /* 🔄 Status Update */
+  const handleStatusChange = async (service, newStatus) => {
     try {
-      const invoiceNo = `INV-${Date.now()}`;
-
-      await addDoc(collection(db, "billings"), {
-        invoiceNo,
-        serviceId: service.id,
-        bookingId: service.bookingId,
-
-        customerName: service.name,
-        mobileNumber: service.phone,
-        car: `${service.brand || ""} ${service.model || ""}`,
-
-        parts,
-        partsTotal,
-        labour: labourAmount,
-        gstPercent: gst,
-        gstAmount,
-        subTotal,
-        grandTotal,
-
-        paymentStatus: "Pending",
-        status: "Generated",
-        createdAt: serverTimestamp(),
-      });
+      setUpdatingId(service.id);
 
       await updateDoc(doc(db, "allServices", service.id), {
-        serviceStatus: "Bill Completed",
+        serviceStatus: newStatus,
         updatedAt: serverTimestamp(),
       });
-
-      Alert.alert("Success", "Invoice Generated 🚗💰");
-
-      router.back();
     } catch (err) {
       console.log(err);
-      Alert.alert("Error", "Failed to generate bill");
+    } finally {
+      setUpdatingId(null);
     }
   };
 
-  if (!service) return <Text style={{ padding: 20 }}>Loading...</Text>;
+  /* 🔍 Search */
+  const filteredServices = useMemo(() => {
+    return services.filter((s) => {
+      const text = `
+        ${s.bookingId || ""}
+        ${s.name || ""}
+        ${s.phone || ""}
+        ${s.brand || ""}
+        ${s.model || ""}
+      `.toLowerCase();
+
+      return text.includes(search.toLowerCase());
+    });
+  }, [services, search]);
+
+  /* 🎨 Status Color */
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Approved":
+        return "#6366f1";
+      case "Processing":
+        return "#9333ea";
+      case "Waiting for Spare":
+        return "#f59e0b";
+      case "Service Going on":
+        return "#f97316";
+      case "Bill Pending":
+        return "#ec4899";
+      case "Bill Completed":
+        return "#06b6d4";
+      case "Service Completed":
+        return "#16a34a";
+      default:
+        return "#6b7280";
+    }
+  };
+
+  if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <Text style={{ fontWeight: "bold" }}>{service.name}</Text>
-      <Text>{service.phone}</Text>
-      <Text>
-        {service.brand} {service.model}
-      </Text>
-      <Text>Booking: {service.bookingId}</Text>
-
-      <Text style={{ marginTop: 10, fontWeight: "bold" }}>Parts</Text>
+    <View style={{ flex: 1, padding: 12 }}>
+      {/* 🔍 SEARCH */}
+      <TextInput
+        placeholder="Search booking, name, phone, car"
+        value={search}
+        onChangeText={setSearch}
+        style={{
+          borderWidth: 1,
+          borderColor: "#ddd",
+          padding: 10,
+          borderRadius: 10,
+          marginBottom: 10,
+        }}
+      />
 
       <FlatList
-        data={parts}
-        keyExtractor={(_, i) => i.toString()}
+        data={filteredServices}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View
             style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginVertical: 4,
+              backgroundColor: "#fff",
+              padding: 14,
+              borderRadius: 12,
+              marginBottom: 12,
+              elevation: 3,
             }}
           >
-            <Text>{item.partName}</Text>
-            <Text>
-              {item.qty} × ₹{item.price}
+            <Text style={{ fontWeight: "bold" }}>
+              {item.bookingId || "No Booking"}
             </Text>
-            <Text>₹{item.total}</Text>
+
+            <Text>{item.name}</Text>
+            <Text>{item.phone}</Text>
+            <Text>
+              {item.brand} {item.model}
+            </Text>
+
+            {/* STATUS CHIP */}
+            <View
+              style={{
+                backgroundColor: getStatusColor(item.serviceStatus),
+                paddingVertical: 4,
+                paddingHorizontal: 10,
+                borderRadius: 20,
+                alignSelf: "flex-start",
+                marginTop: 6,
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 12 }}>
+                {item.serviceStatus}
+              </Text>
+            </View>
+
+            {/* STATUS DROPDOWN */}
+            {updatingId === item.id ? (
+              <ActivityIndicator style={{ marginTop: 10 }} />
+            ) : (
+              <View
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#ddd",
+                  borderRadius: 8,
+                  marginTop: 8,
+                  overflow: "hidden",
+                }}
+              >
+                <Picker
+                  selectedValue={item.serviceStatus}
+                  onValueChange={(value) =>
+                    handleStatusChange(item, value)
+                  }
+                >
+                  {BOOKING_STATUS.map((status) => (
+                    <Picker.Item key={status} label={status} value={status} />
+                  ))}
+                </Picker>
+              </View>
+            )}
+
+            {/* ACTION ROW */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginTop: 12,
+                alignItems: "center",
+              }}
+            >
+              {/* LEFT → GENERATE BILL */}
+              {item.serviceStatus === "Bill Pending" && (
+              <TouchableOpacity
+                onPress={() =>
+                  router.push({
+                    pathname: "/(serviceslist)/ServiceBillingScreen",
+                    params: { id: item.id }, 
+                  })
+                }
+                style={{
+                  marginTop: 10,
+                  backgroundColor: "black",
+                  padding: 10,
+                  borderRadius: 8,
+                }}
+              >
+                <Text style={{ color: "#fff", textAlign: "center" }}>
+                  Generate Bill
+                </Text>
+              </TouchableOpacity>
+            )}
+
+              {/* RIGHT → ADD PARTS */}
+              {item.serviceStatus === "Service Going on" && (
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(serviceslist)/addserviceparts",
+                      params: { serviceId: item.id },
+                    })
+                  }
+                  style={{
+                    backgroundColor: "#16a34a",
+                    paddingVertical: 8,
+                    paddingHorizontal: 14,
+                    borderRadius: 8,
+                  }}
+                >
+                  <Text style={{ color: "#fff" }}>+ Add Parts</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         )}
       />
-
-      <TextInput
-        placeholder="Labour Charges"
-        keyboardType="numeric"
-        value={labour}
-        onChangeText={setLabour}
-        style={{
-          borderWidth: 1,
-          marginTop: 12,
-          padding: 10,
-          borderRadius: 8,
-        }}
-      />
-
-      <TextInput
-        placeholder="GST %"
-        keyboardType="numeric"
-        value={gstPercent}
-        onChangeText={setGstPercent}
-        style={{
-          borderWidth: 1,
-          marginTop: 12,
-          padding: 10,
-          borderRadius: 8,
-        }}
-      />
-
-      <View style={{ marginTop: 16 }}>
-        <Text>Parts Total: ₹{partsTotal}</Text>
-        <Text>Labour: ₹{labourAmount}</Text>
-        <Text>GST: ₹{gstAmount.toFixed(2)}</Text>
-        <Text style={{ fontWeight: "bold" }}>
-          Grand Total: ₹{grandTotal.toFixed(2)}
-        </Text>
-      </View>
-
-      <TouchableOpacity
-        onPress={generateBill}
-        style={{
-          backgroundColor: "black",
-          padding: 14,
-          marginTop: 18,
-          borderRadius: 10,
-        }}
-      >
-        <Text style={{ color: "white", textAlign: "center" }}>
-          Generate Invoice
-        </Text>
-      </TouchableOpacity>
-    </ScrollView>
+    </View>
   );
 }

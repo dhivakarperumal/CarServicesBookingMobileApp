@@ -1,288 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import {
-//   View,
-//   Text,
-//   TouchableOpacity,
-//   ScrollView,
-//   ActivityIndicator,
-//   StyleSheet,
-// } from "react-native";
-// import { Ionicons, Feather } from "@expo/vector-icons";
-// import { auth, db } from "../../firebase";
-// import { doc, getDoc } from "firebase/firestore";
-// import { signOut } from "firebase/auth";
-
-// export default function Profile() {
-//   const [userData, setUserData] = useState(null);
-//   const user = auth.currentUser;
-
-//   useEffect(() => {
-//     const fetchUser = async () => {
-//       if (!user) return;
-
-//       try {
-//         const snap = await getDoc(doc(db, "users", user.uid));
-//         if (snap.exists()) setUserData(snap.data());
-//       } catch (err) {
-//         console.log(err);
-//       }
-//     };
-
-//     fetchUser();
-//   }, []);
-
-//   const handleLogout = async () => {
-//     await signOut(auth);
-//   };
-
-//   if (!userData) {
-//     return (
-//       <View style={styles.loader}>
-//         <ActivityIndicator size="large" color="#ec4899" />
-//       </View>
-//     );
-//   }
-
-//   return (
-//     <ScrollView style={styles.screen} contentContainerStyle={{ paddingBottom: 40 }}>
-//       {/* AVATAR */}
-//       <View style={styles.avatarWrapper}>
-//         <View style={styles.avatarBorder}>
-//           <View style={styles.avatarInner}>
-//             <Text style={styles.avatarText}>
-//               {userData?.name?.charAt(0)?.toUpperCase() || "U"}
-//             </Text>
-//           </View>
-//         </View>
-
-//         <Text style={styles.name}>{userData?.name || "User"}</Text>
-
-//         <View style={styles.activeBadge}>
-//           <Text style={styles.activeText}>Active User</Text>
-//         </View>
-//       </View>
-
-//       {/* PERSONAL INFO */}
-//       <View style={styles.card}>
-//         <View style={styles.cardHeader}>
-//           <Text style={styles.cardTitle}>Personal Information</Text>
-//           <TouchableOpacity>
-//             <Text style={styles.editText}>Edit</Text>
-//           </TouchableOpacity>
-//         </View>
-
-//         {renderRow(
-//           <Ionicons name="mail-outline" size={18} color="#9CA3AF" />,
-//           "Email",
-//           user?.email || "-"
-//         )}
-
-//         {renderRow(
-//           <Feather name="phone" size={18} color="#9CA3AF" />,
-//           "Phone",
-//           userData?.phone || "-"
-//         )}
-
-//         {renderRow(
-//           <Feather name="globe" size={18} color="#9CA3AF" />,
-//           "Website",
-//           userData?.website || "-"
-//         )}
-
-//         {renderRow(
-//           <Ionicons name="location-outline" size={18} color="#9CA3AF" />,
-//           "Location",
-//           userData?.location || "-",
-//           false
-//         )}
-//       </View>
-
-//       {/* UTILITIES */}
-//       <View style={styles.card}>
-//         <Text style={styles.cardTitle}>Utilities</Text>
-
-//         {renderUtility("download", "Downloads")}
-//         {renderUtility("bar-chart-2", "Usage Analytics")}
-//         {renderUtility("help-circle", "Ask Help-Desk", false)}
-
-//         {/* LOGOUT */}
-//         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-//           <Feather name="log-out" size={18} color="#ef4444" />
-//           <Text style={styles.logoutText}>Log Out</Text>
-//         </TouchableOpacity>
-//       </View>
-//     </ScrollView>
-//   );
-// }
-
-// /* 🔹 ROW COMPONENT */
-// const renderRow = (icon, label, value, border = true) => (
-//   <View style={[styles.row, border && styles.rowBorder]}>
-//     <View style={styles.rowLeft}>
-//       {icon}
-//       <Text style={styles.rowLabel}>{label}</Text>
-//     </View>
-//     <Text style={styles.rowValue} numberOfLines={1}>
-//       {value}
-//     </Text>
-//   </View>
-// );
-
-// /* 🔹 UTILITY ITEM */
-// const renderUtility = (iconName, label, border = true) => (
-//   <TouchableOpacity style={[styles.row, border && styles.rowBorder]}>
-//     <View style={styles.rowLeft}>
-//       <Feather name={iconName} size={18} color="#9CA3AF" />
-//       <Text style={styles.rowLabel}>{label}</Text>
-//     </View>
-//     <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
-//   </TouchableOpacity>
-// );
-
-// const styles = StyleSheet.create({
-//   screen: {
-//     flex: 1,
-//     backgroundColor: "#020617",
-//     paddingHorizontal: 16,
-//     paddingTop: 20,
-//   },
-
-//   loader: {
-//     flex: 1,
-//     backgroundColor: "#020617",
-//     justifyContent: "center",
-//     alignItems: "center",
-//   },
-
-//   /* AVATAR */
-//   avatarWrapper: {
-//     alignItems: "center",
-//     marginBottom: 24,
-//   },
-
-//   avatarBorder: {
-//     width: 120,
-//     height: 120,
-//     borderRadius: 60,
-//     padding: 3,
-//     backgroundColor: "#ec4899",
-//   },
-
-//   avatarInner: {
-//     flex: 1,
-//     backgroundColor: "#0F172A",
-//     borderRadius: 60,
-//     justifyContent: "center",
-//     alignItems: "center",
-//   },
-
-//   avatarText: {
-//     color: "#fff",
-//     fontSize: 42,
-//     fontWeight: "bold",
-//   },
-
-//   name: {
-//     color: "#fff",
-//     fontSize: 20,
-//     fontWeight: "bold",
-//     marginTop: 12,
-//   },
-
-//   activeBadge: {
-//     marginTop: 6,
-//     backgroundColor: "rgba(34,197,94,0.15)",
-//     paddingHorizontal: 12,
-//     paddingVertical: 4,
-//     borderRadius: 20,
-//   },
-
-//   activeText: {
-//     color: "#22c55e",
-//     fontSize: 12,
-//     fontWeight: "600",
-//   },
-
-//   /* CARD */
-//   card: {
-//     backgroundColor: "#0F172A",
-//     borderRadius: 16,
-//     padding: 16,
-//     marginBottom: 16,
-//     shadowColor: "#000",
-//     shadowOpacity: 0.3,
-//     shadowRadius: 6,
-//     elevation: 4,
-//   },
-
-//   cardHeader: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     marginBottom: 12,
-//   },
-
-//   cardTitle: {
-//     color: "#fff",
-//     fontSize: 16,
-//     fontWeight: "600",
-//   },
-
-//   editText: {
-//     color: "#ec4899",
-//     fontWeight: "500",
-//   },
-
-//   /* ROW */
-//   row: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     alignItems: "center",
-//     paddingVertical: 12,
-//   },
-
-//   rowBorder: {
-//     borderBottomWidth: 1,
-//     borderBottomColor: "#1f2937",
-//   },
-
-//   rowLeft: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     gap: 10,
-//   },
-
-//   rowLabel: {
-//     color: "#9CA3AF",
-//     marginLeft: 8,
-//   },
-
-//   rowValue: {
-//     color: "#fff",
-//     maxWidth: "55%",
-//   },
-
-//   /* LOGOUT */
-//   logoutBtn: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     justifyContent: "center",
-//     marginTop: 16,
-//     paddingVertical: 12,
-//     borderRadius: 12,
-//     borderWidth: 1,
-//     borderColor: "#ef4444",
-//     backgroundColor: "rgba(239,68,68,0.1)",
-//     gap: 8,
-//   },
-
-//   logoutText: {
-//     color: "#ef4444",
-//     fontWeight: "600",
-//   },
-// });
-
-
-import React from "react";
 import {
   View,
   Text,
@@ -291,14 +6,18 @@ import {
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import { Ionicons, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 
 /* ================= CARD COMPONENT ================= */
 const SettingCard = ({ icon, title, desc, path }) => {
   const router = useRouter();
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => router.push(path)}
+      activeOpacity={0.85}
+    >
       <View style={styles.left}>
         <View style={styles.iconBox}>{icon}</View>
 
@@ -308,38 +27,89 @@ const SettingCard = ({ icon, title, desc, path }) => {
         </View>
       </View>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push(path)}
-      >
+      <View style={styles.right}>
         <Text style={styles.buttonText}>Manage</Text>
-      </TouchableOpacity>
-    </View>
+        <Ionicons name="chevron-forward" size={18} color="#9ca3af" />
+      </View>
+    </TouchableOpacity>
   );
 };
 
 /* ================= SCREEN ================= */
 export default function Settings() {
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
       <SettingCard
         icon={<Ionicons name="person-outline" size={22} color="#38bdf8" />}
         title="Profile Settings"
-        desc="Update personal information and change password."
+        desc="Update personal information and password."
         path="/(admin-settings)/profile"
       />
 
       <SettingCard
         icon={<Ionicons name="people-outline" size={22} color="#38bdf8" />}
         title="User Management"
-        desc="Manage user roles, permissions, and accounts."
+        desc="Manage user roles and accounts."
         path="/(admin-settings)/users"
       />
 
       <SettingCard
-        icon={<FontAwesome5 name="star" size={20} color="#38bdf8" />}
+        icon={<Ionicons name="construct-outline" size={22} color="#7c3aed" />}
+        title="Service List"
+        desc="View and manage all service bookings."
+        path="/(admin-settings)/servicesListAll"
+      />
+
+      <SettingCard
+        icon={<MaterialIcons name="price-change" size={22} color="#059669" />}
+        title="Price List"
+        desc="Update service pricing and labour charges."
+        path="/(admin-settings)/priceList"
+      />
+
+      <SettingCard
+        icon={<Ionicons name="cart-outline" size={22} color="#2563eb" />}
+        title="Product Billing"
+        desc="Create product invoices and manage sales."
+        path="/(Products)/ProductBillingScreen"
+      />
+
+      <SettingCard
+        icon={<Ionicons name="build-outline" size={22} color="#f59e0b" />}
+        title="Service Billing"
+        desc="Generate service bills and manage payments."
+        path="/(serviceslist)/Bllinglistall"
+      />
+
+      <SettingCard
+        icon={<Ionicons name="bar-chart-outline" size={22} color="#7c3aed" />}
+        title="Reports"
+        desc="View sales, service and stock reports."
+        path="/(admin-settings)/Report"
+      />
+
+      <SettingCard
+        icon={<Ionicons name="cube-outline" size={22} color="#059669" />}
+        title="Product Stock Details"
+        desc="View and manage product stock."
+        path="/(admin-settings)/stockDetails"
+      />
+
+      <SettingCard
+        icon={<Ionicons name="add-circle-outline" size={22} color="#0ea5e9" />}
+        title="Add Stock"
+        desc="Increase stock for product variants."
+        path="/(admin-settings)/addStock"
+      />
+
+      <SettingCard
+        icon={<FontAwesome5 name="star" size={20} color="#f59e0b" />}
         title="Customer Reviews & Ratings"
-        desc="View and manage customer feedback and service ratings."
+        desc="View and manage customer feedback."
         path="/(admin-settings)/review"
       />
     </ScrollView>
@@ -350,15 +120,20 @@ export default function Settings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: "#f1f5f9",
+    marginBottom: 30,
+  },
+
+  scrollContent: {
     padding: 16,
+    paddingBottom: 40,
   },
 
   card: {
     backgroundColor: "#0f172a",
     borderRadius: 14,
     padding: 16,
-    marginBottom: 14,
+    marginBottom: 18,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -374,7 +149,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
-    gap: 12,
   },
 
   iconBox: {
@@ -383,10 +157,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#38bdf8",
+    marginRight: 12,
   },
 
   title: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
     color: "#fff",
   },
@@ -397,16 +172,15 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  button: {
-    backgroundColor: "#2563eb",
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 8,
+  right: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   buttonText: {
-    color: "#fff",
+    color: "#15173D",
     fontSize: 12,
     fontWeight: "600",
+    marginRight: 6,
   },
 });

@@ -1,23 +1,23 @@
 import { Picker } from "@react-native-picker/picker";
 import {
-    addDoc,
-    collection,
-    doc,
-    runTransaction,
-    serverTimestamp,
+  addDoc,
+  collection,
+  doc,
+  runTransaction,
+  serverTimestamp,
 } from "firebase/firestore";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { db } from "../../firebase";
+import { auth, db } from "../../firebase";
 
 const BOOKING_STATUS = {
   BOOKED: "Booked",
@@ -84,8 +84,16 @@ export default function BookingScreen() {
 
       const bookingId = await generateBookingId();
 
+      const user = auth.currentUser;
+
+      if (!user) {
+        Alert.alert("Error", "User not logged in");
+        return;
+      }
+
       await addDoc(collection(db, "bookings"), {
         bookingId,
+        uid: user.uid,              // 🔥 ADD THIS
         ...formData,
         status: BOOKING_STATUS.BOOKED,
         createdAt: serverTimestamp(),
