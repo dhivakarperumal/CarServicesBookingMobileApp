@@ -70,12 +70,18 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
+        name="pricing"
+        options={{
+          title: "Pricing",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="tags" color={color} size={20} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome name="user" color={color} size={20} />
-          ),
+          href: null,   // 👈 hides from tab bar
         }}
       />
     </Tabs>

@@ -115,7 +115,7 @@ export default function MobileNavbar() {
               router.push("/(tabs)/profile");
             }}
           >
-            <Text style={styles.menuText}>Account</Text>
+            <Text style={styles.menuText}>My Profile</Text>
           </TouchableOpacity>
 
           {userData?.role === "admin" && (
