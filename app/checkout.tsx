@@ -23,7 +23,8 @@ import { auth, db } from "../firebase";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { reduceStockAfterPurchase } from "./utils/reduceStockAfterPurchase";
-
+import { saveUserAddress } from "./utils/saveUserAddress";
+import RazorpayCheckout from "react-native-razorpay";
 
 // ================= ORDER COUNTER =================
 const generateOrderNumber = async () => {
@@ -78,6 +79,9 @@ export default function Checkout() {
         zip: "",
         country: "India",
     });
+
+    const [paymentMethod, setPaymentMethod] = useState("CASH");
+
     const subtotal = items.reduce(
         (a, c) => a + c.price * c.quantity,
         0
@@ -100,6 +104,16 @@ export default function Checkout() {
         if (!uid) throw new Error("User not logged in");
 
         await reduceStockAfterPurchase(items);
+
+        await saveUserAddress(uid, {
+  fullName: shipping.name,
+  email: shipping.email,
+  phone: shipping.phone,
+  street: shipping.address,
+  city: shipping.city,
+  state: shipping.state,
+  pinCode: shipping.zip,
+});
 
         const orderNumber = await generateOrderNumber();
 
@@ -138,23 +152,48 @@ export default function Checkout() {
     };
 
     // ================= PLACE ORDER =================
-    const placeOrder = async () => {
-        if (!items.length)
-            return Alert.alert("Cart is empty");
+const placeOrder = async () => {
+  if (!items.length)
+    return Alert.alert("Cart is empty");
 
-        if (!shipping.name || !shipping.phone || !shipping.address)
-            return Alert.alert("Fill delivery details");
+  if (!shipping.name || !shipping.phone || !shipping.address)
+    return Alert.alert("Fill delivery details");
 
-        setPlacing(true);
+  setPlacing(true);
 
-        try {
-            await saveOrder();
-        } catch (err: any) {
-            Alert.alert("Error", err.message);
-        } finally {
-            setPlacing(false);
-        }
+  try {
+    // CASH FLOW
+    if (paymentMethod === "CASH") {
+      await saveOrder();
+      return;
+    }
+
+    // ONLINE FLOW
+    const options = {
+      key: "rzp_test_SGj8n5SyKSE10b", // replace with your key
+      amount: total * 100,
+      currency: "INR",
+      name: "car service booking",
+      description: "Order Payment",
+      prefill: {
+        name: shipping.name,
+        email: shipping.email,
+        contact: shipping.phone,
+      },
+      theme: { color: "#0EA5E9" },
     };
+
+    const data = await RazorpayCheckout.open(options);
+
+    // Payment successful
+    await saveOrder(data.razorpay_payment_id);
+
+  } catch (err: any) {
+    Alert.alert("Payment Failed", err.description || err.message);
+  } finally {
+    setPlacing(false);
+  }
+};
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
@@ -228,7 +267,7 @@ export default function Checkout() {
                     value={shipping.address}
                     onChangeText={(v) => setShipping({ ...shipping, address: v })}
                 />
-                
+
                 {/* SUMMARY */}
                 <Text style={styles.section}>Summary</Text>
 
@@ -247,6 +286,26 @@ export default function Checkout() {
                     <Text style={styles.totalText}>Total</Text>
                     <Text style={styles.totalAmount}>₹{total}</Text>
                 </View>
+
+                <Text style={styles.section}>Payment Method</Text>
+
+<TouchableOpacity
+  onPress={() => setPaymentMethod("CASH")}
+  style={styles.paymentRow}
+>
+  <Text style={styles.itemText}>
+    {paymentMethod === "CASH" ? "🔘" : "⚪"} Cash on Delivery
+  </Text>
+</TouchableOpacity>
+
+<TouchableOpacity
+  onPress={() => setPaymentMethod("ONLINE")}
+  style={styles.paymentRow}
+>
+  <Text style={styles.itemText}>
+    {paymentMethod === "ONLINE" ? "🔘" : "⚪"} Online Payment
+  </Text>
+</TouchableOpacity>
 
                 <TouchableOpacity
                     style={styles.placeBtn}
@@ -325,4 +384,7 @@ const styles = StyleSheet.create({
         color: "#000",
         fontWeight: "bold",
     },
+    paymentRow: {
+  marginBottom: 10,
+},
 });
