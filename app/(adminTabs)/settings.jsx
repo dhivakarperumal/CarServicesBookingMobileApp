@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 /* ================= CARD COMPONENT ================= */
 const SettingCard = ({ icon, title, desc, path }) => {
@@ -38,6 +39,7 @@ const SettingCard = ({ icon, title, desc, path }) => {
 /* ================= SCREEN ================= */
 export default function Settings() {
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
@@ -113,6 +115,7 @@ export default function Settings() {
         path="/(admin-settings)/review"
       />
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -126,6 +129,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 60,
+    paddingBottom: 120, 
   },
 
   card: {
