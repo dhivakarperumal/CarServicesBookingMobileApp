@@ -18,11 +18,9 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../../firebase";
-import { useLocalSearchParams, useRouter } from "expo-router";
 
-export default function ServiceBilling() {
-  const { serviceId } = useLocalSearchParams();
-  const router = useRouter();
+export default function ServiceBillingScreen({ route, navigation }) {
+  const { serviceId } = route.params;
 
   const [service, setService] = useState(null);
   const [parts, setParts] = useState([]);
@@ -67,8 +65,8 @@ export default function ServiceBilling() {
       }
     };
 
-    if (serviceId) loadService();
-  }, [serviceId]);
+    loadService();
+  }, []);
 
   const partsTotal = parts.reduce((sum, p) => sum + p.total, 0);
   const labourAmount = Number(labour || 0);
@@ -117,8 +115,7 @@ export default function ServiceBilling() {
       });
 
       Alert.alert("Success", "Invoice Generated 🚗💰");
-
-      router.back();
+      navigation.goBack();
     } catch (err) {
       console.log(err);
       Alert.alert("Error", "Failed to generate bill");
