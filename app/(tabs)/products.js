@@ -10,10 +10,12 @@ import {
   View,
 } from "react-native";
 import { db } from "../../firebase";
+import { useRouter } from "expo-router";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "products"), (snap) => {
@@ -43,19 +45,19 @@ export default function Products() {
     return (
       <View style={styles.card}>
         <View style={styles.imageContainer}>
-  {item.images && item.images.length > 0 ? (
-    <Image source={{ uri: item.images[0] }} style={styles.image} />
-  ) : (
-    <View style={styles.imagePlaceholder} />
-  )}
+          {item.images && item.images.length > 0 ? (
+            <Image source={{ uri: item.images[0] }} style={styles.image} />
+          ) : (
+            <View style={styles.imagePlaceholder} />
+          )}
 
-  {/* OFFER BADGE */}
-  {item.offer > 0 && (
-    <View style={styles.offerBadge}>
-      <Text style={styles.offerBadgeText}>{item.offer}% OFF</Text>
-    </View>
-  )}
-</View>
+          {/* OFFER BADGE */}
+          {item.offer > 0 && (
+            <View style={styles.offerBadge}>
+              <Text style={styles.offerBadgeText}>{item.offer}% OFF</Text>
+            </View>
+          )}
+        </View>
 
         <Text style={styles.name}>{item.name}</Text>
 
@@ -65,13 +67,13 @@ export default function Products() {
           <Text style={styles.mrp}>₹ {item.mrp}</Text>
         </View>
 
-           <View style={styles.brandRatingRow}>
-  <Text style={styles.brand}>{item.brand}</Text>
-  <Text style={styles.rating}>⭐ {item.rating}</Text>
-</View>
-       
+        <View style={styles.brandRatingRow}>
+          <Text style={styles.brand}>{item.brand}</Text>
+          <Text style={styles.rating}>⭐ {item.rating}</Text>
+        </View>
 
-        
+
+
 
         {/* <Text style={styles.discount}>{item.offer}% OFF</Text> */}
 
@@ -80,9 +82,12 @@ export default function Products() {
           {inStock ? "In Stock" : "Out of Stock"}
         </Text> */}
 
-    
 
-        <TouchableOpacity style={styles.button}>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push(`/products/${item.slug}`)}
+        >
           <Text style={styles.buttonText}>View</Text>
         </TouchableOpacity>
       </View>
@@ -111,33 +116,33 @@ export default function Products() {
 const styles = StyleSheet.create({
 
   imageContainer: {
-  position: "relative",
-  marginBottom: 10,
-},
+    position: "relative",
+    marginBottom: 10,
+  },
 
-offerBadge: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  backgroundColor: "#0EA5E9",
-  paddingHorizontal: 8,
-  paddingVertical: 4,
-  borderRadius: 20,
-},
+  offerBadge: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    backgroundColor: "#0EA5E9",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
 
-offerBadgeText: {
-  color: "#FFFFFF",
-  fontSize: 10,
-  fontWeight: "700",
-},
+  offerBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "700",
+  },
 
-brandRatingRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginTop: 2,
-  marginBottom: 1,
-},
+  brandRatingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 2,
+    marginBottom: 1,
+  },
 
   container: {
     flex: 1,
@@ -199,7 +204,7 @@ brandRatingRow: {
   priceRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop:4,
+    marginTop: 4,
     marginBottom: 2,
   },
 
