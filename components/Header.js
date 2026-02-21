@@ -112,7 +112,7 @@ export default function MobileNavbar() {
             style={styles.menuItem}
             onPress={() => {
               setAvatarMenuOpen(false);
-              router.push("/account");
+              router.push("/(tabs)/profile");
             }}
           >
             <Text style={styles.menuText}>Account</Text>
