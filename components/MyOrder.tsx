@@ -192,28 +192,34 @@ function OrderModal({ order, onClose }) {
                         </Text>
 
                         {order.status === "cancelled" ? (
-                            <Text style={{ color: "red", fontWeight: "bold" }}>
-                                Order Cancelled
+                            <Text style={{ color: "red", fontWeight: "bold", textAlign: "center", marginVertical: 12 }}>
+                                ❌ Order Cancelled
                             </Text>
                         ) : (
-                            STATUS_STEPS.map((step, index) => (
-                                <View key={step} style={styles.stepRow}>
-                                    <View
-                                        style={[
-                                            styles.circle,
-                                            index <= currentStepIndex && styles.activeCircle,
-                                        ]}
-                                    />
-                                    <Text
-                                        style={[
-                                            styles.stepText,
-                                            index <= currentStepIndex && styles.activeStepText,
-                                        ]}
-                                    >
-                                        {step}
-                                    </Text>
-                                </View>
-                            ))
+                            <View style={styles.trackerGrid}>
+                                {STATUS_STEPS.map((step, index) => (
+                                    <View key={step} style={styles.trackerItem}>
+                                        <View
+                                            style={[
+                                                styles.trackerCircle,
+                                                index <= currentStepIndex && styles.trackerActiveCircle,
+                                            ]}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.trackerStepText,
+                                                    index <= currentStepIndex && styles.trackerActiveText,
+                                                ]}
+                                            >
+                                                {index + 1}
+                                            </Text>
+                                        </View>
+                                        <Text style={styles.trackerLabel}>
+                                            {step}
+                                        </Text>
+                                    </View>
+                                ))}
+                            </View>
                         )}
 
                         <TouchableOpacity
@@ -371,5 +377,53 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         borderRadius: 10,
         alignItems: "center",
+    },
+
+    /* Order Tracker Grid */
+    trackerGrid: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+        marginVertical: 16,
+    },
+
+    trackerItem: {
+        alignItems: "center",
+        width: "48%",
+        marginBottom: 24,
+    },
+
+    trackerCircle: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        borderWidth: 2,
+        borderColor: "#4b5563",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "transparent",
+    },
+
+    trackerActiveCircle: {
+        backgroundColor: "#0ea5e9",
+        borderColor: "#0ea5e9",
+    },
+
+    trackerStepText: {
+        color: "#9ca3af",
+        fontWeight: "700",
+        fontSize: 18,
+    },
+
+    trackerActiveText: {
+        color: "#000",
+    },
+
+    trackerLabel: {
+        marginTop: 8,
+        fontSize: 12,
+        textAlign: "center",
+        color: "#d1d5db",
+        width: 110,
     },
 });
