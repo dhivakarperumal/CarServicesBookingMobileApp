@@ -71,16 +71,21 @@ export default function ReviewsSettings() {
     }
 
     try {
+      const payload = {
+        name: form.name,
+        rating: Number(form.rating),
+        message: form.message,
+        image: form.image,
+      };
+
       if (editId) {
         await updateDoc(doc(db, "reviews", editId), {
-          ...form,
-          rating: Number(form.rating),
+          ...payload,
           updatedAt: serverTimestamp(),
         });
       } else {
         await addDoc(collection(db, "reviews"), {
-          ...form,
-          rating: Number(form.rating),
+          ...payload,
           status: false,
           createdAt: serverTimestamp(),
         });
@@ -135,20 +140,12 @@ export default function ReviewsSettings() {
         style={styles.search}
       />
 
-      {/* ADD BUTTON */}
-      <TouchableOpacity
-        style={styles.addBtn}
-        onPress={() => setShowModal(true)}
-      >
-        <Ionicons name="add" size={18} color="#fff" />
-        <Text style={styles.addText}>Add Review</Text>
-      </TouchableOpacity>
-
       {/* LIST */}
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
         renderItem={({ item }) => (
           <View style={styles.card}>
             {/* IMAGE */}
@@ -182,6 +179,7 @@ export default function ReviewsSettings() {
             <View style={styles.actions}>
               <TouchableOpacity
                 onPress={() => toggleStatus(item.id, item.status)}
+                style={styles.actionBtn}
               >
                 <Ionicons
                   name="checkmark-circle"
@@ -191,16 +189,25 @@ export default function ReviewsSettings() {
               </TouchableOpacity>
 
               <TouchableOpacity
+                style={styles.actionBtn}
                 onPress={() => {
                   setEditId(item.id);
-                  setForm(item);
+                  setForm({
+                    name: item.name || "",
+                    rating: item.rating || 0,
+                    message: item.message || "",
+                    image: item.image || "",
+                  });
                   setShowModal(true);
                 }}
               >
                 <MaterialIcons name="edit" size={22} color="#2563eb" />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => handleDelete(item.id)}>
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() => handleDelete(item.id)}
+              >
                 <Ionicons name="trash" size={22} color="#ef4444" />
               </TouchableOpacity>
             </View>
@@ -208,61 +215,85 @@ export default function ReviewsSettings() {
         )}
       />
 
+      {/* FLOATING ADD BUTTON */}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        style={styles.addBtnFloating}
+        onPress={() => {
+          setEditId(null);
+          setForm({ name: "", rating: 0, message: "", image: "" });
+          setShowModal(true);
+        }}
+      >
+        <Ionicons name="add" size={22} color="#fff" />
+        <Text style={styles.addText}></Text>
+      </TouchableOpacity>
+
       {/* MODAL */}
       <Modal visible={showModal} animationType="slide">
-        <ScrollView style={styles.modal}>
-          <Text style={styles.modalTitle}>
-            {editId ? "Edit Review" : "Add Review"}
-          </Text>
+        <View style={styles.modalContainer}>
+          {/* 🔷 HEADER */}
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalHeaderTitle}>
+              {editId ? "Edit Review" : "Add Review"}
+            </Text>
 
-          <TextInput
-            placeholder="Name"
-            style={styles.input}
-            value={form.name}
-            onChangeText={(t) => setForm({ ...form, name: t })}
-          />
-
-          <TouchableOpacity style={styles.imageBtn} onPress={handleImagePick}>
-            <Text style={{ color: "#fff" }}>Pick Image</Text>
-          </TouchableOpacity>
-
-          {form.image && (
-            <Image source={{ uri: form.image }} style={styles.preview} />
-          )}
-
-          {/* STARS */}
-          <View style={styles.starPicker}>
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Ionicons
-                key={i}
-                name="star"
-                size={28}
-                color={i <= form.rating ? "#facc15" : "#e5e7eb"}
-                onPress={() => setForm({ ...form, rating: i })}
-              />
-            ))}
-          </View>
-
-          <TextInput
-            placeholder="Message"
-            style={styles.input}
-            multiline
-            value={form.message}
-            onChangeText={(t) => setForm({ ...form, message: t })}
-          />
-
-          <View style={styles.modalActions}>
             <TouchableOpacity onPress={() => setShowModal(false)}>
-              <Text>Cancel</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.saveBtn} onPress={handleSubmit}>
-              <Text style={{ color: "#fff" }}>
-                {editId ? "Update" : "Save"}
-              </Text>
+              <Ionicons name="close" size={24} color="#000" />
             </TouchableOpacity>
           </View>
-        </ScrollView>
+
+          {/* 🔷 CONTENT */}
+          <ScrollView contentContainerStyle={{ padding: 16 }}>
+            <TextInput
+              placeholder="Name"
+              style={styles.input}
+              value={form.name}
+              onChangeText={(t) => setForm({ ...form, name: t })}
+            />
+
+            <TouchableOpacity style={styles.imageBtn} onPress={handleImagePick}>
+              <Text style={{ color: "#fff" }}>Pick Image</Text>
+            </TouchableOpacity>
+
+            {form.image ? (
+              <Image source={{ uri: form.image }} style={styles.preview} />
+            ) : null}
+
+            {/* STAR PICKER */}
+            <View style={styles.starPicker}>
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Ionicons
+                  key={i}
+                  name="star"
+                  size={28}
+                  color={i <= form.rating ? "#facc15" : "#e5e7eb"}
+                  onPress={() => setForm({ ...form, rating: i })}
+                />
+              ))}
+            </View>
+
+            <TextInput
+              placeholder="Message"
+              style={styles.input}
+              multiline
+              value={form.message}
+              onChangeText={(t) => setForm({ ...form, message: t })}
+            />
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity onPress={() => setShowModal(false)}>
+                <Text>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.saveBtn} onPress={handleSubmit}>
+                <Text style={{ color: "#fff" }}>
+                  {editId ? "Update" : "Save"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </View>
       </Modal>
     </View>
   );
@@ -270,7 +301,10 @@ export default function ReviewsSettings() {
 
 /* ================= STYLES ================= */
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
+  container: {
+    flex: 1,
+    padding: 16,
+  },
 
   search: {
     backgroundColor: "#fff",
@@ -278,19 +312,6 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
   },
-
-  addBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "#000",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-    justifyContent: "center",
-  },
-
-  addText: { color: "#fff", fontWeight: "600" },
 
   card: {
     flexDirection: "row",
@@ -321,6 +342,35 @@ const styles = StyleSheet.create({
   actions: {
     justifyContent: "space-between",
     alignItems: "center",
+  },
+
+  actionBtn: {
+    paddingVertical: 4,
+  },
+
+  addBtnFloating: {
+    position: "absolute",
+    right: 20,
+    bottom: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#000",
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 40,
+    elevation: 8,
+    zIndex: 999,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+  },
+
+  addText: {
+    color: "#fff",
+    fontWeight: "600",
+    marginLeft: 6,
+    fontSize: 15,
   },
 
   modal: { flex: 1, backgroundColor: "#fff", padding: 16 },
@@ -355,6 +405,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
+  },
+
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderColor: "#e5e7eb",
+    backgroundColor: "#f9fafb",
+  },
+
+  modalHeaderTitle: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 
   saveBtn: {
