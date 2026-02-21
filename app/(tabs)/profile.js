@@ -29,7 +29,7 @@ export default function ProfileScreen() {
   };
 
   const goToAdminDashboard = () => {
-    router.push("/(adminTabs)/dashboard"); 
+    router.push("/(adminTabs)/home"); 
     // 👆 change path if your folder name is different
   };
 

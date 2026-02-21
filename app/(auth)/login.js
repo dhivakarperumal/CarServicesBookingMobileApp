@@ -46,8 +46,7 @@ export default function LoginScreen() {
 
       const role = userSnap.data().role?.toLowerCase();
 
-      if (role === "admin") router.replace("/(adminTabs)/dashboard");
-      else if (role === "driver") router.replace("/(driverTabs)/home");
+      if (role === "admin") router.replace("/(adminTabs)/home");
       else if (role === "user") router.replace("/(tabs)/home");
       else Alert.alert("Error", "Invalid user role");
     } catch (error) {

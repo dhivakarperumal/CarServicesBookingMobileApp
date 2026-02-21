@@ -41,10 +41,10 @@ export default function HomeScreen({ navigation }) {
           >
             <View className="flex-row items-center justify-between">
               <View>
-                <Text className="text-cyan-100 text-xs font-medium mb-1">Total Bookings</Text>
+                <Text className="text-white text-xs font-medium mb-1">Total Bookings</Text>
                 <Text className="text-white text-3xl font-bold">12</Text>
               </View>
-              <View className="bg-white bg-opacity-20 p-3 rounded-full">
+              <View className="bg-black bg-opacity-20 p-3 rounded-full">
                 <FontAwesome5 name="calendar-alt" size={24} color="#fff" />
               </View>
             </View>
@@ -59,7 +59,7 @@ export default function HomeScreen({ navigation }) {
             <View className="flex-row items-center justify-between">
               <View>
                 <Text className="text-green-100 text-xs font-medium mb-1">Completed</Text>
-                <Text className="text-white text-3xl font-bold">8</Text>
+                <Text className="text-red-500 text-3xl font-bold">20</Text>
               </View>
               <View className="bg-white bg-opacity-20 p-3 rounded-full">
                 <FontAwesome5 name="check-circle" size={24} color="#fff" />
