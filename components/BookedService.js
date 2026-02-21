@@ -1,23 +1,16 @@
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  Text,
-  TouchableOpacity,
-  View,
-  StyleSheet,
+    ActivityIndicator,
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth, db } from "../../firebase";
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  getDocs,
-} from "firebase/firestore";
+import { auth, db } from "../firebase";
 
-/* ===== STATUS LABELS ===== */
 const STATUS_LABELS = {
   BOOKED: "Booked",
   CALL_VERIFIED: "Call Verified",
@@ -31,7 +24,6 @@ const STATUS_LABELS = {
   CANCELLED: "Cancelled",
 };
 
-/* ===== STATUS NORMALIZER ===== */
 const STATUS_NORMALIZER = {
   Booked: "BOOKED",
   "Call Verified": "CALL_VERIFIED",
@@ -50,7 +42,6 @@ export default function BookedService() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  /* ===== AUTH ===== */
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
@@ -59,7 +50,6 @@ export default function BookedService() {
     return unsub;
   }, []);
 
-  /* ===== FETCH BOOKINGS ===== */
   useEffect(() => {
     if (!user) return;
 
@@ -80,8 +70,7 @@ export default function BookedService() {
           return {
             id: doc.id,
             ...raw,
-            normalizedStatus:
-              STATUS_NORMALIZER[raw.status] || raw.status,
+            normalizedStatus: STATUS_NORMALIZER[raw.status] || raw.status,
           };
         });
 
@@ -96,7 +85,6 @@ export default function BookedService() {
     fetchBookings();
   }, [user]);
 
-  /* ===== STATUS COLOR ===== */
   const getStatusStyle = (status) => {
     switch (status) {
       case "APPROVED":
@@ -151,13 +139,9 @@ export default function BookedService() {
             return (
               <TouchableOpacity style={styles.bookingCard}>
                 <View>
-                  <Text style={styles.bookingId}>
-                    {item.bookingId}
-                  </Text>
+                  <Text style={styles.bookingId}>{item.bookingId}</Text>
 
-                  <Text style={styles.subText}>
-                    {item.name} • {item.phone}
-                  </Text>
+                  <Text style={styles.subText}>{item.name} • {item.phone}</Text>
                 </View>
 
                 <View
@@ -187,7 +171,6 @@ export default function BookedService() {
   );
 }
 
-/* ===== STYLES ===== */
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -26,21 +26,21 @@ export default function HomeScreen({ navigation }) {
       </View>
       
 
-      <View className="px-4 py-6">
+      <View style={styles.contentWrapper}>
         {/* QUICK STATS */}
-        <View className="flex-row gap-3 mb-8">
+        <View style={styles.statsContainer}>
           <LinearGradient
             colors={["#06b6d4", "#0891b2"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            className="flex-1 p-5 rounded-2xl shadow-lg"
+           style={styles.gradientCard}
           >
-            <View className="flex-row items-center justify-between">
+            <View style={styles.statRow}>
               <View>
-                <Text className="text-white text-xs font-medium mb-1">Total Bookings</Text>
-                <Text className="text-white text-3xl font-bold">12</Text>
+                <Text style={styles.statLabelWhite}>Total Bookings</Text>
+                <Text style={styles.statNumberWhite}>12</Text>
               </View>
-              <View className="bg-black bg-opacity-20 p-3 rounded-full">
+              <View style={styles.iconWrapperDark}>
                 <FontAwesome5 name="calendar-alt" size={24} color="#fff" />
               </View>
             </View>
@@ -50,14 +50,14 @@ export default function HomeScreen({ navigation }) {
             colors={["#10b981", "#059669"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            className="flex-1 p-5 rounded-2xl shadow-lg"
+           style={styles.gradientCard}
           >
-            <View className="flex-row items-center justify-between">
+            <View style={styles.statRow}>
               <View>
-                <Text className="text-green-100 text-xs font-medium mb-1">Completed</Text>
-                <Text className="text-red-500 text-3xl font-bold">20</Text>
+                <Text style={styles.statLabelGreen}>Completed</Text>
+                <Text style={styles.statNumberWhite}>20</Text>
               </View>
-              <View className="bg-white bg-opacity-20 p-3 rounded-full">
+              <View style={styles.iconWrapperLight}>
                 <FontAwesome5 name="check-circle" size={24} color="#fff" />
               </View>
             </View>
@@ -138,6 +138,62 @@ function ServiceCard({ icon, title }) {
 /* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
+
+  contentWrapper: {
+  paddingHorizontal: 16,
+  paddingVertical: 24,
+},
+
+statsContainer: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginBottom: 32,
+},
+
+gradientCard: {
+  flex: 1,
+  padding: 20,
+  borderRadius: 16,
+  marginRight: 10,
+},
+
+statRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+},
+
+statLabelWhite: {
+  color: "#FFFFFF",
+  fontSize: 12,
+  fontWeight: "500",
+  marginBottom: 4,
+},
+
+statLabelGreen: {
+  color: "#D1FAE5",
+  fontSize: 12,
+  fontWeight: "500",
+  marginBottom: 4,
+},
+
+statNumberWhite: {
+  color: "#FFFFFF",
+  fontSize: 28,
+  fontWeight: "700",
+},
+
+iconWrapperDark: {
+  backgroundColor: "rgba(0,0,0,0.2)",
+  padding: 12,
+  borderRadius: 50,
+},
+
+iconWrapperLight: {
+  backgroundColor: "rgba(255,255,255,0.2)",
+  padding: 12,
+  borderRadius: 50,
+},
   container: {
     flex: 1,
     backgroundColor: "#0B1120",

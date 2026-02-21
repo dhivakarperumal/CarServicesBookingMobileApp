@@ -8,8 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import BookedService from "../../components/BookedService";
 import { auth } from "../../firebase";
-// BookedService removed per request — profile should not show booked services
 
 export default function AccountScreen() {
   const [user, setUser] = useState(null);
@@ -44,6 +44,8 @@ export default function AccountScreen() {
   /* ===== TAB CONTENT ===== */
   const renderContent = () => {
     switch (activeTab) {
+      case "servicestatus":
+        return <BookedService />;
       case "personal":
         return (
           <View>
@@ -117,6 +119,7 @@ export default function AccountScreen() {
          style={{ flexGrow: 0 }}  
       >
         {[
+          ["servicestatus", "Service"],
           ["personal", "Profile"],
           ["orders", "Orders"],
           ["address", "Address"],
