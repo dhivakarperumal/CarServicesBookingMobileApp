@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
   /* AVATAR */
   avatarWrapper: {
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 28,
   },
 
   avatarBorder: {
@@ -445,12 +445,16 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     padding: 3,
-    backgroundColor: "#ec4899",
+    backgroundColor: "#38bdf8",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 10,
   },
 
   avatarInner: {
     flex: 1,
-    backgroundColor: "#0F172A",
+    backgroundColor: "#0f172a",
     borderRadius: 60,
     justifyContent: "center",
     alignItems: "center",
@@ -459,40 +463,44 @@ const styles = StyleSheet.create({
   avatarText: {
     color: "#fff",
     fontSize: 42,
-    fontWeight: "bold",
+    fontWeight: "800",
   },
 
   name: {
     color: "#fff",
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "700",
     marginTop: 12,
   },
 
   activeBadge: {
     marginTop: 6,
-    backgroundColor: "rgba(34,197,94,0.15)",
+    backgroundColor: "rgba(56,189,248,0.15)",
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#38bdf8",
   },
 
   activeText: {
-    color: "#22c55e",
+    color: "#38bdf8",
     fontSize: 12,
     fontWeight: "600",
   },
 
   /* CARD */
   card: {
-    backgroundColor: "#0F172A",
+    backgroundColor: "#0f172a",
     borderRadius: 16,
     padding: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 6,
   },
 
   cardHeader: {
@@ -503,13 +511,13 @@ const styles = StyleSheet.create({
 
   cardTitle: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "700",
   },
 
   editText: {
-    color: "#ec4899",
-    fontWeight: "500",
+    color: "#38bdf8",
+    fontWeight: "600",
   },
 
   /* ROW */
@@ -517,12 +525,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
 
   rowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: "#1f2937",
+    borderBottomColor: "#0b3b6f",
   },
 
   rowLeft: {
@@ -532,7 +540,7 @@ const styles = StyleSheet.create({
   },
 
   rowLabel: {
-    color: "#9CA3AF",
+    color: "#94a3b8",
     marginLeft: 8,
   },
 
@@ -546,17 +554,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 16,
+    marginTop: 18,
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#ef4444",
-    backgroundColor: "rgba(239,68,68,0.1)",
+    backgroundColor: "rgba(239,68,68,0.08)",
     gap: 8,
   },
 
   logoutText: {
     color: "#ef4444",
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });

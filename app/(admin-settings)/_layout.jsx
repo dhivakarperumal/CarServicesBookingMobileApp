@@ -4,9 +4,14 @@ export default function SettingsStack() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: "#15173D" },
+        headerStyle: {
+          backgroundColor: "#0f172a",
+        },
         headerTintColor: "#fff",
-        headerTitleStyle: { fontWeight: "bold" },
+        headerTitleStyle: {
+          fontWeight: "700",
+        },
+        headerShadowVisible: false,
       }}
     />
   );

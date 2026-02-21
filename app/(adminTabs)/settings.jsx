@@ -120,28 +120,29 @@ export default function Settings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f1f5f9",
-    marginBottom: 30,
+    backgroundColor: "#020617", 
   },
 
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 60,
   },
 
   card: {
     backgroundColor: "#0f172a",
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 16,
-    marginBottom: 18,
+    marginBottom: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+
     borderWidth: 1,
     borderColor: "#0b3b6f",
+
     shadowColor: "#38bdf8",
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
     elevation: 6,
   },
 
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
   iconBox: {
     backgroundColor: "#020617",
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: "#38bdf8",
     marginRight: 12,
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "#15173D",
+    color: "#38bdf8", // FIXED (blue instead of dark)
     fontSize: 12,
     fontWeight: "600",
     marginRight: 6,
