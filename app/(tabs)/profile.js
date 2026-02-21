@@ -28,6 +28,11 @@ export default function AccountScreen() {
     await signOut(auth);
   };
 
+  const goToAdminDashboard = () => {
+    router.push("/(adminTabs)/home"); 
+    // 👆 change path if your folder name is different
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>

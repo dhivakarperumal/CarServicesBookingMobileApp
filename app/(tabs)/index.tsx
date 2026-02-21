@@ -24,20 +24,43 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* QUICK STATS */}
-      <View style={styles.statsRow}>
-        <View style={styles.statCard}>
-          <FontAwesome5 name="calendar-alt" size={20} color="#0EA5E9" />
-          <Text style={styles.statNumber}>12</Text>
-          <Text style={styles.statLabel}>Total Bookings</Text>
-        </View>
+      <View className="px-4 py-6">
+        {/* QUICK STATS */}
+        <View className="flex-row gap-3 mb-8">
+          <LinearGradient
+            colors={["#06b6d4", "#0891b2"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="flex-1 p-5 rounded-2xl shadow-lg"
+          >
+            <View className="flex-row items-center justify-between">
+              <View>
+                <Text className="text-white text-xs font-medium mb-1">Total Bookings</Text>
+                <Text className="text-white text-3xl font-bold">12</Text>
+              </View>
+              <View className="bg-black bg-opacity-20 p-3 rounded-full">
+                <FontAwesome5 name="calendar-alt" size={24} color="#fff" />
+              </View>
+            </View>
+          </LinearGradient>
 
-        <View style={styles.statCard}>
-          <FontAwesome5 name="check-circle" size={20} color="#10B981" />
-          <Text style={styles.statNumber}>8</Text>
-          <Text style={styles.statLabel}>Completed</Text>
+          <LinearGradient
+            colors={["#10b981", "#059669"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="flex-1 p-5 rounded-2xl shadow-lg"
+          >
+            <View className="flex-row items-center justify-between">
+              <View>
+                <Text className="text-green-100 text-xs font-medium mb-1">Completed</Text>
+                <Text className="text-red-500 text-3xl font-bold">20</Text>
+              </View>
+              <View className="bg-white bg-opacity-20 p-3 rounded-full">
+                <FontAwesome5 name="check-circle" size={24} color="#fff" />
+              </View>
+            </View>
+          </LinearGradient>
         </View>
-      </View>
 
       {/* SERVICES */}
       <View style={styles.sectionHeader}>
