@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import {
   collection,
   onSnapshot,
@@ -8,8 +14,11 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "../../firebase";
+import { useRouter } from "expo-router";
 
 export default function Home() {
+  const router = useRouter();
+
   const [topStats, setTopStats] = useState({
     todayBookings: 0,
     todayCustomers: 0,
@@ -140,6 +149,9 @@ export default function Home() {
     <ScrollView style={styles.container}>
       <Text style={styles.header}>Admin Dashboard</Text>
 
+    
+
+      {/* 🔹 STATS GRID */}
       <View style={styles.grid}>
         <StatCard title="Today Bookings" value={topStats.todayBookings} color="#3b82f6" />
         <StatCard title="Today Customers" value={topStats.todayCustomers} color="#6366f1" />
@@ -156,12 +168,50 @@ export default function Home() {
           full
         />
       </View>
+
+        {/* 🔹 QUICK ACCESS */}
+      <Text style={styles.sectionTitle}>Quick Access</Text>
+
+      <View style={styles.quickGrid}>
+        <QuickButton
+          title="Add Product"
+          color="#3b82f6"
+          onPress={() => router.push("/(adminTabs)/addProduct")}
+        />
+
+        <QuickButton
+          title="Price List"
+          color="#6366f1"
+          onPress={() => router.push("/(adminTabs)/priceList")}
+        />
+
+        <QuickButton
+          title="Service List"
+          color="#8b5cf6"
+          onPress={() => router.push("/(adminTabs)/services")}
+        />
+
+        <QuickButton
+          title="Add Booking"
+          color="#06b6d4"
+          onPress={() => router.push("/(adminTabs)/addBooking")}
+        />
+      </View>
     </ScrollView>
   );
 }
 
-/* ===================== CARD COMPONENT ===================== */
+/* 🔹 QUICK BUTTON */
+const QuickButton = ({ title, color, onPress }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={[styles.quickBtn, { backgroundColor: color }]}
+  >
+    <Text style={styles.quickText}>{title}</Text>
+  </TouchableOpacity>
+);
 
+/* 🔹 STAT CARD */
 const StatCard = ({ title, value, color, full }) => (
   <View
     style={[
@@ -175,8 +225,7 @@ const StatCard = ({ title, value, color, full }) => (
   </View>
 );
 
-/* ===================== STYLES ===================== */
-
+/* 🔹 STYLES */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -186,7 +235,31 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 22,
     fontWeight: "bold",
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  quickGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     marginBottom: 16,
+  },
+  quickBtn: {
+    width: "48%",
+    padding: 16,
+    borderRadius: 14,
+    marginBottom: 12,
+    alignItems: "center",
+  },
+  quickText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 14,
   },
   grid: {
     flexDirection: "row",
