@@ -471,7 +471,6 @@
 //   },
 // });
 
-
 import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
@@ -530,15 +529,11 @@ export default function ProductBillingScreen() {
     return () => unsub();
   }, []);
 
-  const selectedProduct = products.find(
-    (p) => p.docId === selectedProductId
-  );
+  const selectedProduct = products.find((p) => p.docId === selectedProductId);
 
-  const selectedVariant =
-    selectedProduct?.variants?.[selectedVariantIndex];
+  const selectedVariant = selectedProduct?.variants?.[selectedVariantIndex];
 
-  const price =
-    selectedProduct?.offerPrice || selectedProduct?.mrp || 0;
+  const price = selectedProduct?.offerPrice || selectedProduct?.mrp || 0;
 
   /* 🛒 ADD TO CART */
   const addToCart = () => {
@@ -554,7 +549,7 @@ export default function ProductBillingScreen() {
     const existingIndex = cart.findIndex(
       (c) =>
         c.productId === selectedProduct.docId &&
-        c.variantIndex === selectedVariantIndex
+        c.variantIndex === selectedVariantIndex,
     );
 
     if (existingIndex !== -1) {
@@ -565,8 +560,7 @@ export default function ProductBillingScreen() {
         return Alert.alert("Not enough stock");
 
       updated[existingIndex].qty = newQty;
-      updated[existingIndex].total =
-        newQty * updated[existingIndex].price;
+      updated[existingIndex].total = newQty * updated[existingIndex].price;
 
       setCart(updated);
     } else {
@@ -592,7 +586,7 @@ export default function ProductBillingScreen() {
 
   const grandTotal = useMemo(
     () => cart.reduce((sum, item) => sum + item.total, 0),
-    [cart]
+    [cart],
   );
 
   /* 💾 SAVE ORDER */
@@ -614,31 +608,25 @@ export default function ProductBillingScreen() {
     if (cart.length === 0) return Alert.alert("Cart is empty");
 
     try {
-      const orderId = `ORD-${Date.now()
-        .toString()
-        .slice(-6)}`;
+      const orderId = `ORD-${Date.now().toString().slice(-6)}`;
 
       /* 🔄 UPDATE STOCK */
       for (const item of cart) {
-        const product = products.find(
-          (p) => p.docId === item.productId
-        );
+        const product = products.find((p) => p.docId === item.productId);
 
-        const updatedVariants = product.variants.map(
-          (v, i) => {
-            if (i === Number(item.variantIndex)) {
-              return {
-                ...v,
-                stock: Number(v.stock) - item.qty,
-              };
-            }
-            return v;
+        const updatedVariants = product.variants.map((v, i) => {
+          if (i === Number(item.variantIndex)) {
+            return {
+              ...v,
+              stock: Number(v.stock) - item.qty,
+            };
           }
-        );
+          return v;
+        });
 
         const totalStock = updatedVariants.reduce(
           (sum, v) => sum + Number(v.stock || 0),
-          0
+          0,
         );
 
         await updateDoc(doc(db, "products", product.docId), {
@@ -684,7 +672,7 @@ export default function ProductBillingScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#15173D" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
       {/* 🔝 HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -703,6 +691,9 @@ export default function ProductBillingScreen() {
           <Picker
             selectedValue={orderType}
             onValueChange={(val) => setOrderType(val)}
+            dropdownIconColor="#38bdf8"
+            style={{ color: "#64748b" }}
+            itemStyle={{ color: "#fff" }}
           >
             <Picker.Item label="Shop" value="shop" />
             <Picker.Item label="Online" value="online" />
@@ -714,20 +705,18 @@ export default function ProductBillingScreen() {
           <>
             <TextInput
               placeholder="Customer Name"
+              placeholderTextColor="#64748b"
               value={customer.name}
-              onChangeText={(text) =>
-                setCustomer({ ...customer, name: text })
-              }
+              onChangeText={(text) => setCustomer({ ...customer, name: text })}
               style={styles.input}
             />
 
             <TextInput
               placeholder="Phone"
+              placeholderTextColor="#64748b"
               keyboardType="numeric"
               value={customer.phone}
-              onChangeText={(text) =>
-                setCustomer({ ...customer, phone: text })
-              }
+              onChangeText={(text) => setCustomer({ ...customer, phone: text })}
               style={styles.input}
             />
           </>
@@ -736,24 +725,23 @@ export default function ProductBillingScreen() {
         {/* SHIPPING */}
         {orderType === "online" && (
           <>
-            {["name", "phone", "address", "city", "pincode"].map(
-              (field) => (
-                <TextInput
-                  key={field}
-                  placeholder={`Shipping ${field}`}
-                  value={shipping[field]}
-                  keyboardType={
-                    field === "phone" || field === "pincode"
-                      ? "numeric"
-                      : "default"
-                  }
-                  onChangeText={(text) =>
-                    setShipping({ ...shipping, [field]: text })
-                  }
-                  style={styles.input}
-                />
-              )
-            )}
+            {["name", "phone", "address", "city", "pincode"].map((field) => (
+              <TextInput
+                key={field}
+                placeholder={`Shipping ${field}`}
+                placeholderTextColor="#64748b"
+                value={shipping[field]}
+                keyboardType={
+                  field === "phone" || field === "pincode"
+                    ? "numeric"
+                    : "default"
+                }
+                onChangeText={(text) =>
+                  setShipping({ ...shipping, [field]: text })
+                }
+                style={styles.input}
+              />
+            ))}
           </>
         )}
 
@@ -765,14 +753,13 @@ export default function ProductBillingScreen() {
               setSelectedProductId(val);
               setSelectedVariantIndex("");
             }}
+            dropdownIconColor="#38bdf8"
+            style={{ color: "#64748b" }}
+            itemStyle={{ color: "#64748b" }}
           >
             <Picker.Item label="Select Product" value="" />
             {products.map((p) => (
-              <Picker.Item
-                key={p.docId}
-                label={p.name}
-                value={p.docId}
-              />
+              <Picker.Item key={p.docId} label={p.name} value={p.docId} />
             ))}
           </Picker>
         </View>
@@ -782,9 +769,10 @@ export default function ProductBillingScreen() {
           <View style={styles.picker}>
             <Picker
               selectedValue={selectedVariantIndex}
-              onValueChange={(val) =>
-                setSelectedVariantIndex(val)
-              }
+              onValueChange={(val) => setSelectedVariantIndex(val)}
+              dropdownIconColor="#38bdf8"
+              style={{ color: "#64748b" }}
+              itemStyle={{ color: "#64748b" }}
             >
               <Picker.Item label="Select Variant" value="" />
               {selectedProduct.variants?.map((v, i) => (
@@ -801,6 +789,7 @@ export default function ProductBillingScreen() {
         {/* QTY */}
         <TextInput
           placeholder="Qty"
+          placeholderTextColor="#64748b"
           keyboardType="numeric"
           value={qty}
           onChangeText={setQty}
@@ -835,14 +824,9 @@ export default function ProductBillingScreen() {
           )}
         />
 
-        <Text style={styles.total}>
-          Grand Total: ₹ {grandTotal}
-        </Text>
+        <Text style={styles.total}>Grand Total: ₹ {grandTotal}</Text>
 
-        <TouchableOpacity
-          style={styles.saveBtn}
-          onPress={handleSaveBill}
-        >
+        <TouchableOpacity style={styles.saveBtn} onPress={handleSaveBill}>
           <Text style={styles.btnText}>Save Order</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -852,75 +836,109 @@ export default function ProductBillingScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: "#15173D",
+    backgroundColor: "#0f172a",
     paddingHorizontal: 16,
     paddingVertical: 14,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
+    borderBottomWidth: 1,
+    borderColor: "#0b3b6f",
   },
+
   headerTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#fff",
   },
+
   container: {
     flex: 1,
-    backgroundColor: "#f1f5f9",
+    backgroundColor: "#020617",
     padding: 16,
   },
+
   input: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  picker: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  addBtn: {
-    backgroundColor: "#000",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 14,
-  },
-  saveBtn: {
-    backgroundColor: "#16a34a",
+    backgroundColor: "#0f172a",
     padding: 14,
     borderRadius: 12,
-    marginTop: 10,
-    marginBottom: 30,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    color: "#fff",
   },
+
+picker: {
+  backgroundColor: "#0f172a",
+  borderRadius: 12,
+  marginBottom: 12,
+  borderWidth: 1,
+  borderColor: "#0b3b6f",
+  overflow: "hidden", 
+},
+
+  addBtn: {
+    backgroundColor: "#2563eb",
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 16,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+
+  saveBtn: {
+    backgroundColor: "#2563eb",
+    padding: 16,
+    borderRadius: 14,
+    marginTop: 10,
+    marginBottom: 40,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+
   btnText: {
     color: "#fff",
     textAlign: "center",
-    fontWeight: "bold",
+    fontWeight: "700",
   },
+
   cartItem: {
-    backgroundColor: "#fff",
+    backgroundColor: "#0f172a",
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 12,
     marginBottom: 10,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
+
   removeBtn: {
-    backgroundColor: "red",
-    padding: 8,
-    borderRadius: 8,
+    backgroundColor: "#020617",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ef4444",
   },
+
   total: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "700",
     textAlign: "right",
-    marginTop: 10,
+    marginTop: 14,
+    color: "#38bdf8",
   },
+
   bold: {
-    fontWeight: "bold",
+    fontWeight: "700",
+    color: "#fff",
   },
 });

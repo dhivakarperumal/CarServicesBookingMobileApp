@@ -99,7 +99,10 @@ export default function AddService() {
     });
 
     if (!res.canceled) {
-      setForm({ ...form, image: `data:image/jpeg;base64,${res.assets[0].base64}` });
+      setForm({
+        ...form,
+        image: `data:image/jpeg;base64,${res.assets[0].base64}`,
+      });
     }
   };
 
@@ -167,7 +170,12 @@ export default function AddService() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 120 }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={styles.header}>
         {editId ? "Update Car Service" : "Add Car Service"}
       </Text>
@@ -175,6 +183,7 @@ export default function AddService() {
       {/* NAME */}
       <TextInput
         placeholder="Service Name"
+        placeholderTextColor="#64748b"
         value={form.name}
         onChangeText={(v) => setForm({ ...form, name: v })}
         style={styles.input}
@@ -183,6 +192,7 @@ export default function AddService() {
       {/* PRICE */}
       <TextInput
         placeholder="Price ₹"
+        placeholderTextColor="#64748b"
         keyboardType="numeric"
         value={form.price}
         onChangeText={(v) => setForm({ ...form, price: v })}
@@ -191,19 +201,17 @@ export default function AddService() {
 
       {/* ICON */}
       <Text style={styles.label}>Select Icon</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }} >
         {iconOptions.map((i) => (
           <TouchableOpacity
             key={i}
-            style={[
-              styles.iconChip,
-              form.icon === i && styles.iconChipActive,
-            ]}
+            style={[styles.iconChip, form.icon === i && styles.iconChipActive]}
             onPress={() => setForm({ ...form, icon: i })}
           >
             <Text
               style={{
-                color: form.icon === i ? "#fff" : "#111",
+                color: form.icon === i ? "#020617" : "#94a3b8",
+                fontWeight: "600",
               }}
             >
               {i}
@@ -215,6 +223,7 @@ export default function AddService() {
       {/* DESCRIPTION */}
       <TextInput
         placeholder="Short Description"
+        placeholderTextColor="#64748b"
         value={form.description}
         onChangeText={(v) => setForm({ ...form, description: v })}
         style={styles.input}
@@ -223,6 +232,7 @@ export default function AddService() {
       {/* BIG DESCRIPTION */}
       <TextInput
         placeholder="Full Service Details"
+        placeholderTextColor="#64748b"
         value={form.bigDescription}
         onChangeText={(v) => setForm({ ...form, bigDescription: v })}
         style={[styles.input, { height: 100 }]}
@@ -265,7 +275,9 @@ export default function AddService() {
             onChangeText={(v) => updateArray("sparePartsIncluded", i, v)}
             style={[styles.input, { flex: 1 }]}
           />
-          <TouchableOpacity onPress={() => removeField("sparePartsIncluded", i)}>
+          <TouchableOpacity
+            onPress={() => removeField("sparePartsIncluded", i)}
+          >
             <Text style={styles.remove}>X</Text>
           </TouchableOpacity>
         </View>
@@ -290,42 +302,106 @@ export default function AddService() {
 
 /* ================= STYLES ================= */
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#f1f5f9" },
-  header: { fontSize: 20, fontWeight: "bold", marginBottom: 16 },
-  input: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#ddd",
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#020617",
   },
-  label: { marginBottom: 6, fontWeight: "600" },
+
+  header: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 18,
+    color: "#fff",
+  },
+
+  input: {
+    backgroundColor: "#0f172a",
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    color: "#fff",
+  },
+
+  label: {
+    marginBottom: 6,
+    fontWeight: "600",
+    color: "#38bdf8",
+  },
+
   iconChip: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: "#e5e7eb",
-    marginRight: 8,
+    backgroundColor: "#0f172a",
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
-  iconChipActive: { backgroundColor: "#111827" },
+
+  iconChipActive: {
+    backgroundColor: "#38bdf8",
+    borderColor: "#38bdf8",
+  },
+
   imageBtn: {
-    backgroundColor: "#111827",
-    padding: 12,
-    borderRadius: 10,
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  preview: { width: "100%", height: 150, borderRadius: 12, marginBottom: 10 },
-  section: { fontWeight: "bold", marginTop: 10, marginBottom: 6 },
-  row: { flexDirection: "row", alignItems: "center" },
-  remove: { marginLeft: 10, color: "red", fontWeight: "bold" },
-  add: { color: "#2563eb", marginBottom: 10 },
-  submit: {
-    backgroundColor: "#111827",
+    backgroundColor: "#2563eb",
     padding: 14,
     borderRadius: 12,
     alignItems: "center",
-    marginTop: 10,
+    marginBottom: 12,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+
+  preview: {
+    width: "100%",
+    height: 160,
+    borderRadius: 14,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+  },
+
+  section: {
+    fontWeight: "700",
+    marginTop: 16,
+    marginBottom: 8,
+    color: "#fff",
+    fontSize: 15,
+  },
+
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  remove: {
+    marginLeft: 12,
+    color: "#ef4444",
+    fontWeight: "700",
+  },
+
+  add: {
+    color: "#38bdf8",
+    marginBottom: 14,
+    fontWeight: "600",
+  },
+
+  submit: {
+    backgroundColor: "#2563eb",
+    padding: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 40, // 👈 ADD THIS
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
 });

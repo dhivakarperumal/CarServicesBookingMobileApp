@@ -23,6 +23,7 @@ import {
 import { db } from "../../firebase";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ServiceBillingScreen() {
   const { id } = useLocalSearchParams();
@@ -66,7 +67,7 @@ export default function ServiceBillingScreen() {
         setService(serviceData);
 
         const partsSnap = await getDocs(
-          collection(db, "allServices", id, "parts")
+          collection(db, "allServices", id, "parts"),
         );
 
         const partsData = partsSnap.docs.map((d) => {
@@ -96,7 +97,7 @@ export default function ServiceBillingScreen() {
   /* 🧮 CALCULATIONS */
   const partsTotal = useMemo(
     () => parts.reduce((sum, p) => sum + p.total, 0),
-    [parts]
+    [parts],
   );
 
   const labourAmount = Number(labour || 0);
@@ -164,6 +165,7 @@ export default function ServiceBillingScreen() {
   }
 
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={styles.container}
@@ -180,6 +182,7 @@ export default function ServiceBillingScreen() {
 
       <FlatList
         data={parts}
+        contentContainerStyle={{ paddingBottom: 160 }}
         keyExtractor={(_, i) => i.toString()}
         ListHeaderComponent={
           <View style={styles.header}>
@@ -228,6 +231,7 @@ export default function ServiceBillingScreen() {
             <Text style={styles.inputLabel}>Labour Charges</Text>
             <TextInput
               placeholder="Enter labour amount"
+              placeholderTextColor="#64748b"
               keyboardType="numeric"
               value={labour}
               onChangeText={setLabour}
@@ -237,6 +241,7 @@ export default function ServiceBillingScreen() {
             <Text style={styles.inputLabel}>GST (%)</Text>
             <TextInput
               placeholder="Enter GST percentage"
+              placeholderTextColor="#64748b"
               keyboardType="numeric"
               value={gstPercent}
               onChangeText={setGstPercent}
@@ -247,27 +252,31 @@ export default function ServiceBillingScreen() {
               <Text style={styles.totalTitle}>Invoice Summary</Text>
 
               <View style={styles.rowBetween}>
-                <Text>Parts Total</Text>
-                <Text>₹{partsTotal}</Text>
+                <Text style={{ color: "#94a3b8" }}>Parts Total</Text>
+                <Text style={{ color: "#fff", fontWeight: "600" }}>
+                  ₹{partsTotal}
+                </Text>
               </View>
 
               <View style={styles.rowBetween}>
-                <Text>Labour</Text>
-                <Text>₹{labourAmount}</Text>
+                <Text style={{ color: "#94a3b8" }}>Labour</Text>
+                <Text style={{ color: "#fff", fontWeight: "600" }}>
+                  ₹{labourAmount}
+                </Text>
               </View>
 
               <View style={styles.rowBetween}>
-                <Text>GST</Text>
-                <Text>₹{gstAmount.toFixed(2)}</Text>
+                <Text style={{ color: "#94a3b8" }}>GST</Text>
+                <Text style={{ color: "#fff", fontWeight: "600" }}>
+                  ₹{gstAmount.toFixed(2)}
+                </Text>
               </View>
 
               <View style={styles.divider} />
 
               <View style={styles.rowBetween}>
                 <Text style={styles.grandLabel}>Grand Total</Text>
-                <Text style={styles.grandTotal}>
-                  ₹{grandTotal.toFixed(2)}
-                </Text>
+                <Text style={styles.grandTotal}>₹{grandTotal.toFixed(2)}</Text>
               </View>
             </View>
 
@@ -279,99 +288,160 @@ export default function ServiceBillingScreen() {
               {saving ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.buttonText}>
-                  Generate Invoice
-                </Text>
+                <Text style={styles.buttonText}>Generate Invoice</Text>
               )}
             </TouchableOpacity>
           </View>
         }
       />
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f1f5f9" },
+  container: { flex: 1, backgroundColor: "#020617" },
 
   headerBar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     padding: 14,
-    backgroundColor: "#000",
+    backgroundColor: "#0f172a",
+    borderBottomWidth: 1,
+    borderColor: "#0b3b6f",
   },
-  backText: {
-    color: "#fff",
-    fontSize: 14,
-  },
+
   headerTitle: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "700",
   },
 
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
+
   header: { padding: 16 },
 
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#0f172a",
     padding: 16,
-    borderRadius: 14,
+    borderRadius: 16,
     marginBottom: 16,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
-  cardTitle: { fontWeight: "bold", fontSize: 16, marginBottom: 10 },
 
-  label: { fontWeight: "600", color: "#475569" },
-  value: { fontWeight: "500" },
+  cardTitle: {
+    fontWeight: "700",
+    fontSize: 16,
+    marginBottom: 10,
+    color: "#38bdf8",
+  },
 
-  row: { flexDirection: "row", justifyContent: "space-between", marginBottom: 6 },
+  label: { fontWeight: "600", color: "#94a3b8" },
+  value: { fontWeight: "600", color: "#fff" },
 
-  sectionTitle: { fontWeight: "bold", fontSize: 15, marginBottom: 8 },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+
+  sectionTitle: {
+    fontWeight: "700",
+    fontSize: 15,
+    marginBottom: 8,
+    color: "#fff",
+  },
 
   partRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    backgroundColor: "#fff",
+    backgroundColor: "#0f172a",
     padding: 14,
     marginHorizontal: 16,
     marginBottom: 10,
-    borderRadius: 12,
-    elevation: 2,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
-  partName: { fontWeight: "600" },
-  partSub: { fontSize: 12, color: "#64748b" },
-  partTotal: { fontWeight: "bold", fontSize: 14 },
+
+  partName: { fontWeight: "700", color: "#fff" },
+  partSub: { fontSize: 12, color: "#94a3b8" },
+  partTotal: { fontWeight: "700", fontSize: 14, color: "#38bdf8" },
 
   footer: { padding: 16 },
 
-  inputLabel: { fontWeight: "600", marginBottom: 4, color: "#334155" },
+  inputLabel: {
+    fontWeight: "600",
+    marginBottom: 4,
+    color: "#38bdf8",
+  },
 
   input: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
+    backgroundColor: "#0f172a",
+    padding: 14,
+    borderRadius: 12,
     marginBottom: 12,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    color: "#fff",
   },
 
   totalCard: {
-    backgroundColor: "#fff",
+    backgroundColor: "#0f172a",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+  },
+
+  totalTitle: {
+    fontWeight: "700",
+    fontSize: 15,
+    marginBottom: 10,
+    color: "#fff",
+  },
+
+  rowBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: "#0b3b6f",
+    marginVertical: 8,
+  },
+
+  grandLabel: {
+    fontWeight: "700",
+    fontSize: 15,
+    color: "#fff",
+  },
+
+  grandTotal: {
+    fontWeight: "800",
+    fontSize: 17,
+    color: "#38bdf8",
+  },
+
+  button: {
+    backgroundColor: "#2563eb",
     padding: 16,
     borderRadius: 14,
-    marginBottom: 16,
-    elevation: 3,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  totalTitle: { fontWeight: "bold", fontSize: 15, marginBottom: 10 },
 
-  rowBetween: { flexDirection: "row", justifyContent: "space-between", marginBottom: 6 },
-
-  divider: { height: 1, backgroundColor: "#e2e8f0", marginVertical: 8 },
-
-  grandLabel: { fontWeight: "bold", fontSize: 15 },
-  grandTotal: { fontWeight: "bold", fontSize: 16, color: "#16a34a" },
-
-  button: { backgroundColor: "#000", padding: 16, borderRadius: 14 },
-  buttonText: { color: "#fff", textAlign: "center", fontWeight: "bold", fontSize: 15 },
+  buttonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "700",
+    fontSize: 15,
+  },
 });

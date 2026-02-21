@@ -221,7 +221,7 @@ export default function Home() {
           title="Add Product"
           icon="add-circle-outline"
           iconSet="Ionicons"
-          onPress={() => router.push("/(adminTabs)/Products")}
+          onPress={() => router.push("/(Products)/addproducts")}
         />
 
         <QuickButton

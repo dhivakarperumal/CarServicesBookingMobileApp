@@ -99,22 +99,28 @@ export default function UserManagement() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: "#0f172a",
+    backgroundColor: "#020617",
     padding: 16,
   },
 
   loader: {
     flex: 1,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#020617",
     justifyContent: "center",
     alignItems: "center",
   },
 
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#0f172a",
     padding: 14,
-    borderRadius: 12,
-    marginBottom: 10,
+    borderRadius: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
   },
 
   row: {
@@ -123,42 +129,41 @@ const styles = StyleSheet.create({
   },
 
   avatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: "#6366f1",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+    backgroundColor: "#020617",
+    borderWidth: 2,
+    borderColor: "#38bdf8",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
   },
 
   avatarText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "700",
     fontSize: 16,
   },
 
   username: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
-    color: "#111827",
+    color: "#fff",
   },
 
   email: {
-    fontSize: 13,
-    color: "#6b7280",
-    marginTop: 2,
-  },
-
-  mobile: {
-    fontSize: 13,
-    color: "#6b7280",
+    fontSize: 12,
+    color: "#94a3b8",
     marginTop: 2,
   },
 
   role: {
     fontSize: 12,
-    color: "#2563eb",
+    color: "#38bdf8",
     marginTop: 4,
     fontWeight: "600",
   },
@@ -166,26 +171,29 @@ const styles = StyleSheet.create({
   statusBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 10,
+    borderWidth: 1,
   },
 
   active: {
-    backgroundColor: "#dcfce7",
+    backgroundColor: "rgba(34,197,94,0.12)",
+    borderColor: "#22c55e",
   },
 
   inactive: {
-    backgroundColor: "#fee2e2",
+    backgroundColor: "rgba(239,68,68,0.12)",
+    borderColor: "#ef4444",
   },
 
   statusText: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#111827",
+    color: "#fff",
   },
 
   empty: {
-    color: "#9ca3af",
+    color: "#64748b",
     textAlign: "center",
-    marginTop: 20,
+    marginTop: 40,
   },
 });
