@@ -12,6 +12,7 @@ import BookedService from "../../components/BookedService";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import MyOrder from "../../components/MyOrder";
+import ManageAddress from "../../components/ManageAddress";
 
 export default function AccountScreen() {
   const [user, setUser] = useState(null);
@@ -98,14 +99,10 @@ export default function AccountScreen() {
         );
 
       case "orders":
-  return <MyOrder />;
+        return <MyOrder />;
 
       case "address":
-        return (
-          <View>
-            <Text style={styles.title}>Manage Address</Text>
-          </View>
-        );
+        return <ManageAddress />;
 
       default:
         return (
