@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
   ActivityIndicator,
+  FlatList,
   Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { db } from "../../firebase";
-import { collection, onSnapshot } from "firebase/firestore";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -17,7 +18,7 @@ export default function Products() {
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "products"), (snap) => {
       const list = snap.docs.map((d) => ({
-        docId: d.id, // ✅ always unique
+        docId: d.id,
         ...d.data(),
       }));
 
@@ -30,8 +31,8 @@ export default function Products() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#06b6d4" />
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#0EA5E9" />
       </View>
     );
   }
@@ -41,34 +42,49 @@ export default function Products() {
 
     return (
       <View style={styles.card}>
-        {item.image && (
-          <Image source={{ uri: item.image }} style={styles.image} />
-        )}
+        <View style={styles.imageContainer}>
+  {item.images && item.images.length > 0 ? (
+    <Image source={{ uri: item.images[0] }} style={styles.image} />
+  ) : (
+    <View style={styles.imagePlaceholder} />
+  )}
 
-        <View style={{ flex: 1 }}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.brand}>{item.brand}</Text>
+  {/* OFFER BADGE */}
+  {item.offer > 0 && (
+    <View style={styles.offerBadge}>
+      <Text style={styles.offerBadgeText}>{item.offer}% OFF</Text>
+    </View>
+  )}
+</View>
 
-          {/* PRICE SECTION */}
-          <View style={styles.priceRow}>
-            <Text style={styles.offerPrice}>₹ {item.offerPrice}</Text>
-            <Text style={styles.mrp}>₹ {item.mrp}</Text>
-            <Text style={styles.offer}>{item.offer}% OFF</Text>
-          </View>
+        <Text style={styles.name}>{item.name}</Text>
 
-          {/* STOCK */}
-          <Text
-            style={[
-              styles.stock,
-              { color: inStock ? "#16a34a" : "#ef4444" },
-            ]}
-          >
-            {inStock ? "In Stock" : "Out of Stock"}
-          </Text>
-
-          {/* RATING */}
-          <Text style={styles.rating}>⭐ {item.rating}</Text>
+        {/* PRICE */}
+        <View style={styles.priceRow}>
+          <Text style={styles.offerPrice}>₹ {item.offerPrice}</Text>
+          <Text style={styles.mrp}>₹ {item.mrp}</Text>
         </View>
+
+           <View style={styles.brandRatingRow}>
+  <Text style={styles.brand}>{item.brand}</Text>
+  <Text style={styles.rating}>⭐ {item.rating}</Text>
+</View>
+       
+
+        
+
+        {/* <Text style={styles.discount}>{item.offer}% OFF</Text> */}
+
+        {/* STOCK */}
+        {/* <Text style={[styles.stock, inStock ? styles.inStock : styles.outStock]}>
+          {inStock ? "In Stock" : "Out of Stock"}
+        </Text> */}
+
+    
+
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>View</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -81,101 +97,164 @@ export default function Products() {
         data={products}
         keyExtractor={(item) => item.docId}
         renderItem={renderItem}
+        numColumns={2} // ✅ 2 per row
+        columnWrapperStyle={{ justifyContent: "space-between" }}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
       />
     </View>
   );
 }
 
-
+/* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
+
+  imageContainer: {
+  position: "relative",
+  marginBottom: 10,
+},
+
+offerBadge: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  backgroundColor: "#0EA5E9",
+  paddingHorizontal: 8,
+  paddingVertical: 4,
+  borderRadius: 20,
+},
+
+offerBadgeText: {
+  color: "#FFFFFF",
+  fontSize: 10,
+  fontWeight: "700",
+},
+
+brandRatingRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginTop: 2,
+  marginBottom: 1,
+},
+
   container: {
     flex: 1,
-    backgroundColor: "#f1f5f9",
-    padding: 16,
+    backgroundColor: "#0B1120",
+    padding: 20,
   },
 
   title: {
+    color: "#FFFFFF",
     fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 16,
-    color: "#111827",
+    fontWeight: "700",
+    marginBottom: 20,
+  },
+
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#0B1120",
   },
 
   card: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 14,
-    marginBottom: 12,
-
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 3,
+    width: "48%",
+    backgroundColor: "#111827",
+    borderRadius: 18,
+    padding: 10,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.2)",
   },
 
   image: {
-    width: 90,
-    height: 90,
-    borderRadius: 10,
-    marginRight: 12,
+    width: "100%",
+    height: 110,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+
+  imagePlaceholder: {
+    width: "100%",
+    height: 110,
+    borderRadius: 12,
+    backgroundColor: "#1F2937",
+    marginBottom: 10,
   },
 
   name: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
   },
 
   brand: {
-    fontSize: 12,
-    color: "#6b7280",
-    marginBottom: 4,
+    color: "#94A3B8",
+    fontSize: 11,
+    marginBottom: 6,
   },
 
   priceRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 4,
+    marginTop:4,
+    marginBottom: 2,
   },
 
   offerPrice: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#06b6d4",
-    marginRight: 8,
-  },
-
-  mrp: {
-    fontSize: 13,
-    color: "#9ca3af",
-    textDecorationLine: "line-through",
+    color: "#0EA5E9",
+    fontSize: 14,
+    fontWeight: "700",
     marginRight: 6,
   },
 
-  offer: {
-    fontSize: 12,
-    color: "#16a34a",
+  mrp: {
+    color: "#64748B",
+    fontSize: 11,
+    textDecorationLine: "line-through",
+  },
+
+  discount: {
+    color: "#10B981",
+    fontSize: 11,
     fontWeight: "600",
+    marginBottom: 4,
   },
 
   stock: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "600",
+    marginBottom: 4,
+  },
+
+  inStock: {
+    color: "#22C55E",
+  },
+
+  outStock: {
+    color: "#EF4444",
   },
 
   rating: {
-    fontSize: 12,
-    color: "#f59e0b",
-    marginTop: 2,
+    color: "#FBBF24",
+    fontSize: 11,
+    marginBottom: 8,
   },
 
-  center: {
-    flex: 1,
-    justifyContent: "center",
+  button: {
+    borderWidth: 1,
+    borderColor: "#0EA5E9",
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginTop: 6,
     alignItems: "center",
+  },
+
+  buttonText: {
+    color: "#0EA5E9",
+    fontSize: 12,
+    fontWeight: "600",
   },
 });

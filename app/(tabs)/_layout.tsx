@@ -1,21 +1,40 @@
 import { Tabs } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import Header from "../../components/Header";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
-        header: () => <Header />,   // 👈 GLOBAL HEADER
-        tabBarActiveTintColor: "#06b6d4",
+        header: () => <Header />,
+
+        tabBarActiveTintColor: "#0EA5E9",
+        tabBarInactiveTintColor: "#64748B",
+
+        tabBarStyle: {
+          backgroundColor: "#111827",
+          borderTopWidth: 1,
+          borderTopColor: "rgba(14,165,233,0.2)",
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
+          paddingTop: 6,
+        },
+
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: "600",
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="home" color={color} size={size} />
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="home" color={color} size={20} />
           ),
         }}
       />
@@ -24,8 +43,8 @@ export default function TabLayout() {
         name="services"
         options={{
           title: "Services",
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="wrench" color={color} size={size} />
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="wrench" color={color} size={20} />
           ),
         }}
       />
@@ -34,8 +53,8 @@ export default function TabLayout() {
         name="booking"
         options={{
           title: "Booking",
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="calendar" color={color} size={size} />
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="calendar" color={color} size={20} />
           ),
         }}
       />
@@ -44,8 +63,8 @@ export default function TabLayout() {
         name="products"
         options={{
           title: "Products",
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="shopping-cart" color={color} size={size} />
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="shopping-cart" color={color} size={20} />
           ),
         }}
       />
@@ -54,12 +73,11 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="user" color={color} size={size} />
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="user" color={color} size={20} />
           ),
         }}
       />
     </Tabs>
   );
 }
-

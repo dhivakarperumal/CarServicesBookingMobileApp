@@ -1,22 +1,23 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Alert,
-} from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { db } from "../../firebase";
 import {
-  collection,
-  addDoc,
-  doc,
-  runTransaction,
-  serverTimestamp,
+    addDoc,
+    collection,
+    doc,
+    runTransaction,
+    serverTimestamp,
 } from "firebase/firestore";
+import { useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { db } from "../../firebase";
 
 const BOOKING_STATUS = {
   BOOKED: "Booked",
@@ -42,8 +43,8 @@ export default function BookingScreen() {
 
     const bookingId = await runTransaction(db, async (transaction) => {
       const counterSnap = await transaction.get(counterRef);
-
       let nextValue = 1;
+
       if (counterSnap.exists()) {
         nextValue = counterSnap.data().value + 1;
       }
@@ -56,7 +57,7 @@ export default function BookingScreen() {
     return bookingId;
   };
 
-  const handleChange = (key, value) => {
+  const handleChange = (key: string, value: string) => {
     setFormData({ ...formData, [key]: value });
   };
 
@@ -83,14 +84,12 @@ export default function BookingScreen() {
 
       const bookingId = await generateBookingId();
 
-      const bookingData = {
+      await addDoc(collection(db, "bookings"), {
         bookingId,
         ...formData,
         status: BOOKING_STATUS.BOOKED,
         createdAt: serverTimestamp(),
-      };
-
-      await addDoc(collection(db, "bookings"), bookingData);
+      });
 
       Alert.alert("Success", `Booking Successful: ${bookingId}`);
 
@@ -106,7 +105,6 @@ export default function BookingScreen() {
         location: "",
       });
     } catch (error) {
-      console.log(error);
       Alert.alert("Error", "Booking failed");
     } finally {
       setLoading(false);
@@ -114,24 +112,21 @@ export default function BookingScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>Book Service</Text>
 
-      {/* NAME */}
       <Input label="Full Name" value={formData.name} onChange={(v) => handleChange("name", v)} />
-
-      {/* PHONE */}
       <Input label="Phone" value={formData.phone} onChange={(v) => handleChange("phone", v)} />
-
-      {/* EMAIL */}
       <Input label="Email" value={formData.email} onChange={(v) => handleChange("email", v)} />
 
       {/* BRAND */}
       <Text style={styles.label}>Car Brand</Text>
-      <View style={styles.picker}>
+      <View style={styles.pickerWrapper}>
         <Picker
+          dropdownIconColor="#0EA5E9"
           selectedValue={formData.brand}
           onValueChange={(v) => handleChange("brand", v)}
+          style={{ color: "#fff" }}
         >
           <Picker.Item label="Select Brand" value="" />
           <Picker.Item label="Honda" value="Honda" />
@@ -141,15 +136,16 @@ export default function BookingScreen() {
         </Picker>
       </View>
 
-      {/* MODEL */}
       <Input label="Car Model" value={formData.model} onChange={(v) => handleChange("model", v)} />
 
       {/* ISSUE */}
       <Text style={styles.label}>Issue</Text>
-      <View style={styles.picker}>
+      <View style={styles.pickerWrapper}>
         <Picker
+          dropdownIconColor="#0EA5E9"
           selectedValue={formData.issue}
           onValueChange={(v) => handleChange("issue", v)}
+          style={{ color: "#fff" }}
         >
           <Picker.Item label="Select Issue" value="" />
           <Picker.Item label="Engine Problem" value="Engine Problem" />
@@ -167,77 +163,97 @@ export default function BookingScreen() {
         />
       )}
 
-      {/* LOCATION */}
       <Input label="Location" value={formData.location} onChange={(v) => handleChange("location", v)} />
+      <Input label="Service Address" value={formData.address} onChange={(v) => handleChange("address", v)} multiline />
 
-      {/* ADDRESS */}
-      <Input
-        label="Service Address"
-        value={formData.address}
-        onChange={(v) => handleChange("address", v)}
-        multiline
-      />
-
-      {/* BUTTON */}
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleBooking}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? "Booking..." : "Book Service"}
-        </Text>
+      <TouchableOpacity style={styles.button} onPress={handleBooking} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator color="#000" />
+        ) : (
+          <Text style={styles.buttonText}>Book Service</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
-function Input({ label, value, onChange, multiline = false }) {
+/* ================= INPUT COMPONENT ================= */
+
+function Input({
+  label,
+  value,
+  onChange,
+  multiline = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  multiline?: boolean;
+}) {
   return (
-    <View style={{ marginBottom: 14 }}>
+    <View style={{ marginBottom: 16 }}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChange}
-        style={[styles.input, multiline && { height: 80 }]}
+        placeholderTextColor="#64748B"
         multiline={multiline}
+        style={[styles.input, multiline && { height: 90 }]}
       />
     </View>
   );
 }
 
+/* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 16 },
-
-  label: { fontSize: 14, marginBottom: 6, color: "#374151" },
-
-  input: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    padding: 12,
+  container: {
+    flex: 1,
+    backgroundColor: "#0B1120",
+    padding: 20,
   },
 
-  picker: {
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    marginBottom: 20,
+  },
+
+  label: {
+    color: "#94A3B8",
+    marginBottom: 6,
+    fontSize: 13,
+  },
+
+  input: {
+    backgroundColor: "#111827",
+    borderRadius: 16,
+    padding: 14,
+    color: "#fff",
     borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    marginBottom: 14,
+    borderColor: "rgba(14,165,233,0.3)",
+  },
+
+  pickerWrapper: {
+    backgroundColor: "#111827",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.3)",
+    marginBottom: 16,
   },
 
   button: {
-    backgroundColor: "#06b6d4",
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: "#0EA5E9",
+    paddingVertical: 16,
+    borderRadius: 18,
+    alignItems: "center",
     marginTop: 10,
   },
 
   buttonText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "bold",
+    color: "#000",
+    fontWeight: "700",
     fontSize: 16,
   },
 });

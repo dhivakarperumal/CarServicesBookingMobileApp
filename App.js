@@ -1,22 +1,48 @@
+import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createDrawerNavigator } from "@react-navigation/drawer";
+import { createStackNavigator } from "@react-navigation/stack";
 
-import LoginScreen from "./app/screens/LoginScreen";
-import RegisterScreen from "./app/screens/RegisterScreen";
-import HomeScreen from "./app/screens/HomeScreen";
-import ProfileScreen from "./app/screens/ProfileScreen";
+import HomeScreen from "./screens/HomeScreen";
+import Profile from "./screens/Profile";
+import Notifications from "./screens/Notifications";
+import AdminDashboard from "./screens/AdminDashboard";
+import Header from "./components/Header";
 
-const Stack = createNativeStackNavigator();
+const Drawer = createDrawerNavigator();
+const Stack = createStackNavigator();
+
+function MainStack({ role }) {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        header: () => <Header role={role} />,
+      }}
+    >
+      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="Profile" component={Profile} />
+      <Stack.Screen name="Notifications" component={Notifications} />
+      <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+    </Stack.Navigator>
+  );
+}
+
+function DrawerLayout() {
+  const role = "admin"; // 🔥 get this from Firebase later
+
+  return (
+    <Drawer.Navigator screenOptions={{ headerShown: false }}>
+      <Drawer.Screen name="Main">
+        {() => <MainStack role={role} />}
+      </Drawer.Screen>
+    </Drawer.Navigator>
+  );
+}
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
-      </Stack.Navigator>
+      <DrawerLayout />
     </NavigationContainer>
   );
 }

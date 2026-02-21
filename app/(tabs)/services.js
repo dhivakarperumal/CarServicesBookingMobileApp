@@ -1,14 +1,26 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
-import { db } from "../../firebase";
 import { collection, onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import {
+  FlatList,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { db } from "../../firebase";
 
 export default function Services() {
   const [services, setServices] = useState([]);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "services"), (snap) => {
-      setServices(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      const data = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setServices(data);
     });
 
     return () => unsub();
@@ -16,62 +28,105 @@ export default function Services() {
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
-      <Text style={styles.name}>{item.name}</Text>
+      <Text style={styles.title}>{item.name}</Text>
+
+      {item.image ? (
+        <Image source={{ uri: item.image }} style={styles.image} />
+      ) : (
+        <View style={styles.imagePlaceholder} />
+      )}
+
       <Text style={styles.price}>₹ {item.price}</Text>
+
+      <TouchableOpacity style={styles.button}>
+        <Text style={styles.buttonText}>View</Text>
+      </TouchableOpacity>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Services</Text>
-
       <FlatList
         data={services}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
+        numColumns={2} // ✅ 2 columns
+        columnWrapperStyle={{ justifyContent: "space-between" }} // spacing
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No services available</Text>
+          <Text style={styles.empty}>No services available</Text>
         }
       />
     </View>
   );
 }
 
+/* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#fff",
-  },
-
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
+    backgroundColor: "#0B1120",
+    padding: 20,
   },
 
   card: {
-    padding: 16,
-    marginBottom: 12,
-    backgroundColor: "#ecfeff",
-    borderRadius: 12,
+    width: "48%", // ✅ Important for 2-column layout
+    backgroundColor: "#111827",
+    borderRadius: 18,
+    padding: 15,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.2)",
   },
 
-  name: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
+  title: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 10,
+  },
+
+  image: {
+    width: "100%",
+    height: 120,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+
+  imagePlaceholder: {
+    width: "100%",
+    height: 120,
+    backgroundColor: "#1F2937",
+    borderRadius: 12,
+    marginBottom: 10,
   },
 
   price: {
-    fontSize: 14,
-    color: "#374151",
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#0EA5E9",
+    marginBottom: 10,
   },
 
-  emptyText: {
+  button: {
+    borderWidth: 1,
+    borderColor: "#0EA5E9",
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignItems: "center",
+  },
+
+  buttonText: {
+    color: "#0EA5E9",
+    fontWeight: "600",
+    fontSize: 12,
+  },
+
+  empty: {
+    color: "#64748B",
     textAlign: "center",
-    marginTop: 40,
-    color: "#9ca3af",
+    marginTop: 50,
   },
 });

@@ -1,160 +1,208 @@
-import React, { useState } from "react";
+import { useRouter } from "expo-router";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Alert,
+  View,
 } from "react-native";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { Ionicons } from "@expo/vector-icons";
 import { auth, db } from "../../firebase";
-import { doc, getDoc } from "firebase/firestore";
-import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [secure, setSecure] = useState(true);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Enter email & password");
+      Alert.alert("Error", "Please enter both email and password");
       return;
     }
 
     try {
-      // 🔐 Firebase Auth login
+      setLoading(true);
+
       const userCred = await signInWithEmailAndPassword(
         auth,
-        email,
+        email.trim(),
         password
       );
 
       const uid = userCred.user.uid;
-
-      // 🗄 Fetch user profile from Firestore
       const userRef = doc(db, "users", uid);
       const userSnap = await getDoc(userRef);
 
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
-
-        console.log("User Data:", userData);
-
-        // 👉 You can store this in global state later
-        // e.g. name, role, etc.
-      } else {
-        console.log("No user profile found in Firestore");
+      if (!userSnap.exists()) {
+        Alert.alert("Error", "User profile not found");
+        return;
       }
 
-      // ✅ Navigate to tabs
-      router.replace("/(tabs)");
+      const role = userSnap.data().role?.toLowerCase();
+
+      if (role === "admin") router.replace("/(adminTabs)/home");
+      else router.replace("/(tabs)/home");
     } catch (error) {
       Alert.alert("Login Failed", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      {/* Logo */}
+      <View style={styles.logoContainer}>
+        <Image
+          source={require("../../assets/images/logo_no_bg.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.title}>Car Service Login</Text>
+        <Text style={styles.subtitle}>
+          Sign in to manage services & bookings
+        </Text>
+      </View>
 
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-        autoCapitalize="none"
-      />
+      {/* Email */}
+      <View style={styles.inputWrapper}>
+        <Ionicons name="mail-outline" size={20} color="#94A3B8" />
+        <TextInput
+          placeholder="Email or Username"
+          placeholderTextColor="#64748B"
+          value={email}
+          onChangeText={setEmail}
+          style={styles.input}
+          autoCapitalize="none"
+        />
+      </View>
 
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-      />
+      {/* Password */}
+      <View style={styles.inputWrapper}>
+        <Ionicons name="lock-closed-outline" size={20} color="#94A3B8" />
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#64748B"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={secure}
+          style={styles.input}
+        />
+        <TouchableOpacity onPress={() => setSecure(!secure)}>
+          <Ionicons
+            name={secure ? "eye-off-outline" : "eye-outline"}
+            size={20}
+            color="#94A3B8"
+          />
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+      {/* Sign In Button */}
+      <TouchableOpacity
+        style={styles.loginButton}
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.loginText}>Sign In</Text>
+        )}
       </TouchableOpacity>
 
+      {/* Register */}
       <Text
-        style={styles.link}
         onPress={() => router.push("/(auth)/register")}
+        style={styles.registerText}
       >
-        Don't have an account? Register
+        Don’t have an account?{" "}
+        <Text style={{ color: "#06B6D4" }}>Register</Text>
       </Text>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f1f5f9",
+    backgroundColor: "#0B1120", // full dark card look
+    paddingHorizontal: 24,
     justifyContent: "center",
-    padding: 20,
   },
 
-  card: {
-    backgroundColor: "#fff",
-    padding: 24,
-    borderRadius: 16,
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 40,
+  },
 
-    // shadow iOS
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-
-    // shadow Android
-    elevation: 5,
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 12,
   },
 
   title: {
     fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 6,
-    color: "#111827",
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
 
   subtitle: {
+    fontSize: 14,
+    color: "#94A3B8",
+    marginTop: 6,
     textAlign: "center",
-    color: "#6b7280",
-    marginBottom: 20,
+  },
+
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#111827",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 15,
+    marginBottom: 18,
   },
 
   input: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 14,
-    backgroundColor: "#f9fafb",
+    flex: 1,
+    color: "#FFFFFF",
+    marginLeft: 10,
+    fontSize: 15,
   },
 
-  button: {
-    backgroundColor: "#06b6d4",
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 4,
+  loginButton: {
+    backgroundColor: "#0EA5E9",
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    marginTop: 10,
   },
 
-  buttonText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "bold",
+  loginText: {
+    color: "#FFFFFF",
     fontSize: 16,
+    fontWeight: "600",
   },
 
-  link: {
+  registerText: {
     textAlign: "center",
-    marginTop: 18,
-    color: "#06b6d4",
-    fontWeight: "500",
+    color: "#94A3B8",
+    marginTop: 24,
+    fontSize: 14,
   },
 });
-
