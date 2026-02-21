@@ -20,6 +20,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { FontAwesome5, MaterialIcons, Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 /* ================= HEADER ================= */
 function AdminHeader({ title = "Admin" }) {
@@ -82,7 +83,12 @@ function AdminHeader({ title = "Admin" }) {
   };
 
   return (
-    <View style={styles.header}>
+   <LinearGradient
+  colors={["#0f172a", "#0f172a"]}
+  start={{ x: 0, y: 0 }}
+  end={{ x: 1, y: 1 }}
+  style={styles.header}
+>
       <Text style={styles.title}>{title}</Text>
 
       <View style={styles.rightContainer}>
@@ -224,7 +230,7 @@ function AdminHeader({ title = "Admin" }) {
           </View>
         </Pressable>
       </Modal>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -301,15 +307,19 @@ export default function AdminTabsLayout() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#0f172a" },
 
-  header: {
-    backgroundColor: "#0f172a",
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
+header: {
+  backgroundColor: "#0f172a",
+  paddingHorizontal: 18,
+  paddingTop: 14,
+  paddingBottom: 16,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  shadowColor: "#000",
+  shadowOpacity: 0.25,
+  shadowRadius: 8,
+  elevation: 8,
+},
 
   title: { color: "#fff", fontSize: 20, fontWeight: "bold" },
 
@@ -330,14 +340,16 @@ const styles = StyleSheet.create({
 
   badgeText: { color: "#fff", fontSize: 10, fontWeight: "bold" },
 
-  profileCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: "#6366f1",
-    alignItems: "center",
-    justifyContent: "center",
-  },
+profileCircle: {
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  backgroundColor: "#1e3a8a",
+  alignItems: "center",
+  justifyContent: "center",
+  borderWidth: 1,
+  borderColor: "#38bdf8",
+},
 
   profileText: { color: "#fff", fontWeight: "bold", fontSize: 14 },
 
