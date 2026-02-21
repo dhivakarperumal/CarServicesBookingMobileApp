@@ -22,8 +22,15 @@ import {
   where,
 } from "firebase/firestore";
 import { Picker } from "@react-native-picker/picker";
+import { LinearGradient } from "expo-linear-gradient";
 
-const BOOKING_STATUS = ["All", "Booked", "Call Verified", "Approved", "Cancelled"];
+const BOOKING_STATUS = [
+  "All",
+  "Booked",
+  "Call Verified",
+  "Approved",
+  "Cancelled",
+];
 const DATE_FILTERS = ["All", "Today", "This Week", "This Month", "Last Month"];
 
 export default function ShowAllBookings() {
@@ -45,7 +52,7 @@ export default function ShowAllBookings() {
         snap.docs.map((d) => ({
           id: d.id,
           ...d.data(),
-        }))
+        })),
       );
     });
 
@@ -94,8 +101,7 @@ export default function ShowAllBookings() {
       b.name?.toLowerCase().includes(search.toLowerCase()) ||
       b.phone?.includes(search);
 
-    const matchStatus =
-      statusFilter === "All" || b.status === statusFilter;
+    const matchStatus = statusFilter === "All" || b.status === statusFilter;
 
     const matchDate = isInDateFilter(b.createdAt);
 
@@ -121,15 +127,15 @@ export default function ShowAllBookings() {
   const getStatusTextColor = (status) => {
     switch (status) {
       case "Approved":
-        return "#059669";
+        return "#22c55e";
       case "Cancelled":
-        return "#dc2626";
+        return "#ef4444";
       case "Call Verified":
-        return "#d97706";
+        return "#f59e0b";
       case "Booked":
-        return "#6b7280";
+        return "#64748b";
       default:
-        return "#2563eb";
+        return "#3b82f6";
     }
   };
 
@@ -148,7 +154,7 @@ export default function ShowAllBookings() {
       if (booking.uid) {
         await updateDoc(
           doc(db, "users", booking.uid, "bookings", booking.id),
-          updateData
+          updateData,
         );
       }
 
@@ -156,7 +162,7 @@ export default function ShowAllBookings() {
       if (newStatus === "Approved" && !booking.serviceCreated) {
         const q = query(
           collection(db, "allServices"),
-          where("bookingDocId", "==", booking.id)
+          where("bookingDocId", "==", booking.id),
         );
 
         const snap = await getDocs(q);
@@ -216,25 +222,22 @@ export default function ShowAllBookings() {
     const statusStyle = getStatusCardStyle(item.status);
 
     return (
-      <View
-        style={[
-          styles.card,
-          {
-            backgroundColor: statusStyle.backgroundColor,
-            borderColor: statusStyle.borderColor,
-          },
-        ]}
+      <LinearGradient
+        colors={["#0f172a", "#0b3b6f"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.card]}
       >
         <View style={styles.rowBetween}>
           <Text style={styles.bookingId}>{item.bookingId}</Text>
-          <Text
+          <View
             style={[
-              styles.status,
-              { color: getStatusTextColor(item.status) },
+              styles.statusBadge,
+              { backgroundColor: getStatusTextColor(item.status) },
             ]}
           >
-            {item.status}
-          </Text>
+            <Text style={styles.statusText}>{item.status}</Text>
+          </View>
         </View>
 
         <Text style={styles.text}>
@@ -246,13 +249,15 @@ export default function ShowAllBookings() {
 
         <Picker
           selectedValue={item.status}
+          style={styles.cardPicker}
+          dropdownIconColor="#38bdf8"
           onValueChange={(val) => handleStatusChange(item, val)}
         >
           {BOOKING_STATUS.slice(1).map((s) => (
             <Picker.Item key={s} label={s} value={s} />
           ))}
         </Picker>
-      </View>
+      </LinearGradient>
     );
   };
 
@@ -272,6 +277,8 @@ export default function ShowAllBookings() {
         <Picker
           selectedValue={statusFilter}
           style={styles.picker}
+          dropdownIconColor="#38bdf8"
+          itemStyle={{ color: "#fff" }} // 👈 ADD THIS
           onValueChange={(v) => setStatusFilter(v)}
         >
           {BOOKING_STATUS.map((s) => (
@@ -282,6 +289,8 @@ export default function ShowAllBookings() {
         <Picker
           selectedValue={dateFilter}
           style={styles.picker}
+          dropdownIconColor="#38bdf8"
+          itemStyle={{ color: "#fff" }} // 👈 ADD THIS
           onValueChange={(v) => setDateFilter(v)}
         >
           {DATE_FILTERS.map((d) => (
@@ -295,10 +304,12 @@ export default function ShowAllBookings() {
         data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={renderCard}
+        contentContainerStyle={{
+          paddingHorizontal: 4, // 👈 left + right gap
+          paddingBottom: 120, // 👈 bottom tab space
+        }}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <Text style={styles.empty}>No bookings found</Text>
-        }
+        ListEmptyComponent={<Text style={styles.empty}>No bookings found</Text>}
       />
 
       {/* 🔴 POPUP MODAL */}
@@ -376,15 +387,19 @@ export default function ShowAllBookings() {
 
 /* 🎨 STYLES */
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 14, backgroundColor: "#fff" },
+  container: {
+    flex: 1,
+    padding: 14,
+    backgroundColor: "#020617",
+  },
 
   search: {
     borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 10,
-    padding: 10,
+    borderColor: "#0b3b6f",
+    borderRadius: 12,
+    padding: 12,
     marginBottom: 10,
-    backgroundColor: "#111827",
+    backgroundColor: "#020617",
     color: "#fff",
   },
 
@@ -396,33 +411,63 @@ const styles = StyleSheet.create({
 
   picker: {
     flex: 1,
-    backgroundColor: "#f3f4f6",
+    borderWidth: 1,
+    borderColor: "#38bdf8",
     borderRadius: 10,
+    color: "#fff",
+    backgroundColor: "#0f172a", // 👈 dark blue card tone
+  },
+
+  cardPicker: {
+    color: "#fff",
+    borderWidth: 3,
+    borderColor: "#38bdf8", // bright blue border
+    borderRadius: 10,
+    marginTop: 6,
   },
 
   card: {
     padding: 14,
-    borderRadius: 14,
-    marginBottom: 10,
+    borderRadius: 16,
+    marginBottom: 12,
     borderWidth: 1,
-
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
+    borderColor: "#0b3b6f",
   },
 
-  bookingId: { fontWeight: "700", fontSize: 16 },
+  bookingId: {
+    fontWeight: "700",
+    fontSize: 16,
+    color: "#fff",
+  },
 
   status: {
     fontSize: 12,
     fontWeight: "600",
   },
 
-  text: { fontSize: 13, marginTop: 2 },
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
 
-  date: { fontSize: 11, color: "#6b7280", marginTop: 4 },
+  statusText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  text: {
+    fontSize: 13,
+    marginTop: 2,
+    color: "#cbd5f5",
+  },
+
+  date: {
+    fontSize: 11,
+    color: "#94a3b8",
+    marginTop: 4,
+  },
 
   rowBetween: {
     flexDirection: "row",
@@ -432,43 +477,45 @@ const styles = StyleSheet.create({
   empty: {
     textAlign: "center",
     marginTop: 40,
-    color: "#9ca3af",
+    color: "#64748b",
   },
 
   modalBg: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.7)",
     justifyContent: "center",
     alignItems: "center",
   },
 
   modalCard: {
-    backgroundColor: "#fff",
+    backgroundColor: "#020617",
     padding: 20,
-    borderRadius: 14,
+    borderRadius: 18,
     width: "85%",
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
 
   modalTitle: {
     fontWeight: "700",
     marginBottom: 10,
-    color: "#111827",
+    color: "#fff",
   },
 
   input: {
     borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 10,
+    borderColor: "#0b3b6f",
+    borderRadius: 12,
     padding: 10,
     marginBottom: 10,
-    color: "#111827",
-    backgroundColor: "#f9fafb",
+    color: "#fff",
+    backgroundColor: "#020617",
   },
 
   saveBtn: {
     backgroundColor: "#2563eb",
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: "center",
     marginBottom: 10,
   },
@@ -476,12 +523,18 @@ const styles = StyleSheet.create({
   cancelBtn: {
     backgroundColor: "#dc2626",
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: "center",
     marginBottom: 10,
   },
 
-  saveText: { color: "#fff", fontWeight: "600" },
+  saveText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
 
-  close: { textAlign: "center", color: "#6b7280" },
+  close: {
+    textAlign: "center",
+    color: "#94a3b8",
+  },
 });
