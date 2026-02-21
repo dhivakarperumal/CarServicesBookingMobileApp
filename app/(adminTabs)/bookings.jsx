@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#0b3b6f",
     borderRadius: 12,
-    padding: 12,
+    padding: 16,
     marginBottom: 10,
     backgroundColor: "#020617",
     color: "#fff",
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
 
   cardPicker: {
     color: "#fff",
-    borderWidth: 3,
+    borderWidth: 1,
     borderColor: "#38bdf8", // bright blue border
     borderRadius: 10,
     marginTop: 6,
