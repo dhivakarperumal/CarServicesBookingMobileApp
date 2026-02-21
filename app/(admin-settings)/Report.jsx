@@ -14,8 +14,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
 import dayjs from "dayjs";
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
 
-/* 🔹 GROUP BY MONTH */
+/* GROUP BY MONTH */
 const groupByMonth = (data, dateKey = "createdAt") => {
   const map = {};
   data.forEach((item) => {
@@ -27,17 +29,6 @@ const groupByMonth = (data, dateKey = "createdAt") => {
   return map;
 };
 
-/* 🔹 STAT CARD */
-const StatCard = ({ title, value, icon }) => (
-  <View style={styles.statCard}>
-    <View>
-      <Text style={styles.statLabel}>{title}</Text>
-      <Text style={styles.statValue}>{value}</Text>
-    </View>
-    <Ionicons name={icon} size={24} color="#2563eb" />
-  </View>
-);
-
 export default function ReportsScreen() {
   const [appointments, setAppointments] = useState([]);
   const [inventory, setInventory] = useState([]);
@@ -47,9 +38,9 @@ export default function ReportsScreen() {
   const [monthFilter, setMonthFilter] = useState("All");
   const [selectedReport, setSelectedReport] = useState(null);
 
-  /* 🔥 FIRESTORE REALTIME */
+  /* FIRESTORE */
   useEffect(() => {
-    const u1 = onSnapshot(collection(db, "appointments"), (s) =>
+    const u1 = onSnapshot(collection(db, "bookings"), (s) =>
       setAppointments(s.docs.map((d) => ({ id: d.id, ...d.data() })))
     );
 
@@ -68,7 +59,7 @@ export default function ReportsScreen() {
     };
   }, []);
 
-  /* 🔹 BUILD REPORTS */
+  /* BUILD REPORTS */
   const reports = useMemo(() => {
     const rows = [];
 
@@ -100,35 +91,63 @@ export default function ReportsScreen() {
     return typeMatch && monthMatch;
   });
 
+  /* 🧾 GENERATE PDF */
+  const generatePDF = async (report) => {
+    const rows = report.items
+      .map((i, idx) => {
+        const date = dayjs(
+          i.createdAt?.toDate() || i.updatedAt?.toDate()
+        ).format("DD MMM YYYY");
+
+        const name =
+          i.customerName ||
+          i.partName ||
+          i.name ||
+          "-";
+
+        const amount = i.grandTotal
+          ? `₹${i.grandTotal}`
+          : i.stockQty
+          ? `Stock: ${i.stockQty}`
+          : "-";
+
+        return `
+          <tr>
+            <td>${idx + 1}</td>
+            <td>${date}</td>
+            <td>${name}</td>
+            <td>${amount}</td>
+          </tr>
+        `;
+      })
+      .join("");
+
+    const html = `
+      <html>
+        <body>
+          <h2>${report.name}</h2>
+          <table border="1" cellspacing="0" cellpadding="5" width="100%">
+            <tr>
+              <th>S No</th>
+              <th>Date</th>
+              <th>Name</th>
+              <th>Amount / Stock</th>
+            </tr>
+            ${rows}
+          </table>
+        </body>
+      </html>
+    `;
+
+    const { uri } = await Print.printToFileAsync({ html });
+
+    await Sharing.shareAsync(uri);
+  };
+
   /* UI */
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#15173D" }}>
-      {/* 🔝 HEADER */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Reports</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
       <ScrollView style={styles.container}>
-        {/* STATS */}
-        <View style={styles.statsRow}>
-          <StatCard
-            title="Appointments"
-            value={appointments.length}
-            icon="calendar-outline"
-          />
-          <StatCard
-            title="Billing"
-            value={billings.length}
-            icon="document-text-outline"
-          />
-          <StatCard
-            title="Inventory"
-            value={inventory.length}
-            icon="cube-outline"
-          />
-        </View>
-
         {/* FILTERS */}
         <View style={styles.row}>
           <Picker
@@ -158,40 +177,40 @@ export default function ReportsScreen() {
           </Picker>
         </View>
 
-        {/* REPORT LIST */}
+        {/* LIST */}
         <FlatList
           data={filteredReports}
           keyExtractor={(item, i) => i.toString()}
-          renderItem={({ item, index }) => (
+          renderItem={({ item }) => (
             <View style={styles.card}>
               <Text style={styles.bold}>{item.name}</Text>
               <Text>{item.type}</Text>
-              <Text>{dayjs(item.month).format("MMM YYYY")}</Text>
 
-              <TouchableOpacity
-                style={styles.viewBtn}
-                onPress={() => setSelectedReport(item)}
-              >
-                <Text style={styles.btnText}>View</Text>
-              </TouchableOpacity>
+              <View style={styles.actions}>
+                <TouchableOpacity
+                  style={styles.viewBtn}
+                  onPress={() => setSelectedReport(item)}
+                >
+                  <Text style={styles.btnText}>View</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.pdfBtn}
+                  onPress={() => generatePDF(item)}
+                >
+                  <Text style={styles.btnText}>PDF</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         />
-
-        {filteredReports.length === 0 && (
-          <Text style={{ textAlign: "center", marginTop: 20 }}>
-            No reports found
-          </Text>
-        )}
       </ScrollView>
 
-      {/* 🔍 MODAL */}
+      {/* MODAL */}
       <Modal visible={!!selectedReport} animationType="slide">
         <SafeAreaView style={{ flex: 1 }}>
           <View style={styles.modalHeader}>
-            <Text style={styles.headerTitle}>
-              {selectedReport?.name}
-            </Text>
+            <Text style={styles.bold}>{selectedReport?.name}</Text>
             <TouchableOpacity onPress={() => setSelectedReport(null)}>
               <Ionicons name="close" size={26} />
             </TouchableOpacity>
@@ -202,7 +221,7 @@ export default function ReportsScreen() {
             keyExtractor={(_, i) => i.toString()}
             renderItem={({ item, index }) => (
               <View style={styles.modalRow}>
-                <Text>{index + 1}.</Text>
+                <Text>{index + 1}</Text>
                 <Text>
                   {dayjs(
                     item.createdAt?.toDate() ||
@@ -223,33 +242,10 @@ export default function ReportsScreen() {
   );
 }
 
-/* 🎨 STYLES */
 const styles = StyleSheet.create({
-  header: {
-    backgroundColor: "#15173D",
-    padding: 16,
-    alignItems: "center",
-  },
-  headerTitle: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-
   container: { flex: 1, backgroundColor: "#f1f5f9", padding: 16 },
 
-  statsRow: { gap: 10, marginBottom: 10 },
-
-  statCard: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-
-  statLabel: { color: "#6b7280" },
-  statValue: { fontWeight: "bold", fontSize: 16 },
-
   row: { flexDirection: "row", gap: 10, marginBottom: 10 },
-
   picker: { flex: 1, backgroundColor: "#fff" },
 
   card: {
@@ -261,14 +257,21 @@ const styles = StyleSheet.create({
 
   bold: { fontWeight: "bold" },
 
+  actions: { flexDirection: "row", gap: 10, marginTop: 8 },
+
   viewBtn: {
     backgroundColor: "#2563eb",
     padding: 8,
     borderRadius: 8,
-    marginTop: 6,
   },
 
-  btnText: { color: "#fff", textAlign: "center" },
+  pdfBtn: {
+    backgroundColor: "#16a34a",
+    padding: 8,
+    borderRadius: 8,
+  },
+
+  btnText: { color: "#fff" },
 
   modalHeader: {
     flexDirection: "row",
@@ -281,6 +284,5 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 12,
     borderBottomWidth: 1,
-    borderColor: "#e5e7eb",
   },
 });

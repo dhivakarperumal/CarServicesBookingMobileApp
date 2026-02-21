@@ -89,7 +89,7 @@ export default function Settings() {
         icon={<Ionicons name="bar-chart-outline" size={22} color="#7c3aed" />}
         title="Reports"
         desc="View sales, service and stock reports."
-        path="/(admin-settings)/reports"
+        path="/(admin-settings)/Report"
       />
 
       <SettingCard
