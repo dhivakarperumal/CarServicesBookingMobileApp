@@ -202,7 +202,7 @@ function AdminHeader({ title = "Admin" }) {
               label="Profile"
               onPress={() => {
                 setMenuVisible(false);
-                router.push("/(admin)/profile");
+                router.push("/(admin-settings)/profile");
               }}
             />
 
