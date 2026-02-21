@@ -291,7 +291,7 @@ export default function AdminTabsLayout() {
         <Tabs.Screen name="bookings" options={{ tabBarIcon: ({ color, size }) => <FontAwesome5 name="clipboard-list" size={size} color={color} /> }} />
         <Tabs.Screen name="services" options={{ tabBarIcon: ({ color, size }) => <MaterialIcons name="miscellaneous-services" size={size} color={color} /> }} />
         <Tabs.Screen name="products" options={{ tabBarIcon: ({ color, size }) => <MaterialIcons name="inventory" size={size} color={color} /> }} />
-        <Tabs.Screen name="settings" options={{ tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} /> }} />
+        <Tabs.Screen name="settings" options={{ tabBarIcon: ({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} /> }} />
       </Tabs>
     </SafeAreaView>
   );
@@ -420,3 +420,5 @@ const styles = StyleSheet.create({
 
   tabLabel: { fontSize: 12, marginBottom: 4 },
 });
+
+
