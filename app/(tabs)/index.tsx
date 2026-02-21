@@ -14,6 +14,18 @@ import {
 } from "react-native";
 import { auth, db } from "../../firebase";
 
+const STATUS_FLOW = [
+    "BOOKED",
+    "CALL_VERIFIED",
+    "APPROVED",
+    "PROCESSING",
+    "WAITING_SPARE",
+    "SERVICE_GOING",
+    "BILL_PENDING",
+    "BILL_COMPLETED",
+    "SERVICE_COMPLETED",
+];
+
 const STATUS_LABELS = {
   BOOKED: "Booked",
   CALL_VERIFIED: "Call Verified",
@@ -310,6 +322,26 @@ function BookingDetailModal({ booking, onClose }) {
               </Text>
             </View>
 
+            {/* Service Tracker */}
+            <View style={styles.trackerSection}>
+              <Text style={styles.sectionTitle}>Service Progress</Text>
+              <View style={styles.trackerContainer}>
+                {STATUS_FLOW.map((status, index) => {
+                  const isCompleted = index <= STATUS_FLOW.indexOf(booking.normalizedStatus || "");
+                  return (
+                    <View key={status} style={styles.stepWrapper}>
+                      <View style={[styles.circle, isCompleted && styles.activeCircle]}>
+                        <Text style={[styles.stepText, isCompleted && styles.activeText]}>
+                          {index + 1}
+                        </Text>
+                      </View>
+                      <Text style={styles.stepLabel}>{status.replace(/_/g, " ")}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+
             {/* Close Button */}
             <TouchableOpacity
               style={styles.closeModalButton}
@@ -524,17 +556,17 @@ const styles = StyleSheet.create({
   statusBadge: {
     backgroundColor: "#0EA5E9",
     paddingHorizontal: 12,
-    paddingVertical: 0,   // 👈 reduced
-    borderRadius: 14,     // 👈 slightly smaller
+    paddingVertical: 0,   
+    borderRadius: 14,     
     justifyContent: "center",
     alignItems: "center",
     minHeight: 10,
-    maxHeight: 20,     // 👈 fixed clean height
+    maxHeight: 20,     
   },
 
   statusText: {
     color: "#fff",
-    fontSize: 12,   // slightly smaller
+    fontSize: 12,   
     fontWeight: "600",
   },
 
@@ -631,5 +663,67 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
     fontSize: 16,
+  },
+
+  /* Tracker Styles */
+  trackerSection: {
+    marginTop: 24,
+    marginBottom: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(14, 165, 233, 0.1)",
+  },
+
+  sectionTitle: {
+    color: "#38bdf8",
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 16,
+  },
+
+  trackerContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingVertical: 16,
+  },
+
+  stepWrapper: {
+    alignItems: "center",
+    width: "48%",
+    marginBottom: 24,
+  },
+
+  circle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: "#4b5563",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  activeCircle: {
+    backgroundColor: "#38bdf8",
+    borderColor: "#38bdf8",
+  },
+
+  stepText: {
+    color: "#9ca3af",
+    fontWeight: "700",
+    fontSize: 18,
+  },
+
+  activeText: {
+    color: "#000",
+  },
+
+  stepLabel: {
+    marginTop: 8,
+    fontSize: 11,
+    textAlign: "center",
+    color: "#d1d5db",
+    width: 110,
   },
 });
