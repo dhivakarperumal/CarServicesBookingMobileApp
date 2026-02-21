@@ -1,18 +1,111 @@
-import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import { useRouter } from "expo-router";
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
 import {
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
+import { auth, db } from "../../firebase";
+
+const STATUS_LABELS = {
+  BOOKED: "Booked",
+  CALL_VERIFIED: "Call Verified",
+  APPROVED: "Approved",
+  PROCESSING: "Processing",
+  WAITING_SPARE: "Waiting for Spare",
+  SERVICE_GOING: "Service Going On",
+  BILL_PENDING: "Bill Pending",
+  BILL_COMPLETED: "Bill Completed",
+  SERVICE_COMPLETED: "Service Completed",
+  CANCELLED: "Cancelled",
+};
+
+const STATUS_NORMALIZER = {
+  Booked: "BOOKED",
+  "Call Verified": "CALL_VERIFIED",
+  Approved: "APPROVED",
+  Processing: "PROCESSING",
+  "Waiting for Spare": "WAITING_SPARE",
+  "Service Going on": "SERVICE_GOING",
+  "Bill Pending": "BILL_PENDING",
+  "Bill Completed": "BILL_COMPLETED",
+  "Service Completed": "SERVICE_COMPLETED",
+  Cancelled: "CANCELLED",
+};
 
 export default function HomeScreen({ navigation }) {
+  const router = useRouter();
+  const [services, setServices] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [activeBooking, setActiveBooking] = useState(null);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch current user
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  // Fetch services
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "services"), (snap) => {
+      const data = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setServices(data);
+    });
+
+    return () => unsub();
+  }, []);
+
+  // Fetch active bookings
+  useEffect(() => {
+    if (!user) return;
+
+    const q = query(
+      collection(db, "bookings"),
+      where("uid", "==", user.uid),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((doc) => {
+        const raw = doc.data();
+        return {
+          id: doc.id,
+          ...raw,
+          normalizedStatus: STATUS_NORMALIZER[raw.status] || raw.status,
+        };
+      });
+
+      // Filter: only show active bookings (not completed or cancelled)
+      const active = data.find(
+        (b) =>
+          b.normalizedStatus !== "SERVICE_COMPLETED" &&
+          b.normalizedStatus !== "CANCELLED"
+      );
+
+      setActiveBooking(active || null);
+    });
+
+    return () => unsub();
+  }, [user]);
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      
+
       {/* HEADER */}
       <View style={styles.header}>
         <View>
@@ -24,7 +117,7 @@ export default function HomeScreen({ navigation }) {
           <Ionicons name="notifications-outline" size={22} color="#0EA5E9" />
         </TouchableOpacity>
       </View>
-      
+
 
       <View style={styles.contentWrapper}>
         {/* QUICK STATS */}
@@ -33,7 +126,7 @@ export default function HomeScreen({ navigation }) {
             colors={["#06b6d4", "#0891b2"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-           style={styles.gradientCard}
+            style={styles.gradientCard}
           >
             <View style={styles.statRow}>
               <View>
@@ -50,7 +143,7 @@ export default function HomeScreen({ navigation }) {
             colors={["#10b981", "#059669"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-           style={styles.gradientCard}
+            style={styles.gradientCard}
           >
             <View style={styles.statRow}>
               <View>
@@ -64,62 +157,67 @@ export default function HomeScreen({ navigation }) {
           </LinearGradient>
         </View>
 
-      {/* SERVICES */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Services</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Services")}>
-          <Text style={styles.linkText}>View All →</Text>
+        {/* SERVICES */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Services</Text>
+          <TouchableOpacity onPress={() => router.push("/(tabs)/services")}>
+            <Text style={styles.linkText}>View All →</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.servicesGrid}>
+          {services.map((service) => (
+            <ServiceCard
+              key={service.id}
+              icon={<FontAwesome5 name="car" size={24} color="#0EA5E9" />}
+              title={service.name}
+            />
+          ))}
+        </View>
+
+        {/* ACTIVE BOOKING */}
+        {activeBooking && (
+          <>
+            <Text style={styles.sectionTitle}>Active Booking</Text>
+
+            <TouchableOpacity
+              style={styles.bookingCard}
+              onPress={() => setSelectedBooking(activeBooking)}
+            >
+              <View style={styles.bookingTop}>
+                <View>
+                  <Text style={styles.carName}>{activeBooking.brand} - {activeBooking.model}</Text>
+                  <Text style={styles.serviceName}>{activeBooking.issue}</Text>
+                </View>
+                <View style={styles.statusBadge}>
+                  <Text style={styles.statusText}>{STATUS_LABELS[activeBooking.normalizedStatus]}</Text>
+                </View>
+              </View>
+
+              <View style={styles.bookingFooter}>
+                <Text style={styles.smallText}>ID: {activeBooking.bookingId}</Text>
+                <Text style={styles.smallText}>{activeBooking.name}</Text>
+              </View>
+            </TouchableOpacity>
+
+            {selectedBooking && (
+              <BookingDetailModal
+                booking={selectedBooking}
+                onClose={() => setSelectedBooking(null)}
+              />
+            )}
+          </>
+        )}
+
+        {/* BOOK BUTTON */}
+        <TouchableOpacity
+          style={styles.bookButton}
+          onPress={() => router.push("/(tabs)/booking")}
+        >
+          <Ionicons name="add-circle-outline" size={20} color="#fff" />
+          <Text style={styles.bookButtonText}>Book New Service</Text>
         </TouchableOpacity>
       </View>
-
-      <View style={styles.servicesGrid}>
-        <ServiceCard
-          icon={<FontAwesome5 name="car" size={24} color="#0EA5E9" />}
-          title="General Service"
-        />
-        <ServiceCard
-          icon={<MaterialIcons name="oil-barrel" size={24} color="#0EA5E9" />}
-          title="Oil Change"
-        />
-        <ServiceCard
-          icon={<Ionicons name="snow-outline" size={24} color="#0EA5E9" />}
-          title="AC Service"
-        />
-        <ServiceCard
-          icon={<FontAwesome5 name="car-side" size={24} color="#0EA5E9" />}
-          title="Full Service"
-        />
-      </View>
-
-      {/* ACTIVE BOOKING */}
-      <Text style={styles.sectionTitle}>Active Booking</Text>
-
-      <View style={styles.bookingCard}>
-        <View style={styles.bookingTop}>
-          <View>
-            <Text style={styles.carName}>Swift - TN 00 AB 1234</Text>
-            <Text style={styles.serviceName}>General Service</Text>
-          </View>
-          <View style={styles.statusBadge}>
-            <Text style={styles.statusText}>Pending</Text>
-          </View>
-        </View>
-
-        <View style={styles.bookingFooter}>
-          <Text style={styles.smallText}>Est. Time: 2 hours</Text>
-          <Text style={styles.smallText}>₹ 1,500</Text>
-        </View>
-      </View>
-
-      {/* BOOK BUTTON */}
-      <TouchableOpacity
-        style={styles.bookButton}
-        onPress={() => navigation.navigate("Booking")}
-      >
-        <Ionicons name="add-circle-outline" size={20} color="#fff" />
-        <Text style={styles.bookButtonText}>Book New Service</Text>
-      </TouchableOpacity>
-    </View>
     </ScrollView>
   );
 }
@@ -135,65 +233,156 @@ function ServiceCard({ icon, title }) {
   );
 }
 
+/* ================= BOOKING DETAIL MODAL ================= */
+
+function BookingDetailModal({ booking, onClose }) {
+  return (
+    <Modal visible transparent animationType="slide">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalCard}>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {/* Close Button */}
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+            >
+              <Text style={{ color: "#fff", fontSize: 18 }}>✕</Text>
+            </TouchableOpacity>
+
+            {/* Title */}
+            <Text style={styles.modalTitle}>
+              Booking Details
+            </Text>
+
+            {/* Booking ID */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Booking ID</Text>
+              <Text style={styles.detailValue}>{booking.bookingId}</Text>
+            </View>
+
+            {/* Name */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Name</Text>
+              <Text style={styles.detailValue}>{booking.name}</Text>
+            </View>
+
+            {/* Phone */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Phone</Text>
+              <Text style={styles.detailValue}>{booking.phone}</Text>
+            </View>
+
+            {/* Car Brand */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Car Brand</Text>
+              <Text style={styles.detailValue}>{booking.brand}</Text>
+            </View>
+
+            {/* Car Model */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Car Model</Text>
+              <Text style={styles.detailValue}>{booking.model}</Text>
+            </View>
+
+            {/* Issue */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Issue</Text>
+              <Text style={styles.detailValue}>{booking.issue}</Text>
+            </View>
+
+            {/* Location */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Location</Text>
+              <Text style={styles.detailValue}>{booking.location}</Text>
+            </View>
+
+            {/* Address */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Service Address</Text>
+              <Text style={styles.detailValue}>{booking.address}</Text>
+            </View>
+
+            {/* Status */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Status</Text>
+              <Text style={[styles.detailValue, { color: "#0ea5e9" }]}>
+                {STATUS_LABELS[booking.normalizedStatus] || booking.status}
+              </Text>
+            </View>
+
+            {/* Close Button */}
+            <TouchableOpacity
+              style={styles.closeModalButton}
+              onPress={onClose}
+            >
+              <Text style={styles.closeModalButtonText}>Close</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 /* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
 
   contentWrapper: {
-  paddingHorizontal: 16,
-  paddingVertical: 24,
-},
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+  },
 
-statsContainer: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  marginBottom: 32,
-},
+  statsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 32,
+  },
 
-gradientCard: {
-  flex: 1,
-  padding: 20,
-  borderRadius: 16,
-  marginRight: 10,
-},
+  gradientCard: {
+    flex: 1,
+    padding: 20,
+    borderRadius: 16,
+    marginRight: 10,
+  },
 
-statRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-},
+  statRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
 
-statLabelWhite: {
-  color: "#FFFFFF",
-  fontSize: 12,
-  fontWeight: "500",
-  marginBottom: 4,
-},
+  statLabelWhite: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "500",
+    marginBottom: 4,
+  },
 
-statLabelGreen: {
-  color: "#D1FAE5",
-  fontSize: 12,
-  fontWeight: "500",
-  marginBottom: 4,
-},
+  statLabelGreen: {
+    color: "#D1FAE5",
+    fontSize: 12,
+    fontWeight: "500",
+    marginBottom: 4,
+  },
 
-statNumberWhite: {
-  color: "#FFFFFF",
-  fontSize: 28,
-  fontWeight: "700",
-},
+  statNumberWhite: {
+    color: "#FFFFFF",
+    fontSize: 28,
+    fontWeight: "700",
+  },
 
-iconWrapperDark: {
-  backgroundColor: "rgba(0,0,0,0.2)",
-  padding: 12,
-  borderRadius: 50,
-},
+  iconWrapperDark: {
+    backgroundColor: "rgba(0,0,0,0.2)",
+    padding: 12,
+    borderRadius: 50,
+  },
 
-iconWrapperLight: {
-  backgroundColor: "rgba(255,255,255,0.2)",
-  padding: 12,
-  borderRadius: 50,
-},
+  iconWrapperLight: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    padding: 12,
+    borderRadius: 50,
+  },
   container: {
     flex: 1,
     backgroundColor: "#0B1120",
@@ -264,6 +453,8 @@ iconWrapperLight: {
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "700",
+    marginBottom: 12,
+    marginTop: 4,
   },
 
   linkText: {
@@ -283,8 +474,10 @@ iconWrapperLight: {
     width: "48%",
     backgroundColor: "#111827",
     borderRadius: 16,
-    paddingVertical: 20,
+    paddingVertical: 24,
+    paddingHorizontal: 10,
     alignItems: "center",
+    justifyContent: "center",
     marginBottom: 15,
   },
 
@@ -299,13 +492,15 @@ iconWrapperLight: {
     color: "#FFFFFF",
     fontSize: 13,
     fontWeight: "600",
+    textAlign: "center",
+    width: "100%",
   },
 
   bookingCard: {
     backgroundColor: "#111827",
     borderRadius: 16,
     padding: 18,
-    marginBottom: 30,
+    marginBottom: 16,
   },
 
   bookingTop: {
@@ -328,14 +523,18 @@ iconWrapperLight: {
 
   statusBadge: {
     backgroundColor: "#0EA5E9",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 0,   // 👈 reduced
+    borderRadius: 14,     // 👈 slightly smaller
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: 10,
+    maxHeight: 20,     // 👈 fixed clean height
   },
 
   statusText: {
     color: "#fff",
-    fontSize: 11,
+    fontSize: 12,   // slightly smaller
     fontWeight: "600",
   },
 
@@ -364,5 +563,73 @@ iconWrapperLight: {
     fontWeight: "700",
     marginLeft: 8,
     fontSize: 15,
+  },
+
+  /* Modal Styles */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+
+  modalCard: {
+    width: "100%",
+    maxHeight: "85%",
+    backgroundColor: "#0f172a",
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#0ea5e9",
+  },
+
+  closeButton: {
+    alignSelf: "flex-end",
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+  },
+
+  modalTitle: {
+    color: "#38bdf8",
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 20,
+    marginTop: -8,
+  },
+
+  detailSection: {
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(14, 165, 233, 0.1)",
+  },
+
+  detailLabel: {
+    color: "#94a3b8",
+    fontSize: 12,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+
+  detailValue: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+
+  closeModalButton: {
+    backgroundColor: "#ef4444",
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 10,
+  },
+
+  closeModalButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
   },
 });
