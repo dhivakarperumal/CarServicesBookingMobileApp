@@ -72,17 +72,12 @@ export default function Products() {
           <Text style={styles.rating}>⭐ {item.rating}</Text>
         </View>
 
-
-
-
         {/* <Text style={styles.discount}>{item.offer}% OFF</Text> */}
 
         {/* STOCK */}
         {/* <Text style={[styles.stock, inStock ? styles.inStock : styles.outStock]}>
           {inStock ? "In Stock" : "Out of Stock"}
         </Text> */}
-
-
 
         <TouchableOpacity
           style={styles.button}
