@@ -115,7 +115,7 @@ export default function PriceList() {
             <View style={styles.actions}>
               <TouchableOpacity
                 onPress={() =>
-                  router.push(`/(admin-settings)/addprice?id=${item.id}`)
+                  router.push(`/(admin-settings)/addPrice?id=${item.id}`)
                 }
                 style={styles.iconBtn}
               >
@@ -136,7 +136,7 @@ export default function PriceList() {
 
       {/* 🔹 FAB */}
       <TouchableOpacity
-        onPress={() => router.push("/(admin-settings)/addprice")}
+        onPress={() => router.push("/(admin-settings)/addPrice")}
         style={styles.fab}
         activeOpacity={0.85}
       >
