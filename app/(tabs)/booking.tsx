@@ -1,21 +1,21 @@
 import { Picker } from "@react-native-picker/picker";
 import {
-  addDoc,
-  collection,
-  doc,
-  runTransaction,
-  serverTimestamp,
+    addDoc,
+    collection,
+    doc,
+    runTransaction,
+    serverTimestamp,
 } from "firebase/firestore";
 import { useState } from "react";
 import {
-  Alert,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  StyleSheet,
-  ActivityIndicator,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { db } from "../../firebase";
 
