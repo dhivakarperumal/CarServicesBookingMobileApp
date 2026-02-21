@@ -1,4 +1,5 @@
 import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import {
   ScrollView,
@@ -23,6 +24,7 @@ export default function HomeScreen({ navigation }) {
           <Ionicons name="notifications-outline" size={22} color="#0EA5E9" />
         </TouchableOpacity>
       </View>
+      
 
       <View className="px-4 py-6">
         {/* QUICK STATS */}
@@ -117,6 +119,7 @@ export default function HomeScreen({ navigation }) {
         <Ionicons name="add-circle-outline" size={20} color="#fff" />
         <Text style={styles.bookButtonText}>Book New Service</Text>
       </TouchableOpacity>
+    </View>
     </ScrollView>
   );
 }
