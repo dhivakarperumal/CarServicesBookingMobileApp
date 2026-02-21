@@ -1,20 +1,19 @@
+import { Feather, Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   Image,
   Modal,
   Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons, Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { auth } from "../firebase";
-import { signOut, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 
 export default function MobileNavbar() {
   const router = useRouter();
@@ -124,7 +123,7 @@ export default function MobileNavbar() {
               style={styles.menuItem}
               onPress={() => {
                 setAvatarMenuOpen(false);
-                router.push("/admin");
+                router.push("/(adminTabs)/home");
               }}
             >
               <Text style={[styles.menuText, { color: "#FACC15" }]}>

@@ -51,7 +51,7 @@ export default function LoginScreen() {
 
       const role = userSnap.data().role?.toLowerCase();
 
-      if (role === "admin") router.replace("/(adminTabs)/dashboard");
+      if (role === "admin") router.replace("/(adminTabs)/home");
       else if (role === "driver") router.replace("/(driverTabs)/home");
       else router.replace("/(tabs)/home");
     } catch (error) {
