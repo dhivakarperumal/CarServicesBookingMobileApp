@@ -478,39 +478,43 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 12,
     paddingTop: 12,
-    // backgroundColor: "#0f172a",
+    backgroundColor: "#020617",
   },
 
   loader: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0f172a",
+    backgroundColor: "#020617",
   },
 
   search: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#0f172a",
     color: "#fff",
     padding: 12,
     borderRadius: 12,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
 
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#0f172a",
     borderRadius: 16,
     marginBottom: 14,
-    width: "48%", // ✅ REQUIRED FOR 2 COLUMN
+    width: "48%",
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
 
   image: {
     width: "100%",
-    height: 120, // ✅ SMALLER FOR GRID
+    height: 120,
   },
 
   cardBody: {
@@ -520,19 +524,19 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#111827",
+    color: "#fff",
   },
 
   price: {
     fontSize: 14,
-    fontWeight: "bold",
-    color: "#000",
+    fontWeight: "700",
+    color: "#38bdf8",
     marginTop: 2,
   },
 
   stock: {
     fontSize: 11,
-    color: "#6b7280",
+    color: "#94a3b8",
     marginTop: 2,
   },
 
@@ -545,7 +549,7 @@ const styles = StyleSheet.create({
 
   rating: {
     fontSize: 12,
-    color: "#374151",
+    color: "#cbd5f5",
   },
 
   status: {
@@ -555,16 +559,17 @@ const styles = StyleSheet.create({
   },
 
   active: {
-    backgroundColor: "#dcfce7",
+    backgroundColor: "#064e3b",
   },
 
   inactive: {
-    backgroundColor: "#fee2e2",
+    backgroundColor: "#450a0a",
   },
 
   statusText: {
     fontSize: 10,
-    fontWeight: "600",
+    fontWeight: "700",
+    color: "#fff",
   },
 
   actions: {
@@ -580,7 +585,7 @@ const styles = StyleSheet.create({
 
   empty: {
     textAlign: "center",
-    color: "#9ca3af",
+    color: "#64748b",
     marginTop: 40,
   },
 
@@ -588,12 +593,15 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 90,
     right: 20,
-    backgroundColor: "#000",
+    backgroundColor: "#2563eb",
     width: 56,
     height: 56,
     borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
-    elevation: 6,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 8,
   },
 });
