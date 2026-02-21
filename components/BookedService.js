@@ -2,12 +2,12 @@ import { onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { auth, db } from "../firebase";
 
@@ -70,7 +70,8 @@ export default function BookedService() {
           return {
             id: doc.id,
             ...raw,
-            normalizedStatus: STATUS_NORMALIZER[raw.status] || raw.status,
+            normalizedStatus:
+              STATUS_NORMALIZER[raw.status] || raw.status,
           };
         });
 
@@ -88,23 +89,11 @@ export default function BookedService() {
   const getStatusStyle = (status) => {
     switch (status) {
       case "APPROVED":
-        return {
-          backgroundColor: "#082f49",
-          borderColor: "#0ea5e9",
-          textColor: "#38bdf8",
-        };
+        return { backgroundColor: "#082f49", textColor: "#38bdf8" };
       case "CANCELLED":
-        return {
-          backgroundColor: "#3f1d1d",
-          borderColor: "#ef4444",
-          textColor: "#f87171",
-        };
+        return { backgroundColor: "#3f1d1d", textColor: "#f87171" };
       default:
-        return {
-          backgroundColor: "#3f3f1d",
-          borderColor: "#eab308",
-          textColor: "#facc15",
-        };
+        return { backgroundColor: "#3f3f1d", textColor: "#facc15" };
     }
   };
 
@@ -119,54 +108,52 @@ export default function BookedService() {
   if (!bookings.length) {
     return (
       <View style={styles.center}>
-        <Text style={{ color: "#9ca3af" }}>No bookings found</Text>
+        <Text style={styles.emptyText}>No bookings found</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.outerCard}>
-        <Text style={styles.title}>My Service Bookings</Text>
+      <Text style={styles.title}>My Service Bookings</Text>
 
-        <FlatList
-          data={bookings}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          renderItem={({ item }) => {
-            const statusStyle = getStatusStyle(item.normalizedStatus);
+      <FlatList
+        data={bookings}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        renderItem={({ item }) => {
+          const statusStyle = getStatusStyle(item.normalizedStatus);
 
-            return (
-              <TouchableOpacity style={styles.bookingCard}>
-                <View>
-                  <Text style={styles.bookingId}>{item.bookingId}</Text>
+          return (
+            <TouchableOpacity style={styles.bookingRow}>
+              <View>
+                <Text style={styles.bookingId}>
+                  {item.bookingId}
+                </Text>
+                <Text style={styles.subText}>
+                  {item.name} • {item.phone}
+                </Text>
+              </View>
 
-                  <Text style={styles.subText}>{item.name} • {item.phone}</Text>
-                </View>
-
-                <View
+              <View
+                style={[
+                  styles.statusBadge,
+                  { backgroundColor: statusStyle.backgroundColor },
+                ]}
+              >
+                <Text
                   style={[
-                    styles.statusBadge,
-                    {
-                      backgroundColor: statusStyle.backgroundColor,
-                      borderColor: statusStyle.borderColor,
-                    },
+                    styles.statusText,
+                    { color: statusStyle.textColor },
                   ]}
                 >
-                  <Text
-                    style={{
-                      color: statusStyle.textColor,
-                      fontWeight: "600",
-                    }}
-                  >
-                    {STATUS_LABELS[item.normalizedStatus]}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            );
-          }}
-        />
-      </View>
+                  {STATUS_LABELS[item.normalizedStatus]}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          );
+        }}
+      />
     </View>
   );
 }
@@ -174,52 +161,72 @@ export default function BookedService() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
-    padding: 16,
+    backgroundColor: "#0B1120",
+    paddingHorizontal: 16,
     paddingTop: 20,
   },
-  outerCard: {
-    backgroundColor: "#0f172a",
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: "#0ea5e9",
-  },
+
   title: {
     fontSize: 22,
     fontWeight: "700",
     color: "#38bdf8",
     marginBottom: 20,
   },
-  bookingCard: {
-    backgroundColor: "#020617",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#0ea5e9",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
+
+bookingRow: {
+  backgroundColor: "#111827",
+  paddingVertical: 18,
+  paddingHorizontal: 16,
+  borderRadius: 16,
+  marginBottom: 16,
+
+  // Sky blue border
+  borderWidth: 1,
+  borderColor: "#0ea5e9",
+
+  // Soft shadow
+  shadowColor: "#0ea5e9",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.2,
+  shadowRadius: 6,
+  elevation: 3,
+
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
   bookingId: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 16,
     fontWeight: "600",
   },
+
   subText: {
     color: "#9ca3af",
     marginTop: 6,
+    fontSize: 13,
   },
+
   statusBadge: {
-    paddingHorizontal: 18,
+    paddingHorizontal: 14,
     paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: 1,
+    borderRadius: 20,
   },
+
+  statusText: {
+    fontWeight: "600",
+    fontSize: 12,
+  },
+
+  emptyText: {
+    color: "#9ca3af",
+    fontSize: 14,
+  },
+
   center: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: "#0B1120",
     justifyContent: "center",
     alignItems: "center",
   },

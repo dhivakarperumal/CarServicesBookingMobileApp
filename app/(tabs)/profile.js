@@ -30,7 +30,6 @@ export default function AccountScreen() {
 
   const goToAdminDashboard = () => {
     router.push("/(adminTabs)/home"); 
-    // 👆 change path if your folder name is different
   };
 
   if (loading) {
@@ -148,11 +147,9 @@ export default function AccountScreen() {
       </ScrollView>
 
       {/* ===== CONTENT CARD ===== */}
-      <View style={styles.contentWrapper}>
-        <View style={styles.contentCard}>
-          {renderContent()}
-        </View>
-      </View>
+      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 20 }}>
+  {renderContent()}
+</View>
     </View>
   );
 }
@@ -161,7 +158,7 @@ export default function AccountScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: "#0B1120",
   },
   center: {
     flex: 1,
@@ -198,22 +195,6 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: "#000",
-  },
-
-  /* Content */
-  contentWrapper: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 20,
-  },
-  contentCard: {
-    flex: 1,
-    backgroundColor: "#0f172a",
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: "#0ea5e9",
   },
 
   /* Personal Tab */
