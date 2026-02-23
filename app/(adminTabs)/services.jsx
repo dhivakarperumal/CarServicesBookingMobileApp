@@ -593,7 +593,7 @@ export default function Services() {
               {/* ASSIGNED NAME */}
               {item.assignedEmployeeName && (
                 <Text style={{ color: "#22c55e", marginTop: 4 }}>
-                  👨‍🔧 {item.assignedEmployeeName}
+                   👨‍🔧 {item.assignedEmployeeName}
                 </Text>
               )}
 
