@@ -18,6 +18,7 @@ import {
   View,
 } from "react-native";
 import { auth, db } from "../../firebase";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const BOOKING_STATUS = {
   BOOKED: "Booked",
@@ -120,7 +121,14 @@ export default function BookingScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <KeyboardAwareScrollView
+      style={{ flex: 1, backgroundColor: "#0B1120" }}
+      contentContainerStyle={{ padding: 20 }}
+      enableOnAndroid={true}
+      extraScrollHeight={20}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={styles.title}>Book Service</Text>
 
       <Input label="Full Name" value={formData.name} onChange={(v) => handleChange("name", v)} />
@@ -181,7 +189,7 @@ export default function BookingScreen() {
           <Text style={styles.buttonText}>Book Service</Text>
         )}
       </TouchableOpacity>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 

@@ -25,6 +25,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { reduceStockAfterPurchase } from "./utils/reduceStockAfterPurchase";
 import { saveUserAddress } from "./utils/saveUserAddress";
 import RazorpayCheckout from "react-native-razorpay";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 // ================= ORDER COUNTER =================
 const generateOrderNumber = async () => {
@@ -200,11 +201,14 @@ export default function Checkout() {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
-            <ScrollView
-                style={{ flex: 1 }}
-                contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
-                showsVerticalScrollIndicator={false}
-            >
+           <KeyboardAwareScrollView
+  style={{ flex: 1 }}
+  contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+  enableOnAndroid={true}
+  extraScrollHeight={20}
+  keyboardShouldPersistTaps="handled"
+  showsVerticalScrollIndicator={false}
+>
                 <Text style={styles.heading}>Checkout</Text>
 
                 {/* SHIPPING */}
@@ -321,7 +325,7 @@ export default function Checkout() {
                         <Text style={styles.btnText}>PLACE ORDER</Text>
                     )}
                 </TouchableOpacity>
-            </ScrollView>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 }
