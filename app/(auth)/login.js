@@ -125,14 +125,6 @@ export default function LoginScreen() {
         )}
       </TouchableOpacity>
 
-      {/* Continue Without Login */}
-      {/* <TouchableOpacity
-        style={styles.guestButton}
-        onPress={() => router.replace("/(tabs)")}
-      >
-        <Text style={styles.guestText}>Continue Without Login</Text>
-      </TouchableOpacity> */}
-
       {/* Register */}
       <Text
         onPress={() => router.push("/(auth)/register")}
@@ -213,19 +205,5 @@ const styles = StyleSheet.create({
     color: "#94A3B8",
     marginTop: 24,
     fontSize: 14,
-  },
-  guestButton: {
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: "#334155",
-    paddingVertical: 14,
-    borderRadius: 16,
-    alignItems: "center",
-  },
-
-  guestText: {
-    color: "#CBD5E1",
-    fontSize: 14,
-    fontWeight: "500",
   },
 });

@@ -4,7 +4,7 @@
     "slug": "carservicesbooking",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo_no_bg.png",
+    "icon": "./assets/images/splash.png",
     "scheme": "carservicesbooking",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -24,22 +24,19 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/logo_no_bg.png"
+      "favicon": "./assets/images/splash.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo_no_bg.png",
-          "imageWidth": 200,
+          "image": "./assets/images/splash.png",
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          }
+          "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
