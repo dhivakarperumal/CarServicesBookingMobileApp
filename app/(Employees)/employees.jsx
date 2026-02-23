@@ -93,48 +93,52 @@ export default function StaffsScreen() {
   );
 
   const renderItem = ({ item, index }) => (
-    <View style={styles.staffCard}>
-      <Text style={styles.name}>
-        {index + 1}. {item.name}
-      </Text>
-      <Text style={styles.sub}>{item.email}</Text>
-      <Text style={styles.sub}>{item.phone}</Text>
+  <View style={styles.staffCard}>
 
-      <View style={styles.rowWrap}>
-        <Text style={styles.badge}>{item.role}</Text>
-        <Text style={styles.badge}>{item.department}</Text>
-        <Text
-          style={[
-            styles.status,
-            item.status === "active" ? styles.active : styles.inactive,
-          ]}
-        >
-          {item.status}
-        </Text>
-      </View>
-
-      <View style={styles.actions}>
-        <TouchableOpacity
-          onPress={() =>
-            router.push({
-              pathname: "/addstaff",
-              params: { id: item.id },
-            })
-          }
-          style={styles.actionBtn}
-        >
-          <MaterialCommunityIcons name="pencil" size={18} color="#38bdf8" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => handleDelete(item.id)}
-          style={styles.actionBtn}
-        >
-          <MaterialCommunityIcons name="delete" size={18} color="#ef4444" />
-        </TouchableOpacity>
-      </View>
+    {/* STATUS BADGE (TOP RIGHT) */}
+    <View
+      style={[
+        styles.statusCorner,
+        item.status === "active" ? styles.active : styles.inactive,
+      ]}
+    >
+      <Text style={styles.statusText}>{item.status}</Text>
     </View>
-  );
+
+    <Text style={styles.name}>
+      {index + 1}. {item.name}
+    </Text>
+
+    <Text style={styles.sub}>{item.email}</Text>
+    <Text style={styles.sub}>{item.phone}</Text>
+
+    <View style={styles.rowWrap}>
+      <Text style={styles.badge}>{item.role}</Text>
+      <Text style={styles.badge}>{item.department}</Text>
+    </View>
+
+    <View style={styles.actions}>
+      <TouchableOpacity
+        onPress={() =>
+          router.push({
+            pathname: "/addstaff",
+            params: { id: item.id },
+          })
+        }
+        style={styles.actionBtn}
+      >
+        <MaterialCommunityIcons name="pencil" size={18} color="#38bdf8" />
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => handleDelete(item.id)}
+        style={styles.actionBtn}
+      >
+        <MaterialCommunityIcons name="delete" size={18} color="#ef4444" />
+      </TouchableOpacity>
+    </View>
+  </View>
+);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
@@ -280,6 +284,22 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
+  statusCorner: {
+  position: "absolute",
+  top: 12,
+  right: 12,
+  paddingHorizontal: 10,
+  paddingVertical: 4,
+  borderRadius: 12,
+  zIndex: 10,
+},
+
+statusText: {
+  color: "#fff",
+  fontSize: 11,
+  fontWeight: "700",
+},
+
   stats: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
 
   card: {
@@ -344,6 +364,7 @@ const styles = StyleSheet.create({
     shadowColor: "#38bdf8",
     shadowOpacity: 0.12,
     shadowRadius: 8,
+    paddingTop: 28 , 
   },
 
   name: { fontWeight: "700", fontSize: 15, color: "#fff" },
