@@ -1,24 +1,23 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
-  collection,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  updateDoc,
+    collection,
+    deleteDoc,
+    doc,
+    onSnapshot,
+    updateDoc,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { auth, db } from "../firebase";
+import { auth, db } from "../../firebase";
 
 export default function Cart() {
   const [items, setItems] = useState<any[]>([]);
@@ -116,7 +115,6 @@ export default function Cart() {
   );
 
   return (
-     <SafeAreaView style={{ flex: 1, backgroundColor: "#0B1120" }}>
     <View style={styles.container}>
       {items.length === 0 ? (
         <View style={styles.center}>
@@ -160,7 +158,7 @@ export default function Cart() {
 
             <TouchableOpacity
               style={styles.checkoutBtn}
-              onPress={() => router.push("/checkout")}
+              onPress={() => router.push("/(app)/checkout")}
             >
               <Text style={styles.checkoutText}>
                 Proceed To Checkout
@@ -170,7 +168,6 @@ export default function Cart() {
         </>
       )}
     </View>
-    </SafeAreaView>
   );
 }
 

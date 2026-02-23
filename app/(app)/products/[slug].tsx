@@ -1,29 +1,28 @@
-import React, { useEffect, useState } from "react";
-import {
-    View,
-    Text,
-    Image,
-    ScrollView,
-    TouchableOpacity,
-    StyleSheet,
-    ActivityIndicator,
-    Alert,
-} from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-    doc,
-    setDoc,
-    getDoc,
-    updateDoc,
     collection,
+    doc,
+    getDoc,
     getDocs,
     query,
-    where,
     serverTimestamp,
+    setDoc,
+    updateDoc,
+    where,
 } from "firebase/firestore";
-import { auth, db } from "../../firebase";
-import { Picker } from "@react-native-picker/picker";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React, { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { auth, db } from "../../../firebase";
 
 export default function ProductDetails() {
     const { slug } = useLocalSearchParams();
@@ -106,11 +105,11 @@ export default function ProductDetails() {
             });
         }
 
-        router.push("/cart");
+        router.push("/(app)/cart");
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+        <View style={{ flex: 1, backgroundColor: "#000" }}>
             <ScrollView
                 style={{ flex: 1 }}
                 contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
@@ -209,13 +208,13 @@ export default function ProductDetails() {
 
                 <TouchableOpacity
                     style={styles.buyBtn}
-                    onPress={() => router.push("/checkout")}
+                    onPress={() => router.push("/(app)/checkout")}
                 >
                     <Text style={styles.buyText}>Buy Now</Text>
                 </TouchableOpacity>
 
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 

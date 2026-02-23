@@ -1,31 +1,29 @@
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { onAuthStateChanged } from "firebase/auth";
+import {
+    collection,
+    deleteDoc,
+    doc,
+    getDocs,
+    runTransaction,
+    setDoc,
+    Timestamp,
+} from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
-    View,
+    ActivityIndicator,
+    Alert,
+    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    ScrollView,
-    StyleSheet,
-    Alert,
-    ActivityIndicator,
+    View
 } from "react-native";
-import {
-    collection,
-    getDocs,
-    doc,
-    setDoc,
-    deleteDoc,
-    Timestamp,
-    runTransaction,
-} from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth, db } from "../firebase";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { reduceStockAfterPurchase } from "./utils/reduceStockAfterPurchase";
-import { saveUserAddress } from "./utils/saveUserAddress";
-import RazorpayCheckout from "react-native-razorpay";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import RazorpayCheckout from "react-native-razorpay";
+import { auth, db } from "../../firebase";
+import { reduceStockAfterPurchase } from "../utils/reduceStockAfterPurchase";
+import { saveUserAddress } from "../utils/saveUserAddress";
 
 // ================= ORDER COUNTER =================
 const generateOrderNumber = async () => {
@@ -200,7 +198,7 @@ export default function Checkout() {
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+        <View style={{ flex: 1, backgroundColor: "#000" }}>
            <KeyboardAwareScrollView
   style={{ flex: 1 }}
   contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
@@ -326,7 +324,7 @@ export default function Checkout() {
                     )}
                 </TouchableOpacity>
             </KeyboardAwareScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 

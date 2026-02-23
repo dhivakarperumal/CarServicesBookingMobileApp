@@ -1,16 +1,15 @@
+import { useRouter } from "expo-router";
 import { collection, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
-  FlatList,
-  Text,
-  View,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { db } from "../../firebase";
-import { useRouter } from "expo-router";
 
 export default function Services() {
   const [services, setServices] = useState([]);
@@ -42,7 +41,7 @@ export default function Services() {
 
       <TouchableOpacity
   style={styles.button}
-  onPress={() => router.push(`/service/${item.id}`)}
+  onPress={() => router.push(`/(app)/service/${item.id}`)}
 >
         <Text style={styles.buttonText}>View</Text>
       </TouchableOpacity>

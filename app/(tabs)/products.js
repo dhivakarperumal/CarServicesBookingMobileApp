@@ -1,16 +1,16 @@
+import { useRouter } from "expo-router";
 import { collection, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { db } from "../../firebase";
-import { useRouter } from "expo-router";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -81,7 +81,7 @@ export default function Products() {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.push(`/products/${item.slug}`)}
+          onPress={() => router.push(`/(app)/products/${item.slug}`)}
         >
           <Text style={styles.buttonText}>View</Text>
         </TouchableOpacity>
