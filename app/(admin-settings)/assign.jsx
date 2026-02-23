@@ -270,7 +270,6 @@
 
 //   return (
 //     <SafeAreaView style={styles.container}>
-   
 
 //       {/* 🔥 FILTER BUTTONS */}
 //       <View style={styles.filterRow}>
@@ -603,7 +602,6 @@
 //   },
 // });
 
-
 import { useEffect, useState, useMemo } from "react";
 import {
   View,
@@ -692,9 +690,7 @@ export default function AdminAssignServices() {
 
     const list = snap.docs
       .map((d) => ({ id: d.id, ...d.data() }))
-      .filter(
-        (emp) => emp.status === "active" && emp.role === "mechanic"
-      );
+      .filter((emp) => emp.status === "active" && emp.role === "mechanic");
 
     setEmployees(list);
     setLoadingEmployees(false);
@@ -720,7 +716,7 @@ export default function AdminAssignServices() {
       const customerUid = selectedBooking.uid || "";
 
       const selectedEmployee = employees.find(
-        (emp) => emp.id === selectedEmployeeId
+        (emp) => emp.id === selectedEmployeeId,
       );
 
       if (!selectedEmployee) {
@@ -782,6 +778,21 @@ export default function AdminAssignServices() {
     }
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Approved":
+        return "#22c55e"; // green
+      case "Assigned":
+        return "#38bdf8"; // cyan blue
+      case "Cancelled":
+        return "#ef4444"; // red
+      case "Booked":
+        return "#f59e0b"; // amber
+      default:
+        return "#64748b"; // gray
+    }
+  };
+
   /* 🔥 BOOKING CARD */
   const renderBooking = ({ item }) => (
     <View style={styles.card}>
@@ -792,8 +803,13 @@ export default function AdminAssignServices() {
       <Text style={styles.service}>Issue: {item.issue}</Text>
       <Text style={styles.customer}>Customer: {item.name}</Text>
 
-      <View style={styles.statusBadge}>
-        <Text style={styles.statusText}>{item.serviceStatus}</Text>
+      <View
+        style={[
+          styles.statusBadge,
+          { backgroundColor: getStatusColor(item.status) },
+        ]}
+      >
+        <Text style={styles.statusText}>{item.status}</Text>
       </View>
 
       {!item.assignedEmployeeId && (
@@ -816,7 +832,7 @@ export default function AdminAssignServices() {
       <TouchableOpacity
         style={[
           styles.staffCard,
-          isSelected && { borderWidth: 2, borderColor: "#111" },
+          isSelected && { borderColor: "#38bdf8", borderWidth: 2 },
         ]}
         onPress={() => setSelectedEmployeeId(item.id)}
       >
@@ -927,118 +943,191 @@ export default function AdminAssignServices() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f4f6f8", padding: 16 },
+  container: {
+    flex: 1,
+    backgroundColor: "#020617",
+    padding: 14,
+  },
 
-  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#020617",
+  },
 
   empty: {
     textAlign: "center",
     marginTop: 40,
-    fontSize: 15,
-    color: "#6b7280",
-    fontWeight: "500",
+    color: "#64748b",
+    fontWeight: "600",
   },
 
+  /* FILTER */
   filterRow: {
     flexDirection: "row",
-    backgroundColor: "#e5e7eb",
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 14,
+    backgroundColor: "#0f172a",
+    borderRadius: 16,
+    padding: 6,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
 
   filterBtn: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 12,
+    borderRadius: 12,
     alignItems: "center",
   },
 
-  activeFilter: { backgroundColor: "#111827" },
+  activeFilter: {
+    backgroundColor: "#2563eb",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+  },
 
   filterText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#374151",
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#64748b",
   },
 
+  /* BOOKING CARD */
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#0f172a",
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 18,
     marginBottom: 14,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
 
-  car: { fontSize: 16, fontWeight: "800" },
-  service: { marginTop: 6, fontSize: 14 },
-  customer: { marginTop: 4, fontSize: 13, color: "#6b7280" },
+  car: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#38bdf8",
+  },
+
+  service: {
+    marginTop: 6,
+    color: "#fff",
+  },
+
+  customer: {
+    marginTop: 4,
+    fontSize: 12,
+    color: "#94a3b8",
+  },
 
   statusBadge: {
-    marginTop: 8,
-    alignSelf: "flex-start",
-    backgroundColor: "#e5e7eb",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "#2563eb",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
   },
 
-  statusText: { fontSize: 11, fontWeight: "700" },
+  statusText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#fff",
+  },
 
   assignBtn: {
     marginTop: 12,
-    backgroundColor: "#111827",
+    backgroundColor: "#2563eb",
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: "center",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
   },
 
-  btnText: { color: "#fff", fontWeight: "800" },
+  btnText: {
+    color: "#fff",
+    fontWeight: "800",
+  },
 
-  modal: { flex: 1, padding: 16, backgroundColor: "#f9fafb" },
+  /* MODAL */
+  modal: {
+    flex: 1,
+    padding: 14,
+    backgroundColor: "#020617",
+  },
 
   modalTitle: {
-    fontSize: 20,
-    fontWeight: "900",
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#fff",
     textAlign: "center",
-    marginBottom: 16,
-  },
-
-  selectedBox: {
-    backgroundColor: "#fff",
-    padding: 14,
-    borderRadius: 14,
     marginBottom: 14,
   },
 
-  selectedText: { fontWeight: "800" },
-  selectedSub: { color: "#6b7280", marginTop: 4 },
+  selectedBox: {
+    backgroundColor: "#0f172a",
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+  },
 
+  selectedText: {
+    color: "#fff",
+    fontWeight: "700",
+  },
+
+  selectedSub: {
+    color: "#94a3b8",
+    marginTop: 4,
+  },
+
+  /* STAFF */
   staffCard: {
-    backgroundColor: "#fff",
+    backgroundColor: "#0f172a",
     padding: 14,
     borderRadius: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#0b3b6f",
   },
 
-  staffName: { fontWeight: "800" },
-  staffSub: { fontSize: 12, color: "#6b7280" },
+  staffName: {
+    color: "#fff",
+    fontWeight: "700",
+  },
+
+  staffSub: {
+    fontSize: 12,
+    color: "#94a3b8",
+  },
 
   assignConfirmBtn: {
     marginTop: 14,
-    backgroundColor: "#111827",
+    backgroundColor: "#2563eb",
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: "center",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
   },
 
   closeBtn: {
     marginTop: 10,
-    backgroundColor: "#ef4444",
+    backgroundColor: "#020617",
     paddingVertical: 13,
     borderRadius: 12,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ef4444",
   },
 });
