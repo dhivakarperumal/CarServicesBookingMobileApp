@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -20,6 +22,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../../firebase";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function EmployeeDashboard() {
   const auth = getAuth();
@@ -28,8 +31,9 @@ export default function EmployeeDashboard() {
   const [employee, setEmployee] = useState(null);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const today = new Date().toISOString().split("T")[0];
+  const todayStr = new Date().toISOString().split("T")[0];
 
   /* ================= LOAD EMPLOYEE ================= */
   const loadEmployee = async () => {
@@ -45,28 +49,51 @@ export default function EmployeeDashboard() {
     }
   };
 
-  /* ================= LOAD SERVICES ================= */
+  /* ================= LOAD TODAY SERVICES ================= */
   const loadServices = async () => {
     const q = query(
-      collection(db, "services"),
-      where("assignedUid", "==", user.uid)
+      collection(db, "assignedServices"),
+      where("employeeAuthUid", "==", user.uid)
     );
 
     const snap = await getDocs(q);
 
-    const list = snap.docs.map((d) => ({
-      id: d.id,
-      ...d.data(),
-    }));
+    const list = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .filter((s) => {
+        if (!s.assignedAt) return false;
+        const date = s.assignedAt.toDate().toISOString().split("T")[0];
+        return date === todayStr;
+      });
 
     setServices(list);
   };
 
-  useEffect(() => {
-    loadEmployee();
-    loadServices();
+  const init = async () => {
+    await loadEmployee();
+    await loadServices();
     setLoading(false);
+  };
+
+  useEffect(() => {
+    init();
   }, []);
+
+  /* 🔄 AUTO REFRESH WHEN SCREEN FOCUS */
+  useFocusEffect(
+    useCallback(() => {
+      loadEmployee();
+      loadServices();
+    }, [])
+  );
+
+  /* 🔄 PULL TO REFRESH */
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadEmployee();
+    await loadServices();
+    setRefreshing(false);
+  };
 
   /* ================= TIME CALC ================= */
   const calculateHours = () => {
@@ -103,8 +130,8 @@ export default function EmployeeDashboard() {
   /* ================= UPDATE SERVICE STATUS ================= */
   const updateServiceStatus = async (id, status) => {
     try {
-      await updateDoc(doc(db, "services", id), {
-        status,
+      await updateDoc(doc(db, "assignedServices", id), {
+        serviceStatus: status,
         updatedAt: serverTimestamp(),
       });
 
@@ -117,25 +144,34 @@ export default function EmployeeDashboard() {
   if (loading || !employee) {
     return (
       <SafeAreaView style={styles.center}>
-        <Text>Loading...</Text>
+        <ActivityIndicator size="large" />
       </SafeAreaView>
     );
   }
 
   /* ================= SUMMARY ================= */
-  const completed = services.filter((s) => s.status === "completed").length;
-  const pending = services.filter((s) => s.status === "pending").length;
+  const assigned = services.filter(
+    (s) => s.serviceStatus === "Assigned"
+  ).length;
+
+  const inprogress = services.filter(
+    (s) => s.serviceStatus === "In Progress"
+  ).length;
+
+  const completed = services.filter(
+    (s) => s.serviceStatus === "Completed"
+  ).length;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f4f6f9" }}>
-      <ScrollView style={{ padding: 14 }}>
-
-        {/* HEADER */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Dashboard</Text>
-          <MaterialCommunityIcons name="bell-outline" size={22} />
-        </View>
-
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 14, flexGrow: 1 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
+      >
         {/* WELCOME CARD */}
         <View style={styles.card}>
           <Text style={styles.welcome}>Welcome 👋</Text>
@@ -143,77 +179,42 @@ export default function EmployeeDashboard() {
           <Text style={styles.sub}>
             {employee.role} • {employee.department}
           </Text>
+
+          <Text
+            style={[
+              styles.badge,
+              employee.status === "Active"
+                ? styles.active
+                : styles.inactive,
+            ]}
+          >
+            {employee.status || "Inactive"}
+          </Text>
         </View>
 
-        {/* STATUS + SHIFT */}
-        <View style={styles.row}>
-          <View style={styles.smallCard}>
-            <Text style={styles.label}>Status</Text>
-            <Text
-              style={[
-                styles.badge,
-                employee.status === "active"
-                  ? styles.active
-                  : styles.inactive,
-              ]}
-            >
-              {employee.status}
-            </Text>
+        {/* SUMMARY CARDS */}
+        <View style={styles.summaryRow}>
+          <View style={[styles.summaryCard, { backgroundColor: "#fef3c7" }]}>
+            <Text style={styles.summaryNumber}>{assigned}</Text>
+            <Text style={styles.summaryLabel}>Assigned</Text>
           </View>
 
-          <View style={styles.smallCard}>
-            <Text style={styles.label}>Employee ID</Text>
-            <Text style={styles.value}>{employee.employeeId}</Text>
+          <View style={[styles.summaryCard, { backgroundColor: "#e0f2fe" }]}>
+            <Text style={styles.summaryNumber}>{inprogress}</Text>
+            <Text style={styles.summaryLabel}>In Progress</Text>
+          </View>
+
+          <View style={[styles.summaryCard, { backgroundColor: "#d1fae5" }]}>
+            <Text style={styles.summaryNumber}>{completed}</Text>
+            <Text style={styles.summaryLabel}>Completed</Text>
           </View>
         </View>
 
-        {/* ATTENDANCE */}
+        
+
+        {/* TODAY SERVICES */}
         <View style={styles.card}>
-          <Text style={styles.label}>Today Attendance</Text>
-
-          <View style={styles.timeRow}>
-            <View>
-              <Text style={styles.small}>Time In</Text>
-              <Text style={styles.time}>{employee.timeIn || "--:--"}</Text>
-            </View>
-
-            <View>
-              <Text style={styles.small}>Time Out</Text>
-              <Text style={styles.time}>{employee.timeOut || "--:--"}</Text>
-            </View>
-
-            <View>
-              <Text style={styles.small}>Working</Text>
-              <Text style={styles.time}>{calculateHours()}</Text>
-            </View>
-          </View>
-
-          <View style={styles.btnRow}>
-            {!employee.timeIn && (
-              <TouchableOpacity
-                style={styles.inBtn}
-                onPress={() => markTime("timeIn")}
-              >
-                <MaterialCommunityIcons name="login" size={18} color="#fff" />
-                <Text style={styles.btnText}>Mark In</Text>
-              </TouchableOpacity>
-            )}
-
-            {employee.timeIn && !employee.timeOut && (
-              <TouchableOpacity
-                style={styles.outBtn}
-                onPress={() => markTime("timeOut")}
-              >
-                <MaterialCommunityIcons name="logout" size={18} color="#fff" />
-                <Text style={styles.btnText}>Mark Out</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        {/* ASSIGNED SERVICES */}
-        <View style={styles.card}>
-          <Text style={styles.label}>Assigned Services</Text>
+          <Text style={styles.label}>Today Services</Text>
 
           {services.length === 0 && (
             <Text style={styles.sub}>No services assigned</Text>
@@ -222,27 +223,31 @@ export default function EmployeeDashboard() {
           {services.map((s) => (
             <View key={s.id} style={styles.serviceItem}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.serviceTitle}>{s.serviceName}</Text>
-                <Text style={styles.sub}>{s.vehicle}</Text>
-                <Text style={styles.small}>Status: {s.status}</Text>
+                <Text style={styles.serviceTitle}>
+                  {s.carBrand} - {s.carModel}
+                </Text>
+                <Text style={styles.sub}>{s.carIssue}</Text>
+                <Text style={styles.small}>
+                  Status: {s.serviceStatus}
+                </Text>
               </View>
 
-              {s.status === "pending" && (
+              {s.serviceStatus === "Assigned" && (
                 <TouchableOpacity
                   style={styles.startBtn}
                   onPress={() =>
-                    updateServiceStatus(s.id, "inprogress")
+                    updateServiceStatus(s.id, "In Progress")
                   }
                 >
                   <Text style={styles.btnText}>Start</Text>
                 </TouchableOpacity>
               )}
 
-              {s.status === "inprogress" && (
+              {s.serviceStatus === "In Progress" && (
                 <TouchableOpacity
                   style={styles.doneBtn}
                   onPress={() =>
-                    updateServiceStatus(s.id, "completed")
+                    updateServiceStatus(s.id, "Completed")
                   }
                 >
                   <Text style={styles.btnText}>Done</Text>
@@ -250,24 +255,6 @@ export default function EmployeeDashboard() {
               )}
             </View>
           ))}
-        </View>
-
-        {/* SUMMARY */}
-        <View style={styles.card}>
-          <Text style={styles.label}>Today Summary</Text>
-          <Text style={styles.sub}>Total: {services.length}</Text>
-          <Text style={styles.sub}>Completed: {completed}</Text>
-          <Text style={styles.sub}>Pending: {pending}</Text>
-        </View>
-
-        {/* PROFILE */}
-        <View style={styles.card}>
-          <Text style={styles.label}>Profile</Text>
-          <Text style={styles.sub}>Email: {employee.email}</Text>
-          <Text style={styles.sub}>Phone: {employee.phone}</Text>
-          <Text style={styles.sub}>
-            Joining: {employee.joiningDate || "N/A"}
-          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -277,36 +264,16 @@ export default function EmployeeDashboard() {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
 
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-
-  headerTitle: { fontSize: 18, fontWeight: "bold" },
-
   card: {
     backgroundColor: "#fff",
     borderRadius: 14,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 70,
   },
 
   welcome: { fontSize: 14, color: "#6b7280" },
   name: { fontSize: 20, fontWeight: "bold" },
   sub: { color: "#6b7280", marginTop: 2 },
-
-  row: { flexDirection: "row", gap: 10, marginBottom: 12 },
-
-  smallCard: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 16,
-  },
-
-  label: { fontSize: 14, fontWeight: "bold", marginBottom: 6 },
-  value: { fontWeight: "bold" },
 
   badge: {
     paddingHorizontal: 10,
@@ -315,10 +282,13 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     alignSelf: "flex-start",
+    marginTop: 6,
   },
 
   active: { backgroundColor: "#10b981" },
   inactive: { backgroundColor: "#ef4444" },
+
+  label: { fontSize: 14, fontWeight: "bold", marginBottom: 6 },
 
   timeRow: {
     flexDirection: "row",
@@ -372,5 +342,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
+  },
+
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+
+  summaryCard: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    marginHorizontal: 4,
+    alignItems: "center",
+  },
+
+  summaryNumber: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+
+  summaryLabel: {
+    fontSize: 12,
+    color: "#374151",
+    marginTop: 4,
   },
 });

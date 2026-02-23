@@ -1,0 +1,338 @@
+import { useEffect, useState, useMemo } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { db } from "../../firebase";
+
+export default function AssignedBookings() {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  /* 🔥 FETCH */
+  useEffect(() => {
+    const q = query(
+      collection(db, "assignedServices"),
+      orderBy("assignedAt", "desc")
+    );
+
+    const unsub = onSnapshot(q, (snap) => {
+      const list = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }));
+
+      setServices(list);
+      setLoading(false);
+    });
+
+    return unsub;
+  }, []);
+
+  /* 🔍 SEARCH + FILTER LOGIC */
+  const filteredServices = useMemo(() => {
+    return services
+      .filter((item) => {
+        if (filter === "all") return true;
+        return item.serviceStatus === filter;
+      })
+      .filter((item) => {
+        const text = search.toLowerCase();
+
+        return (
+          item.bookingDocId?.toLowerCase().includes(text) ||
+          item.serviceId?.toLowerCase().includes(text) ||
+          item.customerName?.toLowerCase().includes(text) ||
+          item.carBrand?.toLowerCase().includes(text) ||
+          item.carModel?.toLowerCase().includes(text)
+        );
+      });
+  }, [services, search, filter]);
+
+  /* 🎨 STATUS COLOR */
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "Completed":
+        return { bg: "#d1fae5", text: "#065f46" };
+      case "In Progress":
+        return { bg: "#e0f2fe", text: "#075985" };
+      case "Parts Added":
+        return { bg: "#ede9fe", text: "#5b21b6" };
+      default:
+        return { bg: "#fef3c7", text: "#92400e" };
+    }
+  };
+
+  /* 🔥 CARD */
+  const renderItem = ({ item }) => {
+    const statusStyle = getStatusStyle(item.serviceStatus);
+
+    return (
+      <View style={styles.card}>
+        <Text style={styles.idText}>
+          Booking ID: {item.bookingDocId || "N/A"}
+        </Text>
+
+        <Text style={styles.idText}>
+          Service ID: {item.serviceId || "N/A"}
+        </Text>
+
+        <Text style={styles.car}>
+          {item.carBrand} - {item.carModel}
+        </Text>
+
+        <Text style={styles.issue}>Issue: {item.carIssue}</Text>
+
+        {/* CUSTOMER */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Customer</Text>
+          <Text style={styles.subText}>
+            {item.customerName} • {item.customerPhone}
+          </Text>
+          <Text style={styles.subText}>{item.customerEmail}</Text>
+        </View>
+
+        {/* MECHANIC */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Mechanic</Text>
+          <Text style={styles.subText}>
+            {item.employeeName}
+          </Text>
+        </View>
+
+        {item.partsTotalCost ? (
+          <Text style={styles.parts}>Parts Cost: ₹{item.partsTotalCost}</Text>
+        ) : null}
+
+        <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+          <Text style={[styles.statusText, { color: statusStyle.text }]}>
+            {item.serviceStatus || "Assigned"}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  /* 🔄 LOADER */
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loader}>
+        <ActivityIndicator size="large" color="#111" />
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* 🔎 SEARCH */}
+      <TextInput
+        placeholder="Search booking, service, customer, car..."
+        value={search}
+        onChangeText={setSearch}
+        style={styles.search}
+      />
+
+      {/* 🎛 FILTER TABS */}
+      <View style={styles.filterRow}>
+        {["all", "Assigned", "In Progress", "Parts Added", "Completed"].map(
+          (f) => (
+            <TouchableOpacity
+              key={f}
+              style={[
+                styles.filterBtn,
+                filter === f && styles.activeFilter,
+              ]}
+              onPress={() => setFilter(f)}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  filter === f && { color: "#fff" },
+                ]}
+              >
+                {f}
+              </Text>
+            </TouchableOpacity>
+          )
+        )}
+      </View>
+
+      {/* 📋 LIST */}
+      {filteredServices.length === 0 ? (
+        <Text style={styles.empty}>No Assigned Services</Text>
+      ) : (
+        <FlatList
+          data={filteredServices}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
+      )}
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#f4f6f9",
+  },
+
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  search: {
+  backgroundColor: "#fff",
+  padding: 12,
+  borderRadius: 10,
+  marginBottom: 12,
+  borderWidth: 1,
+  borderColor: "#e5e7eb",
+},
+
+filterRow: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  marginBottom: 12,
+  gap: 6,
+},
+
+filterBtn: {
+  paddingVertical: 6,
+  paddingHorizontal: 10,
+  backgroundColor: "#e5e7eb",
+  borderRadius: 8,
+},
+
+activeFilter: {
+  backgroundColor: "#111827",
+},
+
+filterText: {
+  fontSize: 12,
+  fontWeight: "700",
+  color: "#374151",
+},
+
+  /* 🔥 HEADER */
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+
+  back: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#111",
+  },
+
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#111827",
+  },
+
+  empty: {
+    textAlign: "center",
+    marginTop: 40,
+    fontSize: 15,
+    color: "#6b7280",
+    fontWeight: "500",
+  },
+
+  /* 🔥 CARD */
+  card: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 14,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+
+  idText: {
+  fontSize: 12,
+  fontWeight: "700",
+  color: "#2563eb",
+},
+
+issue: {
+  marginTop: 6,
+  fontSize: 14,
+  color: "#4b5563",
+  fontWeight: "600",
+},
+
+section: {
+  marginTop: 8,
+  paddingTop: 6,
+  borderTopWidth: 1,
+  borderTopColor: "#e5e7eb",
+},
+
+sectionTitle: {
+  fontSize: 13,
+  fontWeight: "800",
+  color: "#111827",
+},
+
+parts: {
+  marginTop: 6,
+  fontSize: 13,
+  fontWeight: "700",
+  color: "#059669",
+},
+
+  car: {
+    fontWeight: "800",
+    fontSize: 16,
+    color: "#111827",
+  },
+
+  service: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "#4b5563",
+    fontWeight: "600",
+  },
+
+  subText: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "#6b7280",
+  },
+
+  /* 🔥 STATUS BADGE */
+  statusBadge: {
+    alignSelf: "flex-start",
+    marginTop: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+
+  statusText: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
+});

@@ -22,6 +22,7 @@ import {
   updateDoc,
   serverTimestamp,
   runTransaction,
+  setDoc,
 } from "firebase/firestore";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { db } from "../../firebase";
@@ -32,7 +33,7 @@ const auth = getAuth();
 
 const roles = [
   "Service Manager",
-  "Mechanic",
+  "mechanic",
   "Senior Mechanic",
   "Electrician",
   "Denter",
@@ -140,57 +141,76 @@ export default function AddEditStaffScreen() {
       Alert.alert("Error", "Password must be at least 6 characters");
       return false;
     }
-
-    if (form.timeIn && form.timeOut && form.timeOut <= form.timeIn) {
-      Alert.alert("Error", "Time Out must be after Time In");
-      return false;
-    }
-
     return true;
   };
 
   /* ===== SUBMIT ===== */
-  const handleSubmit = async () => {
-    if (!validate()) return;
+const handleSubmit = async () => {
+  if (!validate()) return;
 
-    setLoading(true);
-    try {
-      let data = { ...form };
+  setLoading(true);
 
-      if (!isEdit) {
-        data.employeeId = await generateEmployeeId();
+  try {
+    let data = { ...form };
 
-        const cred = await createUserWithEmailAndPassword(
-          auth,
-          form.email,
-          form.password,
-        );
+    if (!isEdit) {
+      // 1️⃣ Generate Employee ID
+      const employeeId = await generateEmployeeId();
+      data.employeeId = employeeId;
 
-        data.authUid = cred.user.uid;
-      }
+      // 2️⃣ Create Auth User
+      const cred = await createUserWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password
+      );
 
-      if (isEdit) {
-        await updateDoc(doc(db, "employees", id), {
-          ...data,
+      const uid = cred.user.uid;
+      data.authUid = uid;
+
+      // 3️⃣ Save Employee Document
+      const empRef = await addDoc(collection(db, "employees"), {
+        ...data,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      // 4️⃣ Save User Document (users collection with UID as doc id)
+      await setDoc(doc(db, "users", uid), {
+        username: form.name || "Kumar",
+        email: form.email,
+        phone: form.phone || "8956236589",
+        role: "mechanic",
+        employeeId: employeeId,
+        employeeDocId: empRef.id,
+        createdAt: serverTimestamp(),
+      });
+    } else {
+      // UPDATE EMPLOYEE
+      await updateDoc(doc(db, "employees", id), {
+        ...data,
+        updatedAt: serverTimestamp(),
+      });
+
+      // ALSO UPDATE USER (if UID exists)
+      if (form.authUid) {
+        await updateDoc(doc(db, "users", form.authUid), {
+          username: form.name,
+          email: form.email,
+          phone: form.phone,
           updatedAt: serverTimestamp(),
         });
-      } else {
-        await addDoc(collection(db, "employees"), {
-          ...data,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
       }
-
-      Alert.alert("Success", isEdit ? "Updated" : "Added");
-      router.replace("/(Employees)/employees");
-    } catch (err) {
-      Alert.alert("Error", err.message);
-    } finally {
-      setLoading(false);
     }
-  };
 
+    Alert.alert("Success", isEdit ? "Updated" : "Added");
+    router.replace("/(Employees)/employees");
+  } catch (err) {
+    Alert.alert("Error", err.message);
+  } finally {
+    setLoading(false);
+  }
+};
   /* ===== DATE / TIME ===== */
   const handleDate = (field, date) => {
     const value = date.toISOString().split("T")[0];
