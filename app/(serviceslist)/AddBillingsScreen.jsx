@@ -11,7 +11,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { collection, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "../../firebase";
 import { useRouter } from "expo-router";
 
@@ -41,7 +46,7 @@ export default function AddBillingsScreen() {
     setSearch("");
 
     const partsSnap = await getDocs(
-      collection(db, "allServices", s.id, "parts")
+      collection(db, "allServices", s.id, "parts"),
     );
 
     const partsData = partsSnap.docs.map((d) => {
@@ -68,14 +73,11 @@ export default function AddBillingsScreen() {
 
   /* 💾 SAVE BILL */
   const handleGenerateBill = async () => {
-    if (!selectedService)
-      return Alert.alert("Select a service");
+    if (!selectedService) return Alert.alert("Select a service");
 
-    if (parts.length === 0)
-      return Alert.alert("No spare parts found");
+    if (parts.length === 0) return Alert.alert("No spare parts found");
 
-    if (grandTotal <= 0)
-      return Alert.alert("Invalid billing amount");
+    if (grandTotal <= 0) return Alert.alert("Invalid billing amount");
 
     try {
       const invoiceNo = `INV-${Date.now()}`;
@@ -118,19 +120,24 @@ export default function AddBillingsScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#15173D" }}>
       {/* HEADER */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Ionicons name="arrow-back" size={22} color="#38bdf8" />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>Generate Invoice</Text>
 
-        <View style={{ width: 24 }} />
+        <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 140 }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* SEARCH */}
         <TextInput
           placeholder="Search Booking / Name / Phone"
+          placeholderTextColor="#64748b"
           value={search}
           onChangeText={setSearch}
           style={styles.input}
@@ -142,7 +149,7 @@ export default function AddBillingsScreen() {
             .filter((s) =>
               `${s.bookingId} ${s.name} ${s.phone}`
                 .toLowerCase()
-                .includes(search.toLowerCase())
+                .includes(search.toLowerCase()),
             )
             .map((s) => (
               <TouchableOpacity
@@ -150,8 +157,10 @@ export default function AddBillingsScreen() {
                 style={styles.searchItem}
                 onPress={() => selectService(s)}
               >
-                <Text style={{ fontWeight: "bold" }}>{s.bookingId}</Text>
-                <Text>
+                <Text style={{ color: "#38bdf8", fontWeight: "700" }}>
+                  {s.bookingId}
+                </Text>
+                <Text style={{ color: "#fff" }}>
                   {s.name} ({s.brand} {s.model})
                 </Text>
               </TouchableOpacity>
@@ -160,26 +169,37 @@ export default function AddBillingsScreen() {
         {/* SERVICE DETAILS */}
         {selectedService && (
           <View style={styles.card}>
-            <Text>Customer: {selectedService.name}</Text>
-            <Text>Mobile: {selectedService.phone}</Text>
-            <Text>
-              Car: {selectedService.brand} {selectedService.model}
+            <Text style={styles.label}>Customer</Text>
+            <Text style={styles.value}>{selectedService.name}</Text>
+
+            <Text style={styles.label}>Mobile</Text>
+            <Text style={styles.value}>{selectedService.phone}</Text>
+
+            <Text style={styles.label}>Vehicle</Text>
+            <Text style={styles.value}>
+              {selectedService.brand} {selectedService.model}
             </Text>
-            <Text>Booking ID: {selectedService.bookingId}</Text>
+
+            <Text style={styles.label}>Booking ID</Text>
+            <Text style={styles.value}>{selectedService.bookingId}</Text>
           </View>
         )}
 
         {/* PARTS LIST */}
         {parts.length > 0 && (
-          <View style={styles.card}>
-            {parts.map((p, i) => (
-              <View key={i} style={styles.partRow}>
-                <Text>{i + 1}. {p.partName}</Text>
-                <Text>
-                  {p.qty} × ₹{p.price} = ₹{p.total}
-                </Text>
-              </View>
-            ))}
+          <View key={i} style={styles.partRow}>
+            <View>
+              <Text style={{ color: "#fff", fontWeight: "600" }}>
+                {i + 1}. {p.partName}
+              </Text>
+              <Text style={{ color: "#94a3b8", fontSize: 12 }}>
+                {p.qty} × ₹{p.price}
+              </Text>
+            </View>
+
+            <Text style={{ color: "#38bdf8", fontWeight: "700" }}>
+              ₹{p.total}
+            </Text>
           </View>
         )}
 
@@ -209,7 +229,9 @@ export default function AddBillingsScreen() {
           <View style={styles.totalBox}>
             <Text>Parts Total: ₹{partsTotal}</Text>
             <Text>Labour: ₹{labourAmount}</Text>
-            <Text>GST ({gst}%): ₹{gstAmount.toFixed(2)}</Text>
+            <Text>
+              GST ({gst}%): ₹{gstAmount.toFixed(2)}
+            </Text>
             <Text style={styles.grand}>
               Grand Total: ₹{grandTotal.toFixed(2)}
             </Text>
@@ -218,10 +240,7 @@ export default function AddBillingsScreen() {
 
         {/* ACTION BUTTON */}
         {selectedService && (
-          <TouchableOpacity
-            style={styles.saveBtn}
-            onPress={handleGenerateBill}
-          >
+          <TouchableOpacity style={styles.saveBtn} onPress={handleGenerateBill}>
             <Text style={styles.btnText}>Generate Invoice</Text>
           </TouchableOpacity>
         )}
@@ -233,73 +252,121 @@ export default function AddBillingsScreen() {
 /* STYLES */
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: "#15173D",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    height: 60,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    paddingHorizontal: 16,
+    backgroundColor: "#0f172a",
+    borderBottomWidth: 1,
+    borderColor: "#0b3b6f",
   },
+
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: "#020617",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+  },
+
   headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+
+  container: {
+    flex: 1,
+    backgroundColor: "#020617",
+    padding: 16,
+  },
+
+  input: {
+    backgroundColor: "#0f172a",
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
     color: "#fff",
   },
 
-  container: { flex: 1, backgroundColor: "#f1f5f9", padding: 16 },
-
-  input: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-
   searchItem: {
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 6,
+    backgroundColor: "#0f172a",
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
 
   card: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
+    backgroundColor: "#0f172a",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
+
+  label: { color: "#94a3b8", fontSize: 12 },
+  value: { color: "#fff", fontWeight: "600", marginBottom: 6 },
 
   partRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 6,
+    marginBottom: 10,
   },
 
   totalBox: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 12,
+    backgroundColor: "#0f172a",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
 
+  rowBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+
+  muted: { color: "#94a3b8" },
+  white: { color: "#fff", fontWeight: "600" },
+
+  divider: {
+    height: 1,
+    backgroundColor: "#0b3b6f",
+    marginVertical: 8,
+  },
+
+  grandLabel: { color: "#fff", fontWeight: "700" },
+
   grand: {
-    fontWeight: "bold",
-    color: "green",
-    marginTop: 6,
+    color: "#38bdf8",
+    fontWeight: "800",
+    fontSize: 16,
   },
 
   saveBtn: {
-    backgroundColor: "#000",
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 30,
+    backgroundColor: "#2563eb",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 40,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
   },
 
   btnText: {
     color: "#fff",
     textAlign: "center",
-    fontWeight: "bold",
+    fontWeight: "800",
   },
 });
