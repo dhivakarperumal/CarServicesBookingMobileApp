@@ -199,12 +199,13 @@ const styles = StyleSheet.create({
 
   search: {
     backgroundColor: "#0f172a",
-    padding: 14,
+    padding: 16,
     borderRadius: 14,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#0b3b6f",
     color: "#fff",
+    fontSize: 15,
   },
   filterRow: {
     flexDirection: "row",
@@ -230,7 +231,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   filterText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "800",
     color: "#64748b",
   },
@@ -278,43 +279,42 @@ const styles = StyleSheet.create({
   },
 
   idText: {
-    fontSize: 11,
-    fontWeight: "800",
+    fontSize: 13,
+    fontWeight: "700",
     color: "#94a3b8",
   },
 
+  car: {
+    fontWeight: "800",
+    fontSize: 18,
+    color: "#38bdf8",
+  },
   issue: {
-    marginTop: 6,
-    fontSize: 13,
+    marginTop: 8,
+    fontSize: 15,
     color: "#fff",
+    lineHeight: 20,
   },
 
   section: {
     marginTop: 8,
     paddingTop: 6,
     borderTopWidth: 1,
-    borderTopColor: "#e5e7eb",
+    borderTopColor: "rgba(229,231,235,0.25)",
   },
 
   sectionTitle: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: "800",
-    color: "#111827",
+    color: "#e5e7eb",
   },
 
   parts: {
-    marginTop: 6,
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#059669",
-  },
-
-  car: {
+    marginTop: 8,
+    fontSize: 14,
     fontWeight: "800",
-    fontSize: 16,
-    color: "#38bdf8",
+    color: "#10b981",
   },
-
   service: {
     marginTop: 6,
     fontSize: 14,
@@ -323,11 +323,10 @@ const styles = StyleSheet.create({
   },
 
   subText: {
-    marginTop: 4,
-    fontSize: 12,
-    color: "#94a3b8",
+    marginTop: 6,
+    fontSize: 14,
+    color: "#cbd5f5",
   },
-
   /* 🔥 STATUS BADGE */
   statusBadge: {
     position: "absolute",
@@ -340,7 +339,7 @@ const styles = StyleSheet.create({
   },
 
   statusText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "900",
   },
 });
