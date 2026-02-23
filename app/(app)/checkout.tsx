@@ -10,7 +10,6 @@ import {
     Timestamp,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
 import {
     ActivityIndicator,
     Alert,
@@ -22,10 +21,10 @@ import {
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import RazorpayCheckout from "react-native-razorpay";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { auth, db } from "../../firebase";
 import { reduceStockAfterPurchase } from "../utils/reduceStockAfterPurchase";
 import { saveUserAddress } from "../utils/saveUserAddress";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 // ================= ORDER COUNTER =================
 const generateOrderNumber = async () => {
@@ -42,6 +41,8 @@ const generateOrderNumber = async () => {
 export default function Checkout() {
     const router = useRouter();
     const params = useLocalSearchParams();
+    const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
     const [uid, setUid] = useState<string | null>(null);
     const [items, setItems] = useState<any[]>([]);
@@ -68,6 +69,45 @@ export default function Checkout() {
 
         loadCart();
     }, [uid]);
+
+    useEffect(() => {
+    if (!uid) return;
+
+    const loadAddresses = async () => {
+        const snap = await getDocs(
+            collection(db, "users", uid, "addresses")
+        );
+
+        const list = snap.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+        }));
+
+        setSavedAddresses(list);
+
+        // ✅ Auto select first address (optional)
+        if (list.length > 0) {
+            selectAddress(list[0]);
+        }
+    };
+
+    loadAddresses();
+}, [uid]);
+
+const selectAddress = (addr: any) => {
+    setSelectedAddressId(addr.id);
+
+    setShipping({
+        name: addr.fullName,
+        email: addr.email || "",
+        phone: addr.phone,
+        address: addr.street,
+        city: addr.city,
+        state: addr.state,
+        zip: addr.pinCode,
+        country: addr.country || "India",
+    });
+};
 
     // ================= SHIPPING =================
     const [shipping, setShipping] = useState({
@@ -119,15 +159,22 @@ export default function Checkout() {
 
         await reduceStockAfterPurchase(items);
 
-        await saveUserAddress(uid, {
-            fullName: shipping.name,
-            email: shipping.email,
-            phone: shipping.phone,
-            street: shipping.address,
-            city: shipping.city,
-            state: shipping.state,
-            pinCode: shipping.zip,
-        });
+       try {
+    await saveUserAddress(uid, {
+        fullName: shipping.name,
+        email: shipping.email,
+        phone: shipping.phone,
+        street: shipping.address,
+        city: shipping.city,
+        state: shipping.state,
+        pinCode: shipping.zip,
+    });
+} catch (err: any) {
+    if (err.message !== "DUPLICATE_ADDRESS") {
+        throw err; // real error
+    }
+    // duplicate address → ignore and continue order
+}
 
         const orderNumber = await generateOrderNumber();
 
@@ -227,6 +274,38 @@ export default function Checkout() {
   showsVerticalScrollIndicator={false}
 >
                 <Text style={styles.heading}>Checkout</Text>
+
+                {/* SAVED ADDRESSES */}
+{savedAddresses.length > 0 && (
+    <>
+        <Text style={styles.section}>Saved Addresses</Text>
+
+        {savedAddresses.map((addr) => (
+            <TouchableOpacity
+                key={addr.id}
+                onPress={() => selectAddress(addr)}
+                style={[
+                    styles.addressCard,
+                    selectedAddressId === addr.id && {
+                        borderColor: "#0EA5E9",
+                        borderWidth: 2,
+                    },
+                ]}
+            >
+                <Text style={styles.itemText}>{addr.fullName}</Text>
+                <Text style={{ color: "#94A3B8", fontSize: 13 }}>
+                    {addr.street}, {addr.city}
+                </Text>
+                <Text style={{ color: "#94A3B8", fontSize: 13 }}>
+                    {addr.state} - {addr.pinCode}
+                </Text>
+                <Text style={{ color: "#94A3B8", fontSize: 13 }}>
+                    {addr.phone}
+                </Text>
+            </TouchableOpacity>
+        ))}
+    </>
+)}
 
                 {/* SHIPPING */}
                 <Text style={styles.section}>Shipping</Text>
@@ -380,6 +459,12 @@ const styles = StyleSheet.create({
     itemText: {
         color: "#FFF",
     },
+    addressCard: {
+    backgroundColor: "#111827",
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 12,
+},
     totalRow: {
         flexDirection: "row",
         justifyContent: "space-between",
