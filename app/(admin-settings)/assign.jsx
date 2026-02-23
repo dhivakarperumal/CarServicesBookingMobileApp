@@ -8,9 +8,9 @@
 //   Modal,
 //   ActivityIndicator,
 //   Alert,
+//   TextInput,
 // } from "react-native";
 // import { SafeAreaView } from "react-native-safe-area-context";
-// import { useRouter } from "expo-router";
 // import {
 //   collection,
 //   onSnapshot,
@@ -18,12 +18,13 @@
 //   updateDoc,
 //   getDocs,
 //   addDoc,
+//   arrayUnion,
+//   serverTimestamp,
 // } from "firebase/firestore";
 // import { db } from "../../firebase";
+// import { Picker } from "@react-native-picker/picker";
 
 // export default function AdminAssignServices() {
-//   const router = useRouter();
-
 //   const [bookings, setBookings] = useState([]);
 //   const [employees, setEmployees] = useState([]);
 
@@ -31,13 +32,14 @@
 //   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
 
 //   const [modalVisible, setModalVisible] = useState(false);
-//   const [bookingModalVisible, setBookingModalVisible] = useState(false);
+//   const [globalModalVisible, setGlobalModalVisible] = useState(false);
 
 //   const [loading, setLoading] = useState(true);
 //   const [assigning, setAssigning] = useState(false);
 //   const [loadingEmployees, setLoadingEmployees] = useState(false);
 
-//   const [filter, setFilter] = useState("new"); // new | todayAssigned | notTodayAssigned
+//   const [filter, setFilter] = useState("notAssigned");
+//   const [searchText, setSearchText] = useState("");
 
 //   /* 🔥 FETCH BOOKINGS */
 //   useEffect(() => {
@@ -53,35 +55,33 @@
 //     return unsub;
 //   }, []);
 
-//   /* 🔥 DATE HELPER */
-//   const isToday = (timestamp) => {
-//     if (!timestamp) return false;
-//     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-//     const today = new Date();
+//   /* 🔥 UNASSIGNED LIST FOR GLOBAL MODAL */
+//   const unassignedBookings = useMemo(() => {
+//     return bookings.filter((b) => !b.assignedEmployeeId);
+//   }, [bookings]);
 
-//     return (
-//       date.getDate() === today.getDate() &&
-//       date.getMonth() === today.getMonth() &&
-//       date.getFullYear() === today.getFullYear()
-//     );
-//   };
-
-//   /* 🔥 FILTERED BOOKINGS */
+//   /* 🔍 FILTER + SEARCH */
 //   const filteredBookings = useMemo(() => {
 //     return bookings.filter((b) => {
-//       if (filter === "new") return !b.assignedEmployeeId;
+//       const search = searchText.toLowerCase();
 
-//       if (filter === "todayAssigned")
-//         return b.serviceStatus === "Approved" && isToday(b.assignedAt);
+//       const matchesSearch =
+//         b.name?.toLowerCase().includes(search) ||
+//         b.phone?.toLowerCase().includes(search) ||
+//         b.brand?.toLowerCase().includes(search) ||
+//         b.model?.toLowerCase().includes(search) ||
+//         b.issue?.toLowerCase().includes(search);
 
-//       if (filter === "notTodayAssigned")
-//         return b.serviceStatus === "Approved" && !isToday(b.assignedAt);
+//       if (!matchesSearch) return false;
+
+//       if (filter === "notAssigned") return !b.assignedEmployeeId;
+//       if (filter === "all") return true;
 
 //       return true;
 //     });
-//   }, [bookings, filter]);
+//   }, [bookings, filter, searchText]);
 
-//   /* 🔥 FETCH FREE MECHANICS */
+//   /* 🔥 FETCH EMPLOYEES */
 //   const fetchAvailableEmployees = async () => {
 //     setLoadingEmployees(true);
 
@@ -89,27 +89,21 @@
 
 //     const list = snap.docs
 //       .map((d) => ({ id: d.id, ...d.data() }))
-//       .filter(
-//         (emp) =>
-//           emp.status === "active" &&
-//           emp.role === "mechanic" &&
-//           emp.workStatus !== "busy"
-//       );
+//       .filter((emp) => emp.status === "active" && emp.role === "mechanic");
 
 //     setEmployees(list);
 //     setLoadingEmployees(false);
 //   };
 
-//   /* 🔥 OPEN MODAL */
+//   /* 🔥 OPEN CARD MODAL */
 //   const openAssignModal = async (booking) => {
 //     setSelectedBooking(booking);
 //     setSelectedEmployeeId(null);
-//     setBookingModalVisible(false);
 //     await fetchAvailableEmployees();
 //     setModalVisible(true);
 //   };
 
-//   /* 🔥 ASSIGN FUNCTION */
+//   /* 🔥 ASSIGN FUNCTION (USED BY BOTH MODALS) */
 //   const assignEmployee = async () => {
 //     if (!selectedBooking || !selectedEmployeeId || assigning) return;
 
@@ -133,71 +127,44 @@
 
 //       /* 1️⃣ UPDATE BOOKING */
 //       await updateDoc(doc(db, "bookings", bookingDocId), {
-//         bookingDocId,
-//         serviceId,
-//         customerUid,
-
 //         assignedEmployeeId: selectedEmployeeId,
 //         assignedEmployeeAuthUid: employeeAuthUid,
-
 //         assignedEmployeeName: selectedEmployee.name || "",
-//         assignedEmployeePhone: selectedEmployee.phone || "",
-//         assignedEmployeeShift: selectedEmployee.shift || "",
-
-//         carBrand: selectedBooking.brand || "",
-//         carModel: selectedBooking.model || "",
-//         carIssue: selectedBooking.issue || "",
-
-//         customerName: selectedBooking.name || "",
-//         customerPhone: selectedBooking.phone || "",
-//         customerEmail: selectedBooking.email || "",
-
 //         serviceStatus: "Approved",
-//         assignedAt: new Date(),
+//         assignedAt: serverTimestamp(),
 //       });
 
 //       /* 2️⃣ UPDATE EMPLOYEE */
 //       await updateDoc(doc(db, "employees", selectedEmployeeId), {
-//         currentBookingId: bookingDocId,
-//         workStatus: "busy",
+//         assignedBookingIds: arrayUnion(bookingDocId),
 //       });
 
-//       /* 3️⃣ CREATE assignedServices DOC */
+//       /* 3️⃣ CREATE assignedServices */
 //       await addDoc(collection(db, "assignedServices"), {
 //         bookingDocId,
 //         serviceId,
 //         customerUid,
-
 //         employeeDocId: selectedEmployeeId,
 //         employeeAuthUid,
-
 //         employeeName: selectedEmployee.name || "",
-//         employeePhone: selectedEmployee.phone || "",
-//         employeeShift: selectedEmployee.shift || "",
-
 //         carBrand: selectedBooking.brand || "",
 //         carModel: selectedBooking.model || "",
 //         carIssue: selectedBooking.issue || "",
-
 //         customerName: selectedBooking.name || "",
 //         customerPhone: selectedBooking.phone || "",
 //         customerEmail: selectedBooking.email || "",
-
 //         serviceStatus: "Assigned",
-//         assignedAt: new Date(),
+//         assignedAt: serverTimestamp(),
 //         startedAt: null,
 //         completedAt: null,
-
-//         trackNumber: "",
-//         notes: "",
 //       });
 
-//       Alert.alert("Success", "Mechanic assigned & job created");
+//       Alert.alert("Success", "Booking assigned");
 
 //       setModalVisible(false);
+//       setGlobalModalVisible(false);
 //       setSelectedBooking(null);
 //       setSelectedEmployeeId(null);
-//       setEmployees([]);
 //     } catch (error) {
 //       console.log(error);
 //       Alert.alert("Error", "Assignment failed");
@@ -234,6 +201,7 @@
 //   /* 🔥 EMPLOYEE CARD */
 //   const renderEmployee = ({ item }) => {
 //     const isSelected = selectedEmployeeId === item.id;
+//     const jobCount = item.assignedBookingIds?.length || 0;
 
 //     return (
 //       <TouchableOpacity
@@ -242,20 +210,9 @@
 //           isSelected && { borderWidth: 2, borderColor: "#111" },
 //         ]}
 //         onPress={() => setSelectedEmployeeId(item.id)}
-//         disabled={assigning}
 //       >
 //         <Text style={styles.staffName}>{item.name}</Text>
-//         <Text style={styles.staffSub}>{item.shift}</Text>
-
-//         <Text
-//           style={{
-//             marginTop: 4,
-//             color: item.workStatus === "busy" ? "red" : "green",
-//             fontSize: 12,
-//           }}
-//         >
-//           {item.workStatus === "busy" ? "Busy" : "Available"}
-//         </Text>
+//         <Text style={styles.staffSub}>Jobs: {jobCount}</Text>
 //       </TouchableOpacity>
 //     );
 //   };
@@ -270,14 +227,19 @@
 
 //   return (
 //     <SafeAreaView style={styles.container}>
-   
+//       {/* 🔍 SEARCH */}
+//       <TextInput
+//         placeholder="Search car, customer, phone..."
+//         value={searchText}
+//         onChangeText={setSearchText}
+//         style={styles.searchInput}
+//       />
 
-//       {/* 🔥 FILTER BUTTONS */}
+//       {/* 🔘 FILTER */}
 //       <View style={styles.filterRow}>
 //         {[
-//           { key: "new", label: "New" },
-//           { key: "todayAssigned", label: "Today Assigned" },
-//           { key: "notTodayAssigned", label: "Not Today" },
+//           { key: "notAssigned", label: "Not Assigned" },
+//           { key: "all", label: "All" },
 //         ].map((btn) => (
 //           <TouchableOpacity
 //             key={btn.key}
@@ -299,7 +261,7 @@
 //         ))}
 //       </View>
 
-//       {/* 🔥 BOOKING LIST */}
+//       {/* 📋 LIST */}
 //       {filteredBookings.length === 0 ? (
 //         <Text style={styles.empty}>No Services Found</Text>
 //       ) : (
@@ -311,15 +273,22 @@
 //         />
 //       )}
 
-//       {/* 🔥 FLOATING BUTTON */}
+//       {/* ➕ GLOBAL ASSIGN BUTTON */}
 //       <TouchableOpacity
 //         style={styles.fab}
-//         onPress={() => setBookingModalVisible(true)}
+//         onPress={async () => {
+//           setSelectedBooking(null);
+//           setSelectedEmployeeId(null);
+//           await fetchAvailableEmployees();
+//           setGlobalModalVisible(true);
+//         }}
 //       >
-//         <Text style={styles.fabText}>＋</Text>
+//         <Text style={{ color: "#fff", fontSize: 28, fontWeight: "900" }}>
+//           +
+//         </Text>
 //       </TouchableOpacity>
 
-//       {/* 🔥 MECHANIC MODAL */}
+//       {/* 🔥 CARD MODAL (UNCHANGED) */}
 //       <Modal visible={modalVisible} animationType="slide">
 //         <SafeAreaView style={styles.modal}>
 //           <Text style={styles.modalTitle}>Select Mechanic</Text>
@@ -336,9 +305,7 @@
 //           )}
 
 //           {loadingEmployees ? (
-//             <ActivityIndicator size="large" color="#111" />
-//           ) : employees.length === 0 ? (
-//             <Text style={styles.empty}>No Available Mechanics</Text>
+//             <ActivityIndicator size="large" />
 //           ) : (
 //             <FlatList
 //               data={employees}
@@ -362,27 +329,130 @@
 
 //           <TouchableOpacity
 //             style={styles.closeBtn}
-//             onPress={() => {
-//               setModalVisible(false);
-//               setSelectedEmployeeId(null);
-//             }}
+//             onPress={() => setModalVisible(false)}
 //           >
 //             <Text style={styles.btnText}>Close</Text>
 //           </TouchableOpacity>
 //         </SafeAreaView>
 //       </Modal>
+
+//       {/* 🔥 GLOBAL MODAL */}
+//       <Modal visible={globalModalVisible} animationType="slide">
+//   <SafeAreaView style={styles.modal}>
+//     <Text style={styles.modalTitle}>Assign Service</Text>
+
+//     {/* 🔽 SELECT SERVICE */}
+//     <Text style={{ fontWeight: "700", marginBottom: 6 }}>
+//       Select Service
+//     </Text>
+
+//     <View
+//       style={{
+//         borderWidth: 1,
+//         borderColor: "#e5e7eb",
+//         borderRadius: 12,
+//         backgroundColor: "#fff",
+//         marginBottom: 14,
+//       }}
+//     >
+//       <Picker
+//         selectedValue={selectedBooking?.id || ""}
+//         onValueChange={(val) =>
+//           setSelectedBooking(
+//             unassignedBookings.find((b) => b.id === val)
+//           )
+//         }
+//       >
+//         <Picker.Item label="Select service" value="" />
+
+//         {unassignedBookings.map((b) => (
+//           <Picker.Item
+//             key={b.id}
+//             label={`${b.brand} - ${b.model} (${b.name})`}
+//             value={b.id}
+//           />
+//         ))}
+//       </Picker>
+//     </View>
+
+//     {/* 🔽 SELECT MECHANIC */}
+//     <Text style={{ fontWeight: "700", marginBottom: 6 }}>
+//       Select Mechanic
+//     </Text>
+
+//     {loadingEmployees ? (
+//       <ActivityIndicator size="large" />
+//     ) : (
+//       <View
+//         style={{
+//           borderWidth: 1,
+//           borderColor: "#e5e7eb",
+//           borderRadius: 12,
+//           backgroundColor: "#fff",
+//           marginBottom: 14,
+//         }}
+//       >
+//         <Picker
+//           selectedValue={selectedEmployeeId}
+//           onValueChange={setSelectedEmployeeId}
+//         >
+//           <Picker.Item label="Select mechanic" value="" />
+
+//           {employees.map((emp) => (
+//             <Picker.Item
+//               key={emp.id}
+//               label={`${emp.name} (Jobs: ${
+//                 emp.assignedBookingIds?.length || 0
+//               })`}
+//               value={emp.id}
+//             />
+//           ))}
+//         </Picker>
+//       </View>
+//     )}
+
+//     {/* ✅ CONFIRM BUTTON */}
+//     <TouchableOpacity
+//       style={[
+//         styles.assignConfirmBtn,
+//         (!selectedEmployeeId || !selectedBooking) && {
+//           backgroundColor: "#ccc",
+//         },
+//       ]}
+//       disabled={!selectedEmployeeId || !selectedBooking || assigning}
+//       onPress={assignEmployee}
+//     >
+//       <Text style={styles.btnText}>
+//         {assigning ? "Assigning..." : "Confirm Assign"}
+//       </Text>
+//     </TouchableOpacity>
+
+//     {/* ❌ CLOSE */}
+//     <TouchableOpacity
+//       style={styles.closeBtn}
+//       onPress={() => setGlobalModalVisible(false)}
+//     >
+//       <Text style={styles.btnText}>Close</Text>
+//     </TouchableOpacity>
+//   </SafeAreaView>
+// </Modal>
 //     </SafeAreaView>
 //   );
 // }
+
 
 // const styles = StyleSheet.create({
 //   container: {
 //     flex: 1,
 //     backgroundColor: "#f4f6f8",
-//     paddingHorizontal: 16,
+//     padding: 16,
 //   },
 
-//   loader: { flex: 1, justifyContent: "center", alignItems: "center" },
+//   loader: {
+//     flex: 1,
+//     justifyContent: "center",
+//     alignItems: "center",
+//   },
 
 //   empty: {
 //     textAlign: "center",
@@ -392,27 +462,18 @@
 //     fontWeight: "500",
 //   },
 
-//   /* 🔥 HEADER */
-//   header: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     justifyContent: "space-between",
-//     paddingVertical: 14,
+//   /* 🔍 SEARCH */
+//   searchInput: {
+//     backgroundColor: "#fff",
+//     padding: 12,
+//     borderRadius: 10,
+//     marginBottom: 10,
+//     borderWidth: 1,
+//     borderColor: "#e5e7eb",
+//     fontSize: 14,
 //   },
 
-//   back: {
-//     fontSize: 22,
-//     fontWeight: "700",
-//     color: "#111",
-//   },
-
-//   headerTitle: {
-//     fontSize: 20,
-//     fontWeight: "800",
-//     color: "#111827",
-//   },
-
-//   /* 🔥 FILTER TABS */
+//   /* 🔘 FILTER */
 //   filterRow: {
 //     flexDirection: "row",
 //     backgroundColor: "#e5e7eb",
@@ -438,22 +499,20 @@
 //     color: "#374151",
 //   },
 
-//   /* 🔥 BOOKING CARD */
+//   /* 📋 BOOKING CARD */
 //   card: {
-//     backgroundColor: "#ffffff",
+//     backgroundColor: "#fff",
 //     padding: 16,
-//     borderRadius: 18,
+//     borderRadius: 16,
 //     marginBottom: 14,
-
+//     elevation: 3,
 //     shadowColor: "#000",
-//     shadowOpacity: 0.06,
-//     shadowRadius: 8,
-//     shadowOffset: { width: 0, height: 4 },
-//     elevation: 4,
+//     shadowOpacity: 0.08,
+//     shadowRadius: 6,
 //   },
 
 //   car: {
-//     fontSize: 17,
+//     fontSize: 16,
 //     fontWeight: "800",
 //     color: "#111827",
 //   },
@@ -461,8 +520,7 @@
 //   service: {
 //     marginTop: 6,
 //     fontSize: 14,
-//     color: "#4b5563",
-//     fontWeight: "500",
+//     color: "#374151",
 //   },
 
 //   customer: {
@@ -471,49 +529,84 @@
 //     color: "#6b7280",
 //   },
 
-//   /* 🔥 STATUS BADGE */
 //   statusBadge: {
-//     alignSelf: "flex-start",
 //     marginTop: 8,
-//     paddingHorizontal: 10,
+//     alignSelf: "flex-start",
+//     backgroundColor: "#e5e7eb",
+//     paddingHorizontal: 8,
 //     paddingVertical: 4,
-//     borderRadius: 8,
+//     borderRadius: 6,
 //   },
 
 //   statusText: {
 //     fontSize: 11,
 //     fontWeight: "700",
+//     color: "#111827",
 //   },
 
-//   /* 🔥 ASSIGN BUTTON */
 //   assignBtn: {
-//     marginTop: 14,
+//     marginTop: 12,
 //     backgroundColor: "#111827",
 //     paddingVertical: 12,
-//     borderRadius: 12,
-//     alignItems: "center",
-//   },
-
-//   assignConfirmBtn: {
-//     marginTop: 14,
-//     backgroundColor: "#111827",
-//     paddingVertical: 14,
-//     borderRadius: 14,
+//     borderRadius: 10,
 //     alignItems: "center",
 //   },
 
 //   btnText: {
-//     color: "#ffffff",
+//     color: "#fff",
 //     fontWeight: "800",
 //     fontSize: 14,
-//     letterSpacing: 0.4,
 //   },
 
-//   /* 🔥 MODAL */
+//   /* 👨‍🔧 STAFF CARD */
+//   staffCard: {
+//     backgroundColor: "#fff",
+//     padding: 14,
+//     borderRadius: 14,
+//     marginBottom: 10,
+//     borderWidth: 1,
+//     borderColor: "#e5e7eb",
+//   },
+
+//   staffName: {
+//     fontWeight: "800",
+//     fontSize: 14,
+//     color: "#111827",
+//   },
+
+//   staffSub: {
+//     fontSize: 12,
+//     color: "#6b7280",
+//     marginTop: 2,
+//   },
+
+//   /* 📦 SELECTED BOOKING BOX */
+//   selectedBox: {
+//     backgroundColor: "#fff",
+//     padding: 14,
+//     borderRadius: 14,
+//     marginBottom: 14,
+//     borderWidth: 1,
+//     borderColor: "#e5e7eb",
+//   },
+
+//   selectedText: {
+//     fontWeight: "800",
+//     fontSize: 14,
+//     color: "#111827",
+//   },
+
+//   selectedSub: {
+//     color: "#6b7280",
+//     marginTop: 4,
+//     fontSize: 12,
+//   },
+
+//   /* 🪟 MODAL */
 //   modal: {
 //     flex: 1,
-//     backgroundColor: "#f9fafb",
 //     padding: 16,
+//     backgroundColor: "#f9fafb",
 //   },
 
 //   modalTitle: {
@@ -524,85 +617,39 @@
 //     color: "#111827",
 //   },
 
-//   selectedBox: {
-//     backgroundColor: "#ffffff",
-//     padding: 14,
-//     borderRadius: 14,
-//     marginBottom: 14,
-//     borderWidth: 1,
-//     borderColor: "#e5e7eb",
+//   assignConfirmBtn: {
+//     marginTop: 14,
+//     backgroundColor: "#111827",
+//     paddingVertical: 14,
+//     borderRadius: 12,
+//     alignItems: "center",
 //   },
 
-//   selectedText: {
-//     fontWeight: "800",
-//     fontSize: 15,
-//     color: "#111827",
-//   },
-
-//   selectedSub: {
-//     color: "#6b7280",
-//     marginTop: 4,
-//     fontSize: 13,
-//   },
-
-//   /* 🔥 MECHANIC CARD */
-//   staffCard: {
-//     backgroundColor: "#ffffff",
-//     padding: 14,
-//     borderRadius: 14,
-//     marginBottom: 12,
-//     borderWidth: 1,
-//     borderColor: "#e5e7eb",
-//   },
-
-//   staffName: {
-//     fontSize: 15,
-//     fontWeight: "800",
-//     color: "#111827",
-//   },
-
-//   staffSub: {
-//     fontSize: 12,
-//     color: "#6b7280",
-//     marginTop: 4,
-//   },
-
-//   /* 🔥 CLOSE BUTTON */
 //   closeBtn: {
 //     marginTop: 10,
 //     backgroundColor: "#ef4444",
 //     paddingVertical: 13,
-//     borderRadius: 14,
+//     borderRadius: 12,
 //     alignItems: "center",
 //   },
 
-//   /* 🔥 FLOATING BUTTON */
+//   /* ➕ FAB */
 //   fab: {
 //     position: "absolute",
-//     bottom: 28,
+//     bottom: 30,
 //     right: 20,
 //     backgroundColor: "#111827",
-//     width: 62,
-//     height: 62,
-//     borderRadius: 31,
+//     width: 60,
+//     height: 60,
+//     borderRadius: 30,
 //     justifyContent: "center",
 //     alignItems: "center",
-
+//     elevation: 6,
 //     shadowColor: "#000",
-//     shadowOpacity: 0.25,
-//     shadowRadius: 10,
-//     shadowOffset: { width: 0, height: 6 },
-//     elevation: 8,
-//   },
-
-//   fabText: {
-//     color: "#ffffff",
-//     fontSize: 30,
-//     fontWeight: "900",
-//     marginTop: -2,
+//     shadowOpacity: 0.2,
+//     shadowRadius: 6,
 //   },
 // });
-
 
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -628,6 +675,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../../firebase";
+import { Picker } from "@react-native-picker/picker";
 
 export default function AdminAssignServices() {
   const [bookings, setBookings] = useState([]);
@@ -637,6 +685,7 @@ export default function AdminAssignServices() {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [globalModalVisible, setGlobalModalVisible] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
@@ -659,34 +708,19 @@ export default function AdminAssignServices() {
     return unsub;
   }, []);
 
-  /* 🔥 DATE HELPERS */
-  const isSameDate = (date, compareDate) => {
-    return (
-      date.getDate() === compareDate.getDate() &&
-      date.getMonth() === compareDate.getMonth() &&
-      date.getFullYear() === compareDate.getFullYear()
+  /* ✅ STRICT UNASSIGNED FILTER */
+  const unassignedBookings = useMemo(() => {
+    return bookings.filter(
+      (b) =>
+        !b.assignedEmployeeId &&
+        !b.assignedEmployeeName &&
+        b.serviceStatus !== "Approved"
     );
-  };
-
-  const isToday = (date) => isSameDate(date, new Date());
-
-  const isYesterday = (date) => {
-    const y = new Date();
-    y.setDate(y.getDate() - 1);
-    return isSameDate(date, y);
-  };
+  }, [bookings]);
 
   /* 🔍 FILTER + SEARCH */
   const filteredBookings = useMemo(() => {
     return bookings.filter((b) => {
-      const isAssigned = !!b.assignedEmployeeId;
-
-      const assignedDate = b.assignedAt
-        ? b.assignedAt.toDate
-          ? b.assignedAt.toDate()
-          : new Date(b.assignedAt)
-        : null;
-
       const search = searchText.toLowerCase();
 
       const matchesSearch =
@@ -698,23 +732,8 @@ export default function AdminAssignServices() {
 
       if (!matchesSearch) return false;
 
-      if (filter === "notAssigned") return !isAssigned;
-
-      if (filter === "todayAssigned")
-        return (
-          b.serviceStatus === "Approved" &&
-          isAssigned &&
-          assignedDate &&
-          isToday(assignedDate)
-        );
-
-      if (filter === "yesterdayAssigned")
-        return (
-          b.serviceStatus === "Approved" &&
-          isAssigned &&
-          assignedDate &&
-          isYesterday(assignedDate)
-        );
+      if (filter === "notAssigned")
+        return !b.assignedEmployeeId && !b.assignedEmployeeName;
 
       if (filter === "all") return true;
 
@@ -722,7 +741,7 @@ export default function AdminAssignServices() {
     });
   }, [bookings, filter, searchText]);
 
-  /* 🔥 FETCH EMPLOYEES */
+  /* 🔥 FETCH EMPLOYEES (SORT BY LEAST JOBS) */
   const fetchAvailableEmployees = async () => {
     setLoadingEmployees(true);
 
@@ -730,23 +749,38 @@ export default function AdminAssignServices() {
 
     const list = snap.docs
       .map((d) => ({ id: d.id, ...d.data() }))
-      .filter((emp) => emp.status === "active" && emp.role === "mechanic");
+      .filter((emp) => emp.status === "active" && emp.role === "mechanic")
+      .sort(
+        (a, b) =>
+          (a.assignedBookingIds?.length || 0) -
+          (b.assignedBookingIds?.length || 0)
+      );
 
     setEmployees(list);
     setLoadingEmployees(false);
   };
 
-  /* 🔥 OPEN MODAL */
+  /* 🔥 OPEN CARD MODAL */
   const openAssignModal = async (booking) => {
+    if (booking.assignedEmployeeId) {
+      Alert.alert("Already Assigned");
+      return;
+    }
+
     setSelectedBooking(booking);
     setSelectedEmployeeId(null);
     await fetchAvailableEmployees();
     setModalVisible(true);
   };
 
-  /* 🔥 ASSIGN EMPLOYEE */
+  /* 🔥 ASSIGN FUNCTION */
   const assignEmployee = async () => {
     if (!selectedBooking || !selectedEmployeeId || assigning) return;
+
+    if (selectedBooking.assignedEmployeeId) {
+      Alert.alert("Already Assigned", "This service already has a mechanic.");
+      return;
+    }
 
     try {
       setAssigning(true);
@@ -803,6 +837,7 @@ export default function AdminAssignServices() {
       Alert.alert("Success", "Booking assigned");
 
       setModalVisible(false);
+      setGlobalModalVisible(false);
       setSelectedBooking(null);
       setSelectedEmployeeId(null);
     } catch (error) {
@@ -827,7 +862,15 @@ export default function AdminAssignServices() {
         <Text style={styles.statusText}>{item.serviceStatus}</Text>
       </View>
 
-      {!item.assignedEmployeeId && (
+      {/* 👨‍🔧 SHOW ASSIGNED NAME */}
+      {item.assignedEmployeeName && (
+        <Text style={{ marginTop: 6, color: "#16a34a", fontWeight: "700" }}>
+          👨‍🔧 {item.assignedEmployeeName}
+        </Text>
+      )}
+
+      {/* ✅ HIDE BUTTON IF ASSIGNED */}
+      {!item.assignedEmployeeId && !item.assignedEmployeeName && (
         <TouchableOpacity
           style={styles.assignBtn}
           onPress={() => openAssignModal(item)}
@@ -837,25 +880,6 @@ export default function AdminAssignServices() {
       )}
     </View>
   );
-
-  /* 🔥 EMPLOYEE CARD */
-  const renderEmployee = ({ item }) => {
-    const isSelected = selectedEmployeeId === item.id;
-    const jobCount = item.assignedBookingIds?.length || 0;
-
-    return (
-      <TouchableOpacity
-        style={[
-          styles.staffCard,
-          isSelected && { borderWidth: 2, borderColor: "#111" },
-        ]}
-        onPress={() => setSelectedEmployeeId(item.id)}
-      >
-        <Text style={styles.staffName}>{item.name}</Text>
-        <Text style={styles.staffSub}>Jobs: {jobCount}</Text>
-      </TouchableOpacity>
-    );
-  };
 
   if (loading) {
     return (
@@ -875,12 +899,10 @@ export default function AdminAssignServices() {
         style={styles.searchInput}
       />
 
-      {/* 🔘 FILTER BUTTONS */}
+      {/* 🔘 FILTER */}
       <View style={styles.filterRow}>
         {[
           { key: "notAssigned", label: "Not Assigned" },
-          { key: "todayAssigned", label: "Today" },
-          { key: "yesterdayAssigned", label: "Yesterday" },
           { key: "all", label: "All" },
         ].map((btn) => (
           <TouchableOpacity
@@ -903,7 +925,7 @@ export default function AdminAssignServices() {
         ))}
       </View>
 
-      {/* 🔥 BOOKING LIST */}
+      {/* 📋 LIST */}
       {filteredBookings.length === 0 ? (
         <Text style={styles.empty}>No Services Found</Text>
       ) : (
@@ -915,38 +937,84 @@ export default function AdminAssignServices() {
         />
       )}
 
-      {/* 🔥 MODAL */}
-      <Modal visible={modalVisible} animationType="slide">
-        <SafeAreaView style={styles.modal}>
-          <Text style={styles.modalTitle}>Select Mechanic</Text>
+      {/* ➕ GLOBAL ASSIGN BUTTON */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={async () => {
+          setSelectedBooking(null);
+          setSelectedEmployeeId(null);
+          await fetchAvailableEmployees();
+          setGlobalModalVisible(true);
+        }}
+      >
+        <Text style={{ color: "#fff", fontSize: 28, fontWeight: "900" }}>
+          +
+        </Text>
+      </TouchableOpacity>
 
-          {selectedBooking && (
-            <View style={styles.selectedBox}>
-              <Text style={styles.selectedText}>
-                {selectedBooking.brand} - {selectedBooking.model}
-              </Text>
-              <Text style={styles.selectedSub}>
-                Issue: {selectedBooking.issue}
-              </Text>
-            </View>
-          )}
+      {/* 🔥 GLOBAL MODAL */}
+      <Modal visible={globalModalVisible} animationType="slide">
+        <SafeAreaView style={styles.modal}>
+          <Text style={styles.modalTitle}>Assign Service</Text>
+
+          <Text style={{ fontWeight: "700", marginBottom: 6 }}>
+            Select Service
+          </Text>
+
+          <View style={styles.pickerBox}>
+            <Picker
+              selectedValue={selectedBooking?.id || ""}
+              onValueChange={(val) =>
+                setSelectedBooking(
+                  unassignedBookings.find((b) => b.id === val)
+                )
+              }
+            >
+              <Picker.Item label="Select service" value="" />
+              {unassignedBookings.map((b) => (
+                <Picker.Item
+                  key={b.id}
+                  label={`${b.brand} - ${b.model} (${b.name})`}
+                  value={b.id}
+                />
+              ))}
+            </Picker>
+          </View>
+
+          <Text style={{ fontWeight: "700", marginBottom: 6 }}>
+            Select Mechanic
+          </Text>
 
           {loadingEmployees ? (
             <ActivityIndicator size="large" />
           ) : (
-            <FlatList
-              data={employees}
-              keyExtractor={(item) => item.id}
-              renderItem={renderEmployee}
-            />
+            <View style={styles.pickerBox}>
+              <Picker
+                selectedValue={selectedEmployeeId}
+                onValueChange={setSelectedEmployeeId}
+              >
+                <Picker.Item label="Select mechanic" value="" />
+                {employees.map((emp) => (
+                  <Picker.Item
+                    key={emp.id}
+                    label={`${emp.name} (Jobs: ${
+                      emp.assignedBookingIds?.length || 0
+                    })`}
+                    value={emp.id}
+                  />
+                ))}
+              </Picker>
+            </View>
           )}
 
           <TouchableOpacity
             style={[
               styles.assignConfirmBtn,
-              !selectedEmployeeId && { backgroundColor: "#ccc" },
+              (!selectedEmployeeId || !selectedBooking) && {
+                backgroundColor: "#ccc",
+              },
             ]}
-            disabled={!selectedEmployeeId || assigning}
+            disabled={!selectedEmployeeId || !selectedBooking || assigning}
             onPress={assignEmployee}
           >
             <Text style={styles.btnText}>
@@ -956,7 +1024,7 @@ export default function AdminAssignServices() {
 
           <TouchableOpacity
             style={styles.closeBtn}
-            onPress={() => setModalVisible(false)}
+            onPress={() => setGlobalModalVisible(false)}
           >
             <Text style={styles.btnText}>Close</Text>
           </TouchableOpacity>
@@ -966,9 +1034,20 @@ export default function AdminAssignServices() {
   );
 }
 
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f4f6f8", padding: 16 },
-  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
+  container: {
+    flex: 1,
+    backgroundColor: "#f4f6f8",
+    padding: 16,
+  },
+
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   empty: {
     textAlign: "center",
     marginTop: 40,
@@ -976,6 +1055,8 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     fontWeight: "500",
   },
+
+  /* 🔍 SEARCH */
   searchInput: {
     backgroundColor: "#fff",
     padding: 12,
@@ -983,7 +1064,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 1,
     borderColor: "#e5e7eb",
+    fontSize: 14,
   },
+
+  /* 🔘 FILTER */
   filterRow: {
     flexDirection: "row",
     backgroundColor: "#e5e7eb",
@@ -991,33 +1075,76 @@ const styles = StyleSheet.create({
     padding: 4,
     marginBottom: 14,
   },
+
   filterBtn: {
     flex: 1,
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: "center",
   },
-  activeFilter: { backgroundColor: "#111827" },
-  filterText: { fontSize: 13, fontWeight: "700", color: "#374151" },
+
+  activeFilter: {
+    backgroundColor: "#111827",
+  },
+
+  filterText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#374151",
+  },
+
+  /* 📋 BOOKING CARD */
   card: {
     backgroundColor: "#fff",
     padding: 16,
     borderRadius: 16,
     marginBottom: 14,
-    elevation: 4,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
   },
-  car: { fontSize: 16, fontWeight: "800" },
-  service: { marginTop: 6, fontSize: 14 },
-  customer: { marginTop: 4, fontSize: 13, color: "#6b7280" },
+
+  car: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#111827",
+  },
+
+  service: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "#374151",
+  },
+
+  customer: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "#6b7280",
+  },
+
   statusBadge: {
     marginTop: 8,
     alignSelf: "flex-start",
     backgroundColor: "#e5e7eb",
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 6,
   },
-  statusText: { fontSize: 11, fontWeight: "700" },
+
+  statusText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#111827",
+  },
+
+  assignedText: {
+    marginTop: 6,
+    color: "#16a34a",
+    fontWeight: "700",
+    fontSize: 13,
+  },
+
   assignBtn: {
     marginTop: 12,
     backgroundColor: "#111827",
@@ -1025,22 +1152,54 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
-  btnText: { color: "#fff", fontWeight: "800" },
-  modal: { flex: 1, padding: 16, backgroundColor: "#f9fafb" },
+
+  btnText: {
+    color: "#fff",
+    fontWeight: "800",
+    fontSize: 14,
+  },
+
+  /* 🪟 MODAL */
+  modal: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#f9fafb",
+  },
+
   modalTitle: {
     fontSize: 20,
     fontWeight: "900",
     textAlign: "center",
     marginBottom: 16,
+    color: "#111827",
   },
-  selectedBox: {
+
+  /* 📦 PICKER BOX */
+  pickerBox: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 12,
     backgroundColor: "#fff",
-    padding: 14,
-    borderRadius: 14,
     marginBottom: 14,
   },
-  selectedText: { fontWeight: "800" },
-  selectedSub: { color: "#6b7280", marginTop: 4 },
+
+  assignConfirmBtn: {
+    marginTop: 14,
+    backgroundColor: "#111827",
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+
+  closeBtn: {
+    marginTop: 10,
+    backgroundColor: "#ef4444",
+    paddingVertical: 13,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+
+  /* 👨‍🔧 STAFF CARD (FUTURE USE) */
   staffCard: {
     backgroundColor: "#fff",
     padding: 14,
@@ -1049,20 +1208,55 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#e5e7eb",
   },
-  staffName: { fontWeight: "800" },
-  staffSub: { fontSize: 12, color: "#6b7280" },
-  assignConfirmBtn: {
-    marginTop: 14,
-    backgroundColor: "#111827",
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
+
+  staffName: {
+    fontWeight: "800",
+    fontSize: 14,
+    color: "#111827",
   },
-  closeBtn: {
-    marginTop: 10,
-    backgroundColor: "#ef4444",
-    paddingVertical: 13,
-    borderRadius: 12,
+
+  staffSub: {
+    fontSize: 12,
+    color: "#6b7280",
+    marginTop: 2,
+  },
+
+  /* 📦 SELECTED BOOKING BOX (CARD MODAL) */
+  selectedBox: {
+    backgroundColor: "#fff",
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+  },
+
+  selectedText: {
+    fontWeight: "800",
+    fontSize: 14,
+    color: "#111827",
+  },
+
+  selectedSub: {
+    color: "#6b7280",
+    marginTop: 4,
+    fontSize: 12,
+  },
+
+  /* ➕ FAB */
+  fab: {
+    position: "absolute",
+    bottom: 30,
+    right: 20,
+    backgroundColor: "#111827",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
     alignItems: "center",
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
   },
 });
