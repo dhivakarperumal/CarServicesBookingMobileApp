@@ -26,33 +26,43 @@ export default function MobileNavbar() {
   const [cartCount, setCartCount] = useState(0);
 
   /* ================= AUTH ================= */
-useEffect(() => {
-  let unsubCart = null;
+  useEffect(() => {
+    let unsubCart = null;
 
-  const unsubAuth = onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      setUserData(null);
-      setCartCount(0);
-      return;
-    }
+    const unsubAuth = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        setUserData(null);
+        setCartCount(0);
+        return;
+      }
 
-    // get user data
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (snap.exists()) setUserData(snap.data());
+      // get user data
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (snap.exists()) {
+        const data = snap.data();
+        setUserData(data);
 
-    // 🔥 LISTEN TO CART
-    const cartRef = collection(db, "users", user.uid, "cart");
+        // 🔥 AUTO REDIRECT BASED ON ROLE
+        if (data.role === "admin") {
+          router.replace("/(adminTabs)/home");
+        } else if (data.role === "mechanic") {
+          router.replace("/(EmployeesDash)/dashboard");
+        }
+      }
 
-    unsubCart = onSnapshot(cartRef, (snapshot) => {
-      setCartCount(snapshot.size); // number of products
+      // 🔥 LISTEN TO CART
+      const cartRef = collection(db, "users", user.uid, "cart");
+
+      unsubCart = onSnapshot(cartRef, (snapshot) => {
+        setCartCount(snapshot.size); // number of products
+      });
     });
-  });
 
-  return () => {
-    unsubAuth();
-    if (unsubCart) unsubCart();
-  };
-}, []);
+    return () => {
+      unsubAuth();
+      if (unsubCart) unsubCart();
+    };
+  }, []);
 
   const handleLogout = async () => {
     await signOut(auth);
