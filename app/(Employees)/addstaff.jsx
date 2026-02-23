@@ -220,185 +220,196 @@ export default function AddEditStaffScreen() {
       </View>
 
       <KeyboardAvoidingView
-  style={{ flex: 1 }}
-  behavior={Platform.OS === "ios" ? "padding" : "height"}
->
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={{ paddingBottom: 200 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={{ marginBottom: 16 }}>
+            <Text style={styles.label}>Full Name</Text>
+            <TextInput
+              placeholder="Enter full name"
+              placeholderTextColor="#64748b"
+              style={styles.input}
+              value={form.name}
+              onChangeText={(t) => setForm({ ...form, name: t })}
+            />
+          </View>
 
-<ScrollView
-  style={styles.container}
-  contentContainerStyle={{ paddingBottom: 200 }}
-  showsVerticalScrollIndicator={false}
-  keyboardShouldPersistTaps="handled"
->
-        <TextInput
-          placeholder="Full Name"
-          placeholderTextColor="#64748b"
-          style={styles.input}
-          value={form.name}
-          onChangeText={(t) => setForm({ ...form, name: t })}
-        />
+          <View style={{ marginBottom: 16 }}>
+  <Text style={styles.label}>Email Address</Text>
+  <TextInput
+    placeholder="Enter email"
+    placeholderTextColor="#64748b"
+    style={styles.input}
+    value={form.email}
+    onChangeText={(t) => setForm({ ...form, email: t })}
+  />
+</View>
 
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor="#64748b"
-          style={styles.input}
-          value={form.email}
-          onChangeText={(t) => setForm({ ...form, email: t })}
-        />
+          <View style={{ marginBottom: 16 }}>
+  <Text style={styles.label}>Phone Number</Text>
+  <TextInput
+    placeholder="Enter phone number"
+    placeholderTextColor="#64748b"
+    style={styles.input}
+    keyboardType="number-pad"
+    value={form.phone}
+    onChangeText={(t) => setForm({ ...form, phone: t, password: t })}
+  />
+</View>
 
-        <TextInput
-          placeholder="Phone"
-          placeholderTextColor="#64748b"
-          style={styles.input}
-          keyboardType="number-pad"
-          value={form.phone}
-          onChangeText={(t) => setForm({ ...form, phone: t, password: t })}
-        />
+          {!isEdit && (
+            <TextInput
+              placeholder="Generated Password"
+              placeholderTextColor="#64748b"
+              style={[styles.input, { backgroundColor: "#0f172a" }]}
+              value={form.password}
+              editable={false}
+            />
+          )}
 
-        {!isEdit && (
+          {/* ROLE */}
+          <View style={{ marginBottom: 16 }}>
+  <Text style={styles.label}>Role</Text>
+  <View style={styles.pickerBox}>
+    <Picker
+      selectedValue={form.role}
+      onValueChange={(v) => setForm({ ...form, role: v })}
+      dropdownIconColor="#38bdf8"
+      style={{ color: "#fff" }}
+    >
+      <Picker.Item label="Select Role" value="" />
+      {roles.map((r) => (
+        <Picker.Item key={r} label={r} value={r} />
+      ))}
+    </Picker>
+  </View>
+</View>
+
+          {/* DEPARTMENT */}
+          <View style={styles.pickerBox}>
+            <Picker
+              selectedValue={form.department}
+              onValueChange={(v) => setForm({ ...form, department: v })}
+              dropdownIconColor="#38bdf8"
+              style={{ color: "#fff" }}
+            >
+              <Picker.Item label="Select Department" value="" />
+              {departments.map((d) => (
+                <Picker.Item key={d} label={d} value={d} />
+              ))}
+            </Picker>
+          </View>
+
+          {/* SHIFT */}
+          <View style={styles.pickerBox}>
+            <Picker
+              selectedValue={form.shift}
+              onValueChange={(v) => setForm({ ...form, shift: v })}
+              dropdownIconColor="#38bdf8"
+              style={{ color: "#fff" }}
+            >
+              <Picker.Item label="Select Shift" value="" />
+              {shifts.map((s) => (
+                <Picker.Item key={s} label={s} value={s} />
+              ))}
+            </Picker>
+          </View>
+
           <TextInput
-            placeholder="Generated Password"
-            placeholderTextColor="#64748b"
-            style={[styles.input, { backgroundColor: "#0f172a" }]}
-            value={form.password}
-            editable={false}
-          />
-        )}
-
-        {/* ROLE */}
-        <View style={styles.pickerBox}>
-          <Picker
-            selectedValue={form.role}
-            onValueChange={(v) => setForm({ ...form, role: v })}
-            dropdownIconColor="#38bdf8"
-            style={{ color: "#fff" }}
-          >
-            <Picker.Item label="Select Role" value="" />
-            {roles.map((r) => (
-              <Picker.Item key={r} label={r} value={r} />
-            ))}
-          </Picker>
-        </View>
-
-        {/* DEPARTMENT */}
-        <View style={styles.pickerBox}>
-          <Picker
-            selectedValue={form.department}
-            onValueChange={(v) => setForm({ ...form, department: v })}
-            dropdownIconColor="#38bdf8"
-            style={{ color: "#fff" }}
-          >
-            <Picker.Item label="Select Department" value="" />
-            {departments.map((d) => (
-              <Picker.Item key={d} label={d} value={d} />
-            ))}
-          </Picker>
-        </View>
-
-        {/* SHIFT */}
-        <View style={styles.pickerBox}>
-          <Picker
-            selectedValue={form.shift}
-            onValueChange={(v) => setForm({ ...form, shift: v })}
-            dropdownIconColor="#38bdf8"
-            style={{ color: "#fff" }}
-          >
-            <Picker.Item label="Select Shift" value="" />
-            {shifts.map((s) => (
-              <Picker.Item key={s} label={s} value={s} />
-            ))}
-          </Picker>
-        </View>
-
-        <TextInput
-          placeholder="Salary"
-          placeholderTextColor="#64748b"
-          style={styles.input}
-          keyboardType="numeric"
-          value={form.salary}
-          onChangeText={(t) => setForm({ ...form, salary: t })}
-        />
-
-        {/* GENDER */}
-        <View style={styles.pickerBox}>
-          <Picker
-            selectedValue={form.gender}
-            onValueChange={(v) => setForm({ ...form, gender: v })}
-            dropdownIconColor="#38bdf8"
-            style={{ color: "#fff" }}
-          >
-            <Picker.Item label="Select Gender" value="" />
-            {genders.map((g) => (
-              <Picker.Item key={g} label={g} value={g} />
-            ))}
-          </Picker>
-        </View>
-
-        {/* DATE */}
-        <TouchableOpacity onPress={() => setShowDate("dob")}>
-          <TextInput
-            placeholder="Date of Birth"
+            placeholder="Salary"
             placeholderTextColor="#64748b"
             style={styles.input}
-            value={form.dob}
-            editable={false}
+            keyboardType="numeric"
+            value={form.salary}
+            onChangeText={(t) => setForm({ ...form, salary: t })}
           />
-        </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => setShowDate("joining")}>
+          {/* GENDER */}
+          <View style={styles.pickerBox}>
+            <Picker
+              selectedValue={form.gender}
+              onValueChange={(v) => setForm({ ...form, gender: v })}
+              dropdownIconColor="#38bdf8"
+              style={{ color: "#fff" }}
+            >
+              <Picker.Item label="Select Gender" value="" />
+              {genders.map((g) => (
+                <Picker.Item key={g} label={g} value={g} />
+              ))}
+            </Picker>
+          </View>
+
+          {/* DATE */}
+          <TouchableOpacity onPress={() => setShowDate("dob")}>
+            <TextInput
+              placeholder="Date of Birth"
+              placeholderTextColor="#64748b"
+              style={styles.input}
+              value={form.dob}
+              editable={false}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setShowDate("joining")}>
+            <TextInput
+              placeholder="Joining Date"
+              placeholderTextColor="#64748b"
+              style={styles.input}
+              value={form.joiningDate}
+              editable={false}
+            />
+          </TouchableOpacity>
+
+          {/* TIME */}
+          <TouchableOpacity onPress={() => setShowTime("timeIn")}>
+            <TextInput
+              placeholder="Time In"
+              placeholderTextColor="#64748b"
+              style={styles.input}
+              value={form.timeIn}
+              editable={false}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setShowTime("timeOut")}>
+            <TextInput
+              placeholder="Time Out"
+              placeholderTextColor="#64748b"
+              style={styles.input}
+              value={form.timeOut}
+              editable={false}
+            />
+          </TouchableOpacity>
+
           <TextInput
-            placeholder="Joining Date"
+            placeholder="Address"
             placeholderTextColor="#64748b"
-            style={styles.input}
-            value={form.joiningDate}
-            editable={false}
+            style={[styles.input, { height: 120, textAlignVertical: "top" }]}
+            multiline
+            value={form.address}
+            onChangeText={(t) => setForm({ ...form, address: t })}
           />
-        </TouchableOpacity>
 
-        {/* TIME */}
-        <TouchableOpacity onPress={() => setShowTime("timeIn")}>
-          <TextInput
-            placeholder="Time In"
-            placeholderTextColor="#64748b"
-            style={styles.input}
-            value={form.timeIn}
-            editable={false}
-          />
-        </TouchableOpacity>
+          {/* PHOTO */}
+          <TouchableOpacity style={styles.uploadBtn} onPress={pickImage}>
+            <Text style={styles.uploadText}>
+              {form.photo ? "Photo Selected" : "Upload Photo"}
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => setShowTime("timeOut")}>
-          <TextInput
-            placeholder="Time Out"
-            placeholderTextColor="#64748b"
-            style={styles.input}
-            value={form.timeOut}
-            editable={false}
-          />
-        </TouchableOpacity>
-
-        <TextInput
-          placeholder="Address"
-          placeholderTextColor="#64748b"
-          style={[styles.input, { height: 120, textAlignVertical: "top" }]}
-          multiline
-          value={form.address}
-          onChangeText={(t) => setForm({ ...form, address: t })}
-        />
-
-        {/* PHOTO */}
-        <TouchableOpacity style={styles.uploadBtn} onPress={pickImage}>
-          <Text style={styles.uploadText}>
-            {form.photo ? "Photo Selected" : "Upload Photo"}
-          </Text>
-        </TouchableOpacity>
-
-        {/* SAVE */}
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSubmit}>
-          <Text style={styles.saveText}>
-            {loading ? "Saving..." : "Save Employee"}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
+          {/* SAVE */}
+          <TouchableOpacity style={styles.saveBtn} onPress={handleSubmit}>
+            <Text style={styles.saveText}>
+              {loading ? "Saving..." : "Save Employee"}
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
       </KeyboardAvoidingView>
 
       {/* DATE PICKERS */}
@@ -495,6 +506,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#0b3b6f",
     color: "#fff",
+  },
+
+  label: {
+    color: "#94a3b8",
+    fontSize: 12,
+    fontWeight: "600",
+    marginBottom: 6,
+    marginLeft: 4,
   },
 
   pickerBox: {
