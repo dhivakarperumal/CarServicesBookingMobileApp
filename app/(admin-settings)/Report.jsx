@@ -41,15 +41,15 @@ export default function ReportsScreen() {
   /* FIRESTORE */
   useEffect(() => {
     const u1 = onSnapshot(collection(db, "bookings"), (s) =>
-      setAppointments(s.docs.map((d) => ({ id: d.id, ...d.data() })))
+      setAppointments(s.docs.map((d) => ({ id: d.id, ...d.data() }))),
     );
 
     const u2 = onSnapshot(collection(db, "carInventory"), (s) =>
-      setInventory(s.docs.map((d) => ({ id: d.id, ...d.data() })))
+      setInventory(s.docs.map((d) => ({ id: d.id, ...d.data() }))),
     );
 
     const u3 = onSnapshot(collection(db, "billings"), (s) =>
-      setBillings(s.docs.map((d) => ({ id: d.id, ...d.data() })))
+      setBillings(s.docs.map((d) => ({ id: d.id, ...d.data() }))),
     );
 
     return () => {
@@ -81,9 +81,9 @@ export default function ReportsScreen() {
     return rows.sort((a, b) => b.month.localeCompare(a.month));
   }, [appointments, inventory, billings]);
 
-  const availableMonths = [
-    ...new Set(reports.map((r) => r.month)),
-  ].sort((a, b) => b.localeCompare(a));
+  const availableMonths = [...new Set(reports.map((r) => r.month))].sort(
+    (a, b) => b.localeCompare(a),
+  );
 
   const filteredReports = reports.filter((r) => {
     const typeMatch = typeFilter === "All" || r.type === typeFilter;
@@ -96,20 +96,16 @@ export default function ReportsScreen() {
     const rows = report.items
       .map((i, idx) => {
         const date = dayjs(
-          i.createdAt?.toDate() || i.updatedAt?.toDate()
+          i.createdAt?.toDate() || i.updatedAt?.toDate(),
         ).format("DD MMM YYYY");
 
-        const name =
-          i.customerName ||
-          i.partName ||
-          i.name ||
-          "-";
+        const name = i.customerName || i.partName || i.name || "-";
 
         const amount = i.grandTotal
           ? `₹${i.grandTotal}`
           : i.stockQty
-          ? `Stock: ${i.stockQty}`
-          : "-";
+            ? `Stock: ${i.stockQty}`
+            : "-";
 
         return `
           <tr>
@@ -146,12 +142,13 @@ export default function ReportsScreen() {
 
   /* UI */
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#15173D" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0f172a" }}>
       <ScrollView style={styles.container}>
         {/* FILTERS */}
         <View style={styles.row}>
           <Picker
             selectedValue={typeFilter}
+            dropdownIconColor="#38bdf8"
             style={styles.picker}
             onValueChange={setTypeFilter}
           >
@@ -163,6 +160,7 @@ export default function ReportsScreen() {
 
           <Picker
             selectedValue={monthFilter}
+            dropdownIconColor="#38bdf8"
             style={styles.picker}
             onValueChange={setMonthFilter}
           >
@@ -184,7 +182,7 @@ export default function ReportsScreen() {
           renderItem={({ item }) => (
             <View style={styles.card}>
               <Text style={styles.bold}>{item.name}</Text>
-              <Text>{item.type}</Text>
+              <Text style={{ color: "#94a3b8" }}>{item.type}</Text>
 
               <View style={styles.actions}>
                 <TouchableOpacity
@@ -208,11 +206,11 @@ export default function ReportsScreen() {
 
       {/* MODAL */}
       <Modal visible={!!selectedReport} animationType="slide">
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
           <View style={styles.modalHeader}>
             <Text style={styles.bold}>{selectedReport?.name}</Text>
             <TouchableOpacity onPress={() => setSelectedReport(null)}>
-              <Ionicons name="close" size={26} />
+              <Ionicons name="close" size={26} color="#38bdf8" />
             </TouchableOpacity>
           </View>
 
@@ -221,17 +219,16 @@ export default function ReportsScreen() {
             keyExtractor={(_, i) => i.toString()}
             renderItem={({ item, index }) => (
               <View style={styles.modalRow}>
-                <Text>{index + 1}</Text>
-                <Text>
+                <Text style={{ color: "#94a3b8" }}>{index + 1}</Text>
+
+                <Text style={{ color: "#94a3b8" }}>
                   {dayjs(
-                    item.createdAt?.toDate() ||
-                      item.updatedAt?.toDate()
+                    item.createdAt?.toDate() || item.updatedAt?.toDate(),
                   ).format("DD MMM YYYY")}
                 </Text>
-                <Text>
-                  {item.customerName ||
-                    item.partName ||
-                    item.name}
+
+                <Text style={{ color: "#fff", fontWeight: "600" }}>
+                  {item.customerName || item.partName || item.name}
                 </Text>
               </View>
             )}
@@ -243,46 +240,82 @@ export default function ReportsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f1f5f9", padding: 16 },
-
-  row: { flexDirection: "row", gap: 10, marginBottom: 10 },
-  picker: { flex: 1, backgroundColor: "#fff" },
-
-  card: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
+  container: {
+    flex: 1,
+    backgroundColor: "#020617",
+    padding: 16,
   },
 
-  bold: { fontWeight: "bold" },
+  row: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+  },
 
+  picker: {
+    flex: 1,
+    backgroundColor: "#0f172a",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    color: "#fff",
+  },
+
+  card: {
+    backgroundColor: "#0f172a",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+
+  bold: {
+    fontWeight: "800",
+    color: "#38bdf8",
+    fontSize: 15,
+  },
   actions: { flexDirection: "row", gap: 10, marginTop: 8 },
 
   viewBtn: {
     backgroundColor: "#2563eb",
-    padding: 8,
-    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 12,
   },
 
   pdfBtn: {
     backgroundColor: "#16a34a",
-    padding: 8,
-    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 12,
   },
 
-  btnText: { color: "#fff" },
+  btnText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 13,
+  },
 
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     padding: 16,
+    backgroundColor: "#0f172a",
+    borderBottomWidth: 1,
+    borderColor: "#0b3b6f",
   },
 
   modalRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: 12,
+    padding: 14,
     borderBottomWidth: 1,
+    borderColor: "#0b3b6f",
   },
 });
