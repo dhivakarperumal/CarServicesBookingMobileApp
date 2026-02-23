@@ -148,7 +148,7 @@ export default function Checkout() {
         await clearCart();
 
         Alert.alert("Success", `Order ${orderNumber} placed`);
-        router.push("/account");
+        router.push("/(tabs)/profile");
     };
 
     // ================= PLACE ORDER =================
