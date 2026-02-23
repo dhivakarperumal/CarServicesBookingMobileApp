@@ -106,14 +106,14 @@ export default function Checkout() {
         await reduceStockAfterPurchase(items);
 
         await saveUserAddress(uid, {
-  fullName: shipping.name,
-  email: shipping.email,
-  phone: shipping.phone,
-  street: shipping.address,
-  city: shipping.city,
-  state: shipping.state,
-  pinCode: shipping.zip,
-});
+            fullName: shipping.name,
+            email: shipping.email,
+            phone: shipping.phone,
+            street: shipping.address,
+            city: shipping.city,
+            state: shipping.state,
+            pinCode: shipping.zip,
+        });
 
         const orderNumber = await generateOrderNumber();
 
@@ -148,52 +148,55 @@ export default function Checkout() {
         await clearCart();
 
         Alert.alert("Success", `Order ${orderNumber} placed`);
-        router.push("/(tabs)/profile");
+        router.push({
+            pathname: "/(tabs)/profile",
+            params: { tab: "orders" },
+        });
     };
 
     // ================= PLACE ORDER =================
-const placeOrder = async () => {
-  if (!items.length)
-    return Alert.alert("Cart is empty");
+    const placeOrder = async () => {
+        if (!items.length)
+            return Alert.alert("Cart is empty");
 
-  if (!shipping.name || !shipping.phone || !shipping.address)
-    return Alert.alert("Fill delivery details");
+        if (!shipping.name || !shipping.phone || !shipping.address)
+            return Alert.alert("Fill delivery details");
 
-  setPlacing(true);
+        setPlacing(true);
 
-  try {
-    // CASH FLOW
-    if (paymentMethod === "CASH") {
-      await saveOrder();
-      return;
-    }
+        try {
+            // CASH FLOW
+            if (paymentMethod === "CASH") {
+                await saveOrder();
+                return;
+            }
 
-    // ONLINE FLOW
-    const options = {
-      key: "rzp_test_SGj8n5SyKSE10b", // replace with your key
-      amount: total * 100,
-      currency: "INR",
-      name: "car service booking",
-      description: "Order Payment",
-      prefill: {
-        name: shipping.name,
-        email: shipping.email,
-        contact: shipping.phone,
-      },
-      theme: { color: "#0EA5E9" },
+            // ONLINE FLOW
+            const options = {
+                key: "rzp_test_SGj8n5SyKSE10b", // replace with your key
+                amount: total * 100,
+                currency: "INR",
+                name: "car service booking",
+                description: "Order Payment",
+                prefill: {
+                    name: shipping.name,
+                    email: shipping.email,
+                    contact: shipping.phone,
+                },
+                theme: { color: "#0EA5E9" },
+            };
+
+            const data = await RazorpayCheckout.open(options);
+
+            // Payment successful
+            await saveOrder(data.razorpay_payment_id);
+
+        } catch (err: any) {
+            Alert.alert("Payment Failed", err.description || err.message);
+        } finally {
+            setPlacing(false);
+        }
     };
-
-    const data = await RazorpayCheckout.open(options);
-
-    // Payment successful
-    await saveOrder(data.razorpay_payment_id);
-
-  } catch (err: any) {
-    Alert.alert("Payment Failed", err.description || err.message);
-  } finally {
-    setPlacing(false);
-  }
-};
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
@@ -258,7 +261,7 @@ const placeOrder = async () => {
                     onChangeText={(v) => setShipping({ ...shipping, zip: v })}
                 />
 
-                
+
                 <TextInput
                     placeholder="ADDRESS"
                     placeholderTextColor="#64748B"
@@ -289,23 +292,23 @@ const placeOrder = async () => {
 
                 <Text style={styles.section}>Payment Method</Text>
 
-<TouchableOpacity
-  onPress={() => setPaymentMethod("CASH")}
-  style={styles.paymentRow}
->
-  <Text style={styles.itemText}>
-    {paymentMethod === "CASH" ? "🔘" : "⚪"} Cash on Delivery
-  </Text>
-</TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => setPaymentMethod("CASH")}
+                    style={styles.paymentRow}
+                >
+                    <Text style={styles.itemText}>
+                        {paymentMethod === "CASH" ? "🔘" : "⚪"} Cash on Delivery
+                    </Text>
+                </TouchableOpacity>
 
-<TouchableOpacity
-  onPress={() => setPaymentMethod("ONLINE")}
-  style={styles.paymentRow}
->
-  <Text style={styles.itemText}>
-    {paymentMethod === "ONLINE" ? "🔘" : "⚪"} Online Payment
-  </Text>
-</TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => setPaymentMethod("ONLINE")}
+                    style={styles.paymentRow}
+                >
+                    <Text style={styles.itemText}>
+                        {paymentMethod === "ONLINE" ? "🔘" : "⚪"} Online Payment
+                    </Text>
+                </TouchableOpacity>
 
                 <TouchableOpacity
                     style={styles.placeBtn}
@@ -385,6 +388,6 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     paymentRow: {
-  marginBottom: 10,
-},
+        marginBottom: 10,
+    },
 });

@@ -13,12 +13,22 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import MyOrder from "../../components/MyOrder";
 import ManageAddress from "../../components/ManageAddress";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function AccountScreen() {
+  const params = useLocalSearchParams();
+  const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [activeTab, setActiveTab] = useState("servicestatus");
+
+  useEffect(() => {
+    if (params?.tab) {
+      setActiveTab(String(params.tab));
+      router.setParams({ tab: undefined });
+    }
+  }, [params?.tab]);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
