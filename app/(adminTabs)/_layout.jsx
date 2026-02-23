@@ -221,6 +221,15 @@ function AdminHeader({ title = "Admin" }) {
               }}
             />
 
+             <MenuItem
+              icon="home-outline"
+              label="Home"
+              onPress={() => {
+                setMenuVisible(false);
+                router.push("/(tabs)index");
+              }}
+            />
+
             <MenuItem
               icon="log-out-outline"
               label="Logout"
