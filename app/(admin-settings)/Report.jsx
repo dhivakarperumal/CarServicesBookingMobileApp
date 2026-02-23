@@ -178,6 +178,7 @@ export default function ReportsScreen() {
         {/* LIST */}
         <FlatList
           data={filteredReports}
+          contentContainerStyle={{ paddingBottom: 120 }}
           keyExtractor={(item, i) => i.toString()}
           renderItem={({ item }) => (
             <View style={styles.card}>
