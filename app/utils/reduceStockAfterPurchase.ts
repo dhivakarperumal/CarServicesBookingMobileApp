@@ -5,12 +5,6 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebase";
 
-/**
- * Reduce product stock after successful order
- * - Reduces totalStock
- * - Reduces matching variant.stock
- * - Uses Firestore transaction (safe)
- */
 export const reduceStockAfterPurchase = async (
   cartItems: any[]
 ) => {
@@ -19,28 +13,35 @@ export const reduceStockAfterPurchase = async (
   }
 
   await runTransaction(db, async (transaction) => {
-    for (const item of cartItems) {
-      /**
-       * REQUIRED FIELDS:
-       * item.docId
-       * item.quantity
-       * item.sku
-       */
-
+    /* =============================
+       1️⃣ CREATE ALL REFERENCES
+    ============================= */
+    const productRefs = cartItems.map((item) => {
       if (!item.docId || !item.quantity) {
         throw new Error("INVALID_CART_ITEM");
       }
+      return doc(db, "products", item.docId);
+    });
 
-      const productRef = doc(db, "products", item.docId);
-      const productSnap = await transaction.get(productRef);
+    /* =============================
+       2️⃣ READ ALL PRODUCTS FIRST
+    ============================= */
+    const productSnaps = await Promise.all(
+      productRefs.map((ref) => transaction.get(ref))
+    );
 
-      if (!productSnap.exists()) {
+    /* =============================
+       3️⃣ PROCESS & UPDATE
+    ============================= */
+    productSnaps.forEach((snap, index) => {
+      if (!snap.exists()) {
         throw new Error("PRODUCT_NOT_FOUND");
       }
 
-      const product = productSnap.data();
+      const product = snap.data();
+      const item = cartItems[index];
 
-      /* ===== TOTAL STOCK CHECK ===== */
+      // TOTAL STOCK CHECK
       if (
         typeof product.totalStock !== "number" ||
         product.totalStock < item.quantity
@@ -48,7 +49,6 @@ export const reduceStockAfterPurchase = async (
         throw new Error(`OUT_OF_STOCK: ${item.name}`);
       }
 
-      /* ===== VARIANT UPDATE ===== */
       let variantUpdated = false;
 
       const updatedVariants = Array.isArray(product.variants)
@@ -76,12 +76,12 @@ export const reduceStockAfterPurchase = async (
         throw new Error(`VARIANT_NOT_FOUND: ${item.name}`);
       }
 
-      /* ===== UPDATE PRODUCT ===== */
-      transaction.update(productRef, {
+      // UPDATE AFTER ALL READS
+      transaction.update(productRefs[index], {
         totalStock: product.totalStock - item.quantity,
         variants: updatedVariants,
         updatedAt: serverTimestamp(),
       });
-    }
+    });
   });
 };
