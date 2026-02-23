@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "../../firebase";
+import { KeyboardAvoidingView, Platform } from "react-native";
 
 export default function AssignedBookings() {
   const [services, setServices] = useState([]);
@@ -23,7 +24,7 @@ export default function AssignedBookings() {
   useEffect(() => {
     const q = query(
       collection(db, "assignedServices"),
-      orderBy("assignedAt", "desc")
+      orderBy("assignedAt", "desc"),
     );
 
     const unsub = onSnapshot(q, (snap) => {
@@ -63,13 +64,13 @@ export default function AssignedBookings() {
   const getStatusStyle = (status) => {
     switch (status) {
       case "Completed":
-        return { bg: "#d1fae5", text: "#065f46" };
+        return { bg: "#10b981", text: "#fff" };
       case "In Progress":
-        return { bg: "#e0f2fe", text: "#075985" };
+        return { bg: "#38bdf8", text: "#020617" };
       case "Parts Added":
-        return { bg: "#ede9fe", text: "#5b21b6" };
+        return { bg: "#8b5cf6", text: "#fff" };
       default:
-        return { bg: "#fef3c7", text: "#92400e" };
+        return { bg: "#f59e0b", text: "#020617" };
     }
   };
 
@@ -83,9 +84,7 @@ export default function AssignedBookings() {
           Booking ID: {item.bookingDocId || "N/A"}
         </Text>
 
-        <Text style={styles.idText}>
-          Service ID: {item.serviceId || "N/A"}
-        </Text>
+        <Text style={styles.idText}>Service ID: {item.serviceId || "N/A"}</Text>
 
         <Text style={styles.car}>
           {item.carBrand} - {item.carModel}
@@ -105,9 +104,7 @@ export default function AssignedBookings() {
         {/* MECHANIC */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Mechanic</Text>
-          <Text style={styles.subText}>
-            {item.employeeName}
-          </Text>
+          <Text style={styles.subText}>{item.employeeName}</Text>
         </View>
 
         {item.partsTotalCost ? (
@@ -133,52 +130,57 @@ export default function AssignedBookings() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* 🔎 SEARCH */}
-      <TextInput
-        placeholder="Search booking, service, customer, car..."
-        value={search}
-        onChangeText={setSearch}
-        style={styles.search}
-      />
-
-      {/* 🎛 FILTER TABS */}
-      <View style={styles.filterRow}>
-        {["all", "Assigned", "In Progress", "Parts Added", "Completed"].map(
-          (f) => (
-            <TouchableOpacity
-              key={f}
-              style={[
-                styles.filterBtn,
-                filter === f && styles.activeFilter,
-              ]}
-              onPress={() => setFilter(f)}
-            >
-              <Text
-                style={[
-                  styles.filterText,
-                  filter === f && { color: "#fff" },
-                ]}
-              >
-                {f}
-              </Text>
-            </TouchableOpacity>
-          )
-        )}
-      </View>
-
-      {/* 📋 LIST */}
-      {filteredServices.length === 0 ? (
-        <Text style={styles.empty}>No Assigned Services</Text>
-      ) : (
-        <FlatList
-          data={filteredServices}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 20 }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <SafeAreaView style={styles.container}>
+        {/* 🔎 SEARCH */}
+        <TextInput
+          placeholder="Search booking, service, customer, car..."
+          placeholderTextColor="#64748b"
+          value={search}
+          onChangeText={setSearch}
+          style={styles.search}
         />
-      )}
-    </SafeAreaView>
+
+        {/* 🎛 FILTER TABS */}
+        <View style={styles.filterRow}>
+          {["all", "Assigned", "In Progress", "Parts Added", "Completed"].map(
+            (f) => (
+              <TouchableOpacity
+                key={f}
+                style={[styles.filterBtn, filter === f && styles.activeFilter]}
+                onPress={() => setFilter(f)}
+              >
+                <Text
+                  style={[styles.filterText, filter === f && { color: "#fff" }]}
+                >
+                  {f}
+                </Text>
+              </TouchableOpacity>
+            ),
+          )}
+        </View>
+
+        {/* 📋 LIST */}
+        {filteredServices.length === 0 ? (
+          <Text style={styles.empty}>No Assigned Services</Text>
+        ) : (
+          <FlatList
+            data={filteredServices}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: 250,
+              flexGrow: 1,
+            }}
+          />
+        )}
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -186,7 +188,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#f4f6f9",
+    backgroundColor: "#020617",
   },
 
   loader: {
@@ -196,37 +198,43 @@ const styles = StyleSheet.create({
   },
 
   search: {
-  backgroundColor: "#fff",
-  padding: 12,
-  borderRadius: 10,
-  marginBottom: 12,
-  borderWidth: 1,
-  borderColor: "#e5e7eb",
-},
+    backgroundColor: "#0f172a",
+    padding: 16,
+    borderRadius: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    color: "#fff",
+    fontSize: 15,
+  },
+  filterRow: {
+    flexDirection: "row",
+    backgroundColor: "#0f172a",
+    borderRadius: 16,
+    padding: 6,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+  },
 
-filterRow: {
-  flexDirection: "row",
-  flexWrap: "wrap",
-  marginBottom: 12,
-  gap: 6,
-},
+  filterBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: "center",
+  },
 
-filterBtn: {
-  paddingVertical: 6,
-  paddingHorizontal: 10,
-  backgroundColor: "#e5e7eb",
-  borderRadius: 8,
-},
-
-activeFilter: {
-  backgroundColor: "#111827",
-},
-
-filterText: {
-  fontSize: 12,
-  fontWeight: "700",
-  color: "#374151",
-},
+  activeFilter: {
+    backgroundColor: "#2563eb",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+  },
+  filterText: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#64748b",
+  },
 
   /* 🔥 HEADER */
   header: {
@@ -258,57 +266,55 @@ filterText: {
 
   /* 🔥 CARD */
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#0f172a",
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 18,
     marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
 
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
   },
 
   idText: {
-  fontSize: 12,
-  fontWeight: "700",
-  color: "#2563eb",
-},
-
-issue: {
-  marginTop: 6,
-  fontSize: 14,
-  color: "#4b5563",
-  fontWeight: "600",
-},
-
-section: {
-  marginTop: 8,
-  paddingTop: 6,
-  borderTopWidth: 1,
-  borderTopColor: "#e5e7eb",
-},
-
-sectionTitle: {
-  fontSize: 13,
-  fontWeight: "800",
-  color: "#111827",
-},
-
-parts: {
-  marginTop: 6,
-  fontSize: 13,
-  fontWeight: "700",
-  color: "#059669",
-},
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#94a3b8",
+  },
 
   car: {
     fontWeight: "800",
-    fontSize: 16,
-    color: "#111827",
+    fontSize: 18,
+    color: "#38bdf8",
+  },
+  issue: {
+    marginTop: 8,
+    fontSize: 15,
+    color: "#fff",
+    lineHeight: 20,
   },
 
+  section: {
+    marginTop: 8,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(229,231,235,0.25)",
+  },
+
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#e5e7eb",
+  },
+
+  parts: {
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#10b981",
+  },
   service: {
     marginTop: 6,
     fontSize: 14,
@@ -317,22 +323,23 @@ parts: {
   },
 
   subText: {
-    marginTop: 4,
-    fontSize: 13,
-    color: "#6b7280",
+    marginTop: 6,
+    fontSize: 14,
+    color: "#cbd5f5",
   },
-
   /* 🔥 STATUS BADGE */
   statusBadge: {
-    alignSelf: "flex-start",
-    marginTop: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    position: "absolute",
+    top: 12,
+    right: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    shadowOpacity: 0.4,
   },
 
   statusText: {
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: 12,
+    fontWeight: "900",
   },
 });

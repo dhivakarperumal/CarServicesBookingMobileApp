@@ -28,7 +28,7 @@ export default function StaffProfile() {
 
         const q = query(
           collection(db, "employees"),
-          where("authUid", "==", uid)
+          where("authUid", "==", uid),
         );
 
         const snap = await getDocs(q);
@@ -62,23 +62,37 @@ export default function StaffProfile() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 🔥 PROFILE CARD */}
+      {/* PROFILE CARD */}
       <View style={styles.card}>
-        <Text style={styles.name}>{employee?.name || "Staff"}</Text>
-
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>
-            {employee?.role || "Mechanic"}
-          </Text>
+        {/* ROLE BADGE */}
+        <View style={styles.roleBadge}>
+          <Text style={styles.roleText}>{employee?.role || "Mechanic"}</Text>
         </View>
 
-        <Text style={styles.info}>📞 {employee?.phone || "-"}</Text>
-        <Text style={styles.info}>🏢 {employee?.department || "-"}</Text>
-        <Text style={styles.info}>⏰ {employee?.shift || "-"}</Text>
-        <Text style={styles.info}>💰 Salary: ₹{employee?.salary || "-"}</Text>
+        <Text style={styles.name}>{employee?.name || "Staff"}</Text>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Phone</Text>
+          <Text style={styles.value}>{employee?.phone || "-"}</Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Department</Text>
+          <Text style={styles.value}>{employee?.department || "-"}</Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Shift</Text>
+          <Text style={styles.value}>{employee?.shift || "-"}</Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Salary</Text>
+          <Text style={styles.salary}>₹{employee?.salary || "-"}</Text>
+        </View>
       </View>
 
-      {/* 🔥 LOGOUT BUTTON */}
+      {/* LOGOUT */}
       <TouchableOpacity style={styles.logout} onPress={handleLogout}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
@@ -87,62 +101,99 @@ export default function StaffProfile() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#f4f6f9" },
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#020617",
+  },
 
-  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-  /* 🔥 CARD */
   card: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 20,
+    backgroundColor: "#0f172a",
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
 
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+  },
+
+  roleBadge: {
+    position: "absolute",
+    top: 14,
+    right: 14,
+    backgroundColor: "#2563eb",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+  },
+
+  roleText: {
+    color: "#fff",
+    fontWeight: "800",
+    fontSize: 11,
   },
 
   name: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: "#111827",
-    marginBottom: 6,
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#fff",
+    marginBottom: 14,
   },
 
-  badge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#e0f2fe",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginBottom: 10,
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#0b3b6f",
+    paddingBottom: 6,
   },
 
-  badgeText: {
-    color: "#075985",
+  label: {
+    color: "#94a3b8",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
+  value: {
+    color: "#fff",
+    fontSize: 13,
     fontWeight: "700",
-    fontSize: 12,
   },
 
-  info: {
-    fontSize: 14,
-    color: "#4b5563",
-    marginTop: 6,
+  salary: {
+    color: "#10b981",
+    fontSize: 13,
+    fontWeight: "800",
   },
 
   logout: {
-    backgroundColor: "#111",
-    padding: 14,
-    borderRadius: 12,
+    marginTop: 24,
+    backgroundColor: "#ef4444",
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: "center",
+
+    shadowColor: "#ef4444",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
   },
 
   logoutText: {
     color: "#fff",
-    fontWeight: "700",
-    fontSize: 15,
+    fontWeight: "800",
+    fontSize: 14,
   },
 });

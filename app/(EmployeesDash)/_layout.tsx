@@ -14,38 +14,41 @@ export default function StaffTabs() {
 
       {/* TABS */}
       <Tabs
-        screenOptions={{
-          headerShown: false,
+  screenOptions={{
+    headerShown: false,
 
-          tabBarActiveTintColor: "#111",
-          tabBarInactiveTintColor: "#9ca3af",
+    tabBarActiveTintColor: "#38bdf8",
+    tabBarInactiveTintColor: "#64748b",
 
-          tabBarStyle: {
-            position: "absolute",
-            height: 60 + insets.bottom,
-            paddingBottom: insets.bottom,
-            paddingTop: 6,
-            borderTopWidth: 0,
-            backgroundColor: "#ffffff",
+    tabBarStyle: {
+      position: "absolute",
+      height: 70 + insets.bottom,
+      paddingBottom: insets.bottom,
+      paddingTop: 8,
 
-            shadowColor: "#000",
-            shadowOpacity: 0.08,
-            shadowRadius: 10,
-            shadowOffset: { width: 0, height: -3 },
-            elevation: 10,
-          },
+      backgroundColor: "#050b1f",
+      borderTopWidth: 1,
+      borderTopColor: "rgba(56,189,248,0.15)",
 
-          tabBarLabelStyle: {
-            fontSize: 11,
-            fontWeight: "600",
-            marginBottom: Platform.OS === "android" ? 4 : 0,
-          },
+      shadowColor: "#38bdf8",
+      shadowOpacity: 0.25,
+      shadowRadius: 15,
+      shadowOffset: { width: 0, height: -4 },
+      elevation: 20,
+    },
 
-          sceneContainerStyle: {
-            paddingTop: 60, // 🔥 pushes screens below header
-          },
-        }}
-      >
+    tabBarLabelStyle: {
+      fontSize: 11,
+      fontWeight: "700",
+      marginBottom: Platform.OS === "android" ? 6 : 0,
+    },
+
+    sceneContainerStyle: {
+      paddingTop: 110, // match your new header height
+      backgroundColor: "#020617",
+    },
+  }}
+>
         <Tabs.Screen
           name="dashboard"
           options={{

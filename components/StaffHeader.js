@@ -111,7 +111,7 @@ export default function StaffHeader() {
   return (
     <View style={{ zIndex: 999 }}>
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 6 }]}>
         <Text style={styles.title}>{getTitle()}</Text>
 
         <View style={styles.right}>
@@ -123,7 +123,7 @@ export default function StaffHeader() {
             }}
             style={{ marginRight: 14 }}
           >
-            <Ionicons name="notifications-outline" size={22} />
+            <Ionicons name="notifications-outline" size={22} color="#e5e7eb" />
 
             {todayCount > 0 && (
               <View style={styles.badge}>
@@ -185,7 +185,7 @@ export default function StaffHeader() {
                 router.replace("/(staff)/profile");
               }}
             >
-              <Ionicons name="person-outline" size={18} />
+              <Ionicons name="person-outline" size={18} color="#38bdf8" />
               <Text style={styles.itemText}>Profile</Text>
             </TouchableOpacity>
             {/* HOME */}
@@ -213,46 +213,75 @@ export default function StaffHeader() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    backgroundColor: "#fff",
-    height: Platform.OS === "ios" ? 100 : 70,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
-  },
+ header: {
+  backgroundColor: "#050b1f", // slightly lighter than page
+  height: Platform.OS === "ios" ? 120 : 92, // more breathing space
+  flexDirection: "row",
+  alignItems: "flex-end", // push content toward bottom
+  justifyContent: "space-between",
+  paddingHorizontal: 16,
+  paddingBottom: 15, // space for profile bubble
 
-  title: { fontSize: 18, fontWeight: "bold" },
+  borderBottomWidth: 1,
+  borderBottomColor: "rgba(56,189,248,0.18)",
+
+  shadowColor: "#38bdf8",
+  shadowOpacity: 0.25,
+  shadowRadius: 14,
+  elevation: 14,
+},
+
+  title: {
+  fontSize: 18,
+  fontWeight: "900",
+  color: "#e5e7eb",
+  letterSpacing: 0.3,
+},
 
   right: { flexDirection: "row", alignItems: "center" },
 
-  profile: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: "#111",
-    alignItems: "center",
-    justifyContent: "center",
-  },
+profile: {
+  width: 38,
+  height: 38,
+  borderRadius: 20,
+  backgroundColor: "#0f172a",
+  alignItems: "center",
+  justifyContent: "center",
+  borderWidth: 1,
+  borderColor: "rgba(56,189,248,0.3)",
 
-  profileText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  shadowColor: "#38bdf8",
+  shadowOpacity: 0.3,
+  shadowRadius: 8,
+},
+  profileText: {
+  color: "#38bdf8",
+  fontWeight: "900",
+  fontSize: 16,
+},
 
-  badge: {
-    position: "absolute",
-    top: -4,
-    right: -6,
-    backgroundColor: "red",
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 4,
-  },
+badge: {
+  position: "absolute",
+  top: -5,
+  right: -6,
+  backgroundColor: "#38bdf8",
+  borderRadius: 20,
+  minWidth: 18,
+  height: 18,
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 5,
 
-  badgeText: { color: "#fff", fontSize: 11, fontWeight: "bold" },
+  shadowColor: "#38bdf8",
+  shadowOpacity: 0.6,
+  shadowRadius: 6,
+},
+
+  badgeText: {
+  color: "#020617",
+  fontSize: 11,
+  fontWeight: "900",
+},
 
   overlay: {
     position: "absolute",
@@ -262,39 +291,56 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
 
-  notifDropdown: {
-    position: "absolute",
-    top: 0,
-    right: 16,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 12,
-    width: 260,
-    maxHeight: 300,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 15,
-  },
+notifDropdown: {
+  position: "absolute",
+  top: 6,
+  right: 16,
+  backgroundColor: "#0f172a",
+  borderRadius: 16,
+  padding: 14,
+  width: 270,
+  maxHeight: 320,
 
-  notifTitle: { fontWeight: "bold", marginBottom: 8 },
+  borderWidth: 1,
+  borderColor: "rgba(56,189,248,0.25)",
 
-  notifCard: {
-    backgroundColor: "#f9fafb",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 8,
-  },
+  shadowColor: "#38bdf8",
+  shadowOpacity: 0.35,
+  shadowRadius: 14,
+  elevation: 20,
+},
 
-  notifCar: { fontWeight: "bold" },
+  notifTitle: {
+  fontWeight: "900",
+  marginBottom: 10,
+  color: "#e5e7eb",
+},
 
-  notifSub: { fontSize: 12, color: "#6b7280" },
+notifCard: {
+  backgroundColor: "#020617",
+  padding: 12,
+  borderRadius: 12,
+  marginBottom: 10,
+  borderWidth: 1,
+  borderColor: "rgba(56,189,248,0.12)",
+},
 
-  notifStatus: {
-    fontSize: 11,
-    marginTop: 2,
-    color: "#2563eb",
-  },
+  notifCar: {
+  fontWeight: "800",
+  color: "#38bdf8",
+},
+
+  notifSub: {
+  fontSize: 12,
+  color: "#94a3b8",
+},
+
+notifStatus: {
+  fontSize: 11,
+  marginTop: 4,
+  color: "#10b981",
+  fontWeight: "700",
+},
 
   empty: {
     textAlign: "center",
@@ -302,26 +348,34 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  dropdown: {
-    position: "absolute",
-    top: 0,
-    right: 16,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingVertical: 6,
-    width: 170,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 15,
-  },
+dropdown: {
+  position: "absolute",
+  top: 6,
+  right: 16,
+  backgroundColor: "#0f172a",
+  borderRadius: 16,
+  paddingVertical: 6,
+  width: 180,
 
-  item: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    gap: 10,
-  },
+  borderWidth: 1,
+  borderColor: "rgba(56,189,248,0.25)",
 
-  itemText: { fontSize: 14, fontWeight: "500" },
+  shadowColor: "#38bdf8",
+  shadowOpacity: 0.35,
+  shadowRadius: 14,
+  elevation: 20,
+},
+
+item: {
+  flexDirection: "row",
+  alignItems: "center",
+  padding: 14,
+  gap: 10,
+},
+
+  itemText: {
+  fontSize: 14,
+  fontWeight: "700",
+  color: "#e5e7eb",
+},
 });
