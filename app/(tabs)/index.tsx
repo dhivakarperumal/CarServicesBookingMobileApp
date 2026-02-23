@@ -123,64 +123,7 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-
-      <View style={styles.contentWrapper}>
-        {/* QUICK STATS */}
-        <View style={styles.statsContainer}>
-          <LinearGradient
-            colors={["#06b6d4", "#0891b2"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradientCard}
-          >
-            <View style={styles.statRow}>
-              <View>
-                <Text style={styles.statLabelWhite}>Total Bookings</Text>
-                <Text style={styles.statNumberWhite}>12</Text>
-              </View>
-              <View style={styles.iconWrapperDark}>
-                <FontAwesome5 name="calendar-alt" size={24} color="#fff" />
-              </View>
-            </View>
-          </LinearGradient>
-
-          <LinearGradient
-            colors={["#10b981", "#059669"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradientCard}
-          >
-            <View style={styles.statRow}>
-              <View>
-                <Text style={styles.statLabelGreen}>Completed</Text>
-                <Text style={styles.statNumberWhite}>20</Text>
-              </View>
-              <View style={styles.iconWrapperLight}>
-                <FontAwesome5 name="check-circle" size={24} color="#fff" />
-              </View>
-            </View>
-          </LinearGradient>
-        </View>
-
-        {/* SERVICES */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Services</Text>
-          <TouchableOpacity onPress={() => router.push("/(tabs)/services")}>
-            <Text style={styles.linkText}>View All →</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.servicesGrid}>
-          {services.map((service) => (
-            <ServiceCard
-              key={service.id}
-              icon={<FontAwesome5 name="car" size={24} color="#0EA5E9" />}
-              title={service.name}
-            />
-          ))}
-        </View>
-
-        {/* ACTIVE BOOKING */}
+          {/* ACTIVE BOOKING */}
         {allBookings.length > 0 && (
           <>
             <Text style={styles.sectionTitle}>My Bookings</Text>
@@ -218,6 +161,27 @@ export default function HomeScreen({ navigation }) {
             )}
           </>
         )}
+
+
+      <View style={styles.contentWrapper}>
+
+        {/* SERVICES */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Services</Text>
+          <TouchableOpacity onPress={() => router.push("/(tabs)/services")}>
+            <Text style={styles.linkText}>View All →</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.servicesGrid}>
+          {services.map((service) => (
+            <ServiceCard
+              key={service.id}
+              icon={<FontAwesome5 name="car" size={24} color="#0EA5E9" />}
+              title={service.name}
+            />
+          ))}
+        </View>
 
         {/* BOOK BUTTON */}
         <TouchableOpacity
