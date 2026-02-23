@@ -1,0 +1,197 @@
+import { useRouter } from "expo-router";
+import { collection, onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import {
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { db } from "../../firebase";
+import { FontAwesome } from "@expo/vector-icons";
+
+interface Service {
+  id: string;
+  serviceId: string;
+  name: string;
+  description: string;
+  price: number;
+  image?: string;
+  sparePartsIncluded?: string[];
+  supportedBrands?: string[];
+  status: string;
+}
+
+export default function Services() {
+  const [services, setServices] = useState<Service[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "services"), (snap) => {
+      const data: Service[] = snap.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as Omit<Service, "id">),
+        }))
+        .filter((item) => item.status === "active"); // ✅ only active
+
+      setServices(data);
+    });
+
+    return () => unsub();
+  }, []);
+
+  const renderItem = ({ item }: { item: Service }) => (
+    <View style={styles.card}>
+      {/* IMAGE */}
+      {item.image ? (
+        <Image source={{ uri: item.image }} style={styles.image} />
+      ) : (
+        <View style={styles.imagePlaceholder} />
+      )}
+
+      {/* TITLE */}
+      <Text style={styles.title}>{item.name}</Text>
+
+      {/* SPARE PARTS */}
+      {item.sparePartsIncluded?.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Includes:</Text>
+          {item.sparePartsIncluded.map((part, index) => (
+            <Text key={index} style={styles.listItem}>
+              <FontAwesome name="check" size={14} color="#0EA5E9" /> {part}
+            </Text>
+          ))}
+        </View>
+      )}
+
+      {/* SUPPORTED BRANDS */}
+      {item.supportedBrands?.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Supported Brands:</Text>
+          <Text style={styles.listItem}>
+            {item.supportedBrands.join(", ")}
+          </Text>
+        </View>
+      )}
+
+      {/* BUTTON */}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push(`/(app)/service/${item.id}`)}
+      >
+        <Text style={styles.buttonText}>View Details</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={services}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        ListEmptyComponent={
+          <Text style={styles.empty}>No services available</Text>
+        }
+      />
+    </View>
+  );
+}
+
+/* ================= STYLES ================= */
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0B1120",
+    padding: 16,
+  },
+
+  card: {
+    backgroundColor: "#111827",
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.25)",
+  },
+
+  image: {
+    width: "100%",
+    height: 180,
+    borderRadius: 14,
+    marginBottom: 14,
+  },
+
+  imagePlaceholder: {
+    width: "100%",
+    height: 180,
+    backgroundColor: "#1F2937",
+    borderRadius: 14,
+    marginBottom: 14,
+  },
+
+  title: {
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontVariant: ["small-caps"],
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+
+  description: {
+    color: "#9CA3AF",
+    fontSize: 13,
+    marginBottom: 12,
+  },
+
+  price: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#0EA5E9",
+    marginBottom: 12,
+  },
+
+  section: {
+    marginBottom: 12,
+  },
+
+  sectionTitle: {
+    color: "#38BDF8",
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+
+  listItem: {
+    color: "#E5E7EB",
+    fontSize: 14,
+    marginBottom: 2,
+    lineHeight: 20,
+  },
+
+  button: {
+    marginTop: 10,
+    backgroundColor: "#0EA5E9",
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignItems: "center",
+  },
+
+  buttonText: {
+    color: "#000",
+    fontWeight: "700",
+    fontSize: 13,
+  },
+
+  empty: {
+    color: "#64748B",
+    textAlign: "center",
+    marginTop: 50,
+  },
+});
