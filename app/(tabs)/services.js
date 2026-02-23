@@ -10,9 +10,11 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { db } from "../../firebase";
+import { useRouter } from "expo-router";
 
 export default function Services() {
   const [services, setServices] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "services"), (snap) => {
@@ -38,7 +40,10 @@ export default function Services() {
 
       <Text style={styles.price}>₹ {item.price}</Text>
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity
+  style={styles.button}
+  onPress={() => router.push(`/service/${item.id}`)}
+>
         <Text style={styles.buttonText}>View</Text>
       </TouchableOpacity>
     </View>
