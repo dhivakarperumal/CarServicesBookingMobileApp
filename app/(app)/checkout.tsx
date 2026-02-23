@@ -1,31 +1,31 @@
-import React, { useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { onAuthStateChanged } from "firebase/auth";
 import {
-    View,
+    collection,
+    deleteDoc,
+    doc,
+    getDocs,
+    runTransaction,
+    setDoc,
+    Timestamp,
+} from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import {
+    ActivityIndicator,
+    Alert,
+    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    ScrollView,
-    StyleSheet,
-    Alert,
-    ActivityIndicator,
+    View
 } from "react-native";
-import {
-    collection,
-    getDocs,
-    doc,
-    setDoc,
-    deleteDoc,
-    Timestamp,
-    runTransaction,
-} from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth, db } from "../firebase";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { reduceStockAfterPurchase } from "./utils/reduceStockAfterPurchase";
-import { saveUserAddress } from "./utils/saveUserAddress";
-import RazorpayCheckout from "react-native-razorpay";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import RazorpayCheckout from "react-native-razorpay";
+import { auth, db } from "../../firebase";
+import { reduceStockAfterPurchase } from "../utils/reduceStockAfterPurchase";
+import { saveUserAddress } from "../utils/saveUserAddress";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // ================= ORDER COUNTER =================
 const generateOrderNumber = async () => {
@@ -89,6 +89,19 @@ export default function Checkout() {
     );
 
     const total = subtotal;
+
+    const handleBack = () => {
+        if (typeof router.canGoBack === "function") {
+            if (router.canGoBack()) return router.back();
+            return router.replace("/(tabs)/index");
+        }
+
+        try {
+            router.back();
+        } catch (e) {
+            router.replace("/(tabs)/index");
+        }
+    };
 
     // ================= CLEAR CART =================
     const clearCart = async () => {
@@ -156,28 +169,32 @@ export default function Checkout() {
     };
 
     // ================= PLACE ORDER =================
-    const placeOrder = async () => {
-        if (!items.length)
-            return Alert.alert("Cart is empty");
+   const placeOrder = async () => {
+    if (!items.length) {
+        Alert.alert("Cart is empty");
+        return;
+    }
 
-        if (!shipping.name || !shipping.phone || !shipping.address)
-            return Alert.alert("Fill delivery details");
+    if (!shipping.name || !shipping.phone || !shipping.address) {
+        Alert.alert("Fill delivery details");
+        return;
+    }
 
-        setPlacing(true);
+    setPlacing(true);
 
-        try {
-            // CASH FLOW
-            if (paymentMethod === "CASH") {
-                await saveOrder();
-                return;
-            }
+    try {
+        // 🟢 CASH FLOW
+        if (paymentMethod === "CASH") {
+            await saveOrder();
+        }
 
-            // ONLINE FLOW
+        // 🔵 ONLINE FLOW
+        if (paymentMethod === "ONLINE") {
             const options = {
-                key: "rzp_test_SGj8n5SyKSE10b", // replace with your key
+                key: "rzp_test_SGj8n5SyKSE10b", // replace later with live key
                 amount: total * 100,
                 currency: "INR",
-                name: "car service booking",
+                name: "Car Service Booking",
                 description: "Order Payment",
                 prefill: {
                     name: shipping.name,
@@ -189,15 +206,15 @@ export default function Checkout() {
 
             const data = await RazorpayCheckout.open(options);
 
-            // Payment successful
-            await saveOrder(data.razorpay_payment_id);
-
-        } catch (err: any) {
-            Alert.alert("Payment Failed", err.description || err.message);
-        } finally {
-            setPlacing(false);
+            // Payment success → save order
+            await saveOrder();
         }
-    };
+    } catch (err: any) {
+        Alert.alert("Payment Failed", err?.description || err?.message);
+    } finally {
+        setPlacing(false);
+    }
+};
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
@@ -394,4 +411,18 @@ const styles = StyleSheet.create({
     paymentRow: {
         marginBottom: 10,
     },
-});
+    backBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 12,
+        gap: 6,
+    },
+
+    backText: {
+        color: "#0EA5E9",
+        fontSize: 12,
+        fontWeight: "700",
+        letterSpacing: 2,
+        marginLeft: 6,
+    },
+});  

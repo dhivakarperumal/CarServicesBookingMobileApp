@@ -1,17 +1,18 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase";
 import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ActivityIndicator,
-  ScrollView,
-  TouchableOpacity,
+    ActivityIndicator,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { db } from "../../../firebase";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ServiceDetails() {
   const { id } = useLocalSearchParams();
@@ -53,6 +54,7 @@ export default function ServiceDetails() {
   }
 
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* BACK BUTTON */}
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
@@ -96,6 +98,7 @@ export default function ServiceDetails() {
         <InfoCard title="WARRANTY" value={service.warranty || "6 Months"} />
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

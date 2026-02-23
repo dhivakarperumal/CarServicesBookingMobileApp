@@ -1,7 +1,7 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
   Image,
@@ -14,7 +14,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { auth, db } from "../firebase";
-import { collection, onSnapshot } from "firebase/firestore";
 
 export default function MobileNavbar() {
   const router = useRouter();
@@ -78,7 +77,7 @@ export default function MobileNavbar() {
       <SafeAreaView edges={["top"]} style={styles.safeArea}>
         <View style={styles.header}>
           {/* LOGO */}
-          <TouchableOpacity onPress={() => router.push("/(tabs)/home")}>
+          <TouchableOpacity onPress={() => router.push("/(tabs)")}>
             <Image
               source={require("../assets/images/logo_no_bg.png")}
               style={styles.logo}
@@ -88,7 +87,7 @@ export default function MobileNavbar() {
           {/* RIGHT ICONS */}
           <View style={styles.rightSection}>
             <TouchableOpacity
-              onPress={() => router.push("/cart")}
+              onPress={() => router.push("/(app)/cart")}
               style={styles.iconButton}
             >
               <Ionicons name="cart-outline" size={22} color="#0EA5E9" />

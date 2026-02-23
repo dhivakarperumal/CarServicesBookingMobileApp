@@ -1,28 +1,28 @@
-import React, { useEffect, useState } from "react";
-import {
-    View,
-    Text,
-    Image,
-    ScrollView,
-    TouchableOpacity,
-    StyleSheet,
-    ActivityIndicator,
-    Alert,
-} from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-    doc,
-    setDoc,
-    getDoc,
-    updateDoc,
     collection,
+    doc,
+    getDoc,
     getDocs,
     query,
-    where,
     serverTimestamp,
+    setDoc,
+    updateDoc,
+    where,
 } from "firebase/firestore";
-import { auth, db } from "../../firebase";
-import { Picker } from "@react-native-picker/picker";
+import React, { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { auth, db } from "../../../firebase";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProductDetails() {
@@ -106,7 +106,7 @@ export default function ProductDetails() {
             });
         }
 
-        router.push("/cart");
+        router.push("/(app)/cart");
     };
 
     return (
@@ -209,7 +209,7 @@ export default function ProductDetails() {
 
                 <TouchableOpacity
                     style={styles.buyBtn}
-                    onPress={() => router.push("/checkout")}
+                    onPress={() => router.push("/(app)/checkout")}
                 >
                     <Text style={styles.buyText}>Buy Now</Text>
                 </TouchableOpacity>
