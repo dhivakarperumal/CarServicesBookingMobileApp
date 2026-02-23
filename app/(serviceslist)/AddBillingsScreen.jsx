@@ -120,13 +120,13 @@ export default function AddBillingsScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#15173D" }}>
       {/* HEADER */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#38bdf8" />
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>Generate Invoice</Text>
 
-        <View style={{ width: 40 }} />
+        <View style={{ width: 24 }} />
       </View>
 
       <ScrollView
@@ -272,7 +272,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#0b3b6f",
   },
-
   headerTitle: {
     color: "#fff",
     fontSize: 16,

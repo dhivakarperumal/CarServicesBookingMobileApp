@@ -28,6 +28,7 @@ import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { db } from "../../firebase";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { KeyboardAvoidingView, Platform } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 const auth = getAuth();
 
@@ -145,72 +146,72 @@ export default function AddEditStaffScreen() {
   };
 
   /* ===== SUBMIT ===== */
-const handleSubmit = async () => {
-  if (!validate()) return;
+  const handleSubmit = async () => {
+    if (!validate()) return;
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    let data = { ...form };
+    try {
+      let data = { ...form };
 
-    if (!isEdit) {
-      // 1️⃣ Generate Employee ID
-      const employeeId = await generateEmployeeId();
-      data.employeeId = employeeId;
+      if (!isEdit) {
+        // 1️⃣ Generate Employee ID
+        const employeeId = await generateEmployeeId();
+        data.employeeId = employeeId;
 
-      // 2️⃣ Create Auth User
-      const cred = await createUserWithEmailAndPassword(
-        auth,
-        form.email,
-        form.password
-      );
+        // 2️⃣ Create Auth User
+        const cred = await createUserWithEmailAndPassword(
+          auth,
+          form.email,
+          form.password,
+        );
 
-      const uid = cred.user.uid;
-      data.authUid = uid;
+        const uid = cred.user.uid;
+        data.authUid = uid;
 
-      // 3️⃣ Save Employee Document
-      const empRef = await addDoc(collection(db, "employees"), {
-        ...data,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-
-      // 4️⃣ Save User Document (users collection with UID as doc id)
-      await setDoc(doc(db, "users", uid), {
-        username: form.name || "Kumar",
-        email: form.email,
-        phone: form.phone || "8956236589",
-        role: "mechanic",
-        employeeId: employeeId,
-        employeeDocId: empRef.id,
-        createdAt: serverTimestamp(),
-      });
-    } else {
-      // UPDATE EMPLOYEE
-      await updateDoc(doc(db, "employees", id), {
-        ...data,
-        updatedAt: serverTimestamp(),
-      });
-
-      // ALSO UPDATE USER (if UID exists)
-      if (form.authUid) {
-        await updateDoc(doc(db, "users", form.authUid), {
-          username: form.name,
-          email: form.email,
-          phone: form.phone,
+        // 3️⃣ Save Employee Document
+        const empRef = await addDoc(collection(db, "employees"), {
+          ...data,
+          createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
-      }
-    }
 
-    Alert.alert("Success", isEdit ? "Updated" : "Added");
-    router.replace("/(Employees)/employees");
-  } catch (err) {
-    Alert.alert("Error", err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+        // 4️⃣ Save User Document (users collection with UID as doc id)
+        await setDoc(doc(db, "users", uid), {
+          username: form.name || "Kumar",
+          email: form.email,
+          phone: form.phone || "8956236589",
+          role: "mechanic",
+          employeeId: employeeId,
+          employeeDocId: empRef.id,
+          createdAt: serverTimestamp(),
+        });
+      } else {
+        // UPDATE EMPLOYEE
+        await updateDoc(doc(db, "employees", id), {
+          ...data,
+          updatedAt: serverTimestamp(),
+        });
+
+        // ALSO UPDATE USER (if UID exists)
+        if (form.authUid) {
+          await updateDoc(doc(db, "users", form.authUid), {
+            username: form.name,
+            email: form.email,
+            phone: form.phone,
+            updatedAt: serverTimestamp(),
+          });
+        }
+      }
+
+      Alert.alert("Success", isEdit ? "Updated" : "Added");
+      router.replace("/(Employees)/employees");
+    } catch (err) {
+      Alert.alert("Error", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
   /* ===== DATE / TIME ===== */
   const handleDate = (field, date) => {
     const value = date.toISOString().split("T")[0];
@@ -228,15 +229,15 @@ const handleSubmit = async () => {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
       {/* HEADER */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <MaterialCommunityIcons name="arrow-left" size={22} color="#38bdf8" />
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>
           {isEdit ? "Edit Employee" : "Add Employee"}
         </Text>
 
-        <View style={{ width: 40 }} />
+        <View style={{ width: 24 }} />
       </View>
 
       <KeyboardAvoidingView
@@ -261,27 +262,27 @@ const handleSubmit = async () => {
           </View>
 
           <View style={{ marginBottom: 16 }}>
-  <Text style={styles.label}>Email Address</Text>
-  <TextInput
-    placeholder="Enter email"
-    placeholderTextColor="#64748b"
-    style={styles.input}
-    value={form.email}
-    onChangeText={(t) => setForm({ ...form, email: t })}
-  />
-</View>
+            <Text style={styles.label}>Email Address</Text>
+            <TextInput
+              placeholder="Enter email"
+              placeholderTextColor="#64748b"
+              style={styles.input}
+              value={form.email}
+              onChangeText={(t) => setForm({ ...form, email: t })}
+            />
+          </View>
 
           <View style={{ marginBottom: 16 }}>
-  <Text style={styles.label}>Phone Number</Text>
-  <TextInput
-    placeholder="Enter phone number"
-    placeholderTextColor="#64748b"
-    style={styles.input}
-    keyboardType="number-pad"
-    value={form.phone}
-    onChangeText={(t) => setForm({ ...form, phone: t, password: t })}
-  />
-</View>
+            <Text style={styles.label}>Phone Number</Text>
+            <TextInput
+              placeholder="Enter phone number"
+              placeholderTextColor="#64748b"
+              style={styles.input}
+              keyboardType="number-pad"
+              value={form.phone}
+              onChangeText={(t) => setForm({ ...form, phone: t, password: t })}
+            />
+          </View>
 
           {!isEdit && (
             <TextInput
@@ -295,21 +296,21 @@ const handleSubmit = async () => {
 
           {/* ROLE */}
           <View style={{ marginBottom: 16 }}>
-  <Text style={styles.label}>Role</Text>
-  <View style={styles.pickerBox}>
-    <Picker
-      selectedValue={form.role}
-      onValueChange={(v) => setForm({ ...form, role: v })}
-      dropdownIconColor="#38bdf8"
-      style={{ color: "#fff" }}
-    >
-      <Picker.Item label="Select Role" value="" />
-      {roles.map((r) => (
-        <Picker.Item key={r} label={r} value={r} />
-      ))}
-    </Picker>
-  </View>
-</View>
+            <Text style={styles.label}>Role</Text>
+            <View style={styles.pickerBox}>
+              <Picker
+                selectedValue={form.role}
+                onValueChange={(v) => setForm({ ...form, role: v })}
+                dropdownIconColor="#38bdf8"
+                style={{ color: "#fff" }}
+              >
+                <Picker.Item label="Select Role" value="" />
+                {roles.map((r) => (
+                  <Picker.Item key={r} label={r} value={r} />
+                ))}
+              </Picker>
+            </View>
+          </View>
 
           {/* DEPARTMENT */}
           <View style={styles.pickerBox}>
