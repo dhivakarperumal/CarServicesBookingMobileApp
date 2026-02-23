@@ -614,6 +614,7 @@ import {
   Modal,
   ActivityIndicator,
   Alert,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -624,6 +625,7 @@ import {
   getDocs,
   addDoc,
   arrayUnion,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../../firebase";
 
@@ -640,7 +642,8 @@ export default function AdminAssignServices() {
   const [assigning, setAssigning] = useState(false);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
 
-  const [filter, setFilter] = useState("new");
+  const [filter, setFilter] = useState("notAssigned");
+  const [searchText, setSearchText] = useState("");
 
   /* 🔥 FETCH BOOKINGS */
   useEffect(() => {
@@ -656,35 +659,70 @@ export default function AdminAssignServices() {
     return unsub;
   }, []);
 
-  /* 🔥 DATE HELPER */
-  const isToday = (timestamp) => {
-    if (!timestamp) return false;
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    const today = new Date();
-
+  /* 🔥 DATE HELPERS */
+  const isSameDate = (date, compareDate) => {
     return (
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear()
+      date.getDate() === compareDate.getDate() &&
+      date.getMonth() === compareDate.getMonth() &&
+      date.getFullYear() === compareDate.getFullYear()
     );
   };
 
-  /* 🔥 FILTER BOOKINGS */
+  const isToday = (date) => isSameDate(date, new Date());
+
+  const isYesterday = (date) => {
+    const y = new Date();
+    y.setDate(y.getDate() - 1);
+    return isSameDate(date, y);
+  };
+
+  /* 🔍 FILTER + SEARCH */
   const filteredBookings = useMemo(() => {
     return bookings.filter((b) => {
-      if (filter === "new") return !b.assignedEmployeeId;
+      const isAssigned = !!b.assignedEmployeeId;
+
+      const assignedDate = b.assignedAt
+        ? b.assignedAt.toDate
+          ? b.assignedAt.toDate()
+          : new Date(b.assignedAt)
+        : null;
+
+      const search = searchText.toLowerCase();
+
+      const matchesSearch =
+        b.name?.toLowerCase().includes(search) ||
+        b.phone?.toLowerCase().includes(search) ||
+        b.brand?.toLowerCase().includes(search) ||
+        b.model?.toLowerCase().includes(search) ||
+        b.issue?.toLowerCase().includes(search);
+
+      if (!matchesSearch) return false;
+
+      if (filter === "notAssigned") return !isAssigned;
 
       if (filter === "todayAssigned")
-        return b.serviceStatus === "Approved" && isToday(b.assignedAt);
+        return (
+          b.serviceStatus === "Approved" &&
+          isAssigned &&
+          assignedDate &&
+          isToday(assignedDate)
+        );
 
-      if (filter === "notTodayAssigned")
-        return b.serviceStatus === "Approved" && !isToday(b.assignedAt);
+      if (filter === "yesterdayAssigned")
+        return (
+          b.serviceStatus === "Approved" &&
+          isAssigned &&
+          assignedDate &&
+          isYesterday(assignedDate)
+        );
+
+      if (filter === "all") return true;
 
       return true;
     });
-  }, [bookings, filter]);
+  }, [bookings, filter, searchText]);
 
-  /* 🔥 FETCH MECHANICS (ALLOW MULTI BOOKING) */
+  /* 🔥 FETCH EMPLOYEES */
   const fetchAvailableEmployees = async () => {
     setLoadingEmployees(true);
 
@@ -692,9 +730,7 @@ export default function AdminAssignServices() {
 
     const list = snap.docs
       .map((d) => ({ id: d.id, ...d.data() }))
-      .filter(
-        (emp) => emp.status === "active" && emp.role === "mechanic"
-      );
+      .filter((emp) => emp.status === "active" && emp.role === "mechanic");
 
     setEmployees(list);
     setLoadingEmployees(false);
@@ -708,7 +744,7 @@ export default function AdminAssignServices() {
     setModalVisible(true);
   };
 
-  /* 🔥 ASSIGN FUNCTION (MULTI BOOKING SAME EMPLOYEE) */
+  /* 🔥 ASSIGN EMPLOYEE */
   const assignEmployee = async () => {
     if (!selectedBooking || !selectedEmployeeId || assigning) return;
 
@@ -736,35 +772,30 @@ export default function AdminAssignServices() {
         assignedEmployeeAuthUid: employeeAuthUid,
         assignedEmployeeName: selectedEmployee.name || "",
         serviceStatus: "Approved",
-        assignedAt: new Date(),
+        assignedAt: serverTimestamp(),
       });
 
-      /* 2️⃣ UPDATE EMPLOYEE → ADD BOOKING TO ARRAY */
+      /* 2️⃣ UPDATE EMPLOYEE */
       await updateDoc(doc(db, "employees", selectedEmployeeId), {
         assignedBookingIds: arrayUnion(bookingDocId),
       });
 
-      /* 3️⃣ CREATE assignedServices DOC */
+      /* 3️⃣ CREATE assignedServices */
       await addDoc(collection(db, "assignedServices"), {
         bookingDocId,
         serviceId,
         customerUid,
-
         employeeDocId: selectedEmployeeId,
         employeeAuthUid,
-
         employeeName: selectedEmployee.name || "",
-
         carBrand: selectedBooking.brand || "",
         carModel: selectedBooking.model || "",
         carIssue: selectedBooking.issue || "",
-
         customerName: selectedBooking.name || "",
         customerPhone: selectedBooking.phone || "",
         customerEmail: selectedBooking.email || "",
-
         serviceStatus: "Assigned",
-        assignedAt: new Date(),
+        assignedAt: serverTimestamp(),
         startedAt: null,
         completedAt: null,
       });
@@ -836,12 +867,21 @@ export default function AdminAssignServices() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 🔥 FILTER BUTTONS */}
+      {/* 🔍 SEARCH */}
+      <TextInput
+        placeholder="Search car, customer, phone..."
+        value={searchText}
+        onChangeText={setSearchText}
+        style={styles.searchInput}
+      />
+
+      {/* 🔘 FILTER BUTTONS */}
       <View style={styles.filterRow}>
         {[
-          { key: "new", label: "New" },
-          { key: "todayAssigned", label: "Today Assigned" },
-          { key: "notTodayAssigned", label: "Not Today" },
+          { key: "notAssigned", label: "Not Assigned" },
+          { key: "todayAssigned", label: "Today" },
+          { key: "yesterdayAssigned", label: "Yesterday" },
+          { key: "all", label: "All" },
         ].map((btn) => (
           <TouchableOpacity
             key={btn.key}
@@ -928,9 +968,7 @@ export default function AdminAssignServices() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f4f6f8", padding: 16 },
-
   loader: { flex: 1, justifyContent: "center", alignItems: "center" },
-
   empty: {
     textAlign: "center",
     marginTop: 40,
@@ -938,7 +976,14 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     fontWeight: "500",
   },
-
+  searchInput: {
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+  },
   filterRow: {
     flexDirection: "row",
     backgroundColor: "#e5e7eb",
@@ -946,22 +991,14 @@ const styles = StyleSheet.create({
     padding: 4,
     marginBottom: 14,
   },
-
   filterBtn: {
     flex: 1,
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: "center",
   },
-
   activeFilter: { backgroundColor: "#111827" },
-
-  filterText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#374151",
-  },
-
+  filterText: { fontSize: 13, fontWeight: "700", color: "#374151" },
   card: {
     backgroundColor: "#fff",
     padding: 16,
@@ -969,11 +1006,9 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     elevation: 4,
   },
-
   car: { fontSize: 16, fontWeight: "800" },
   service: { marginTop: 6, fontSize: 14 },
   customer: { marginTop: 4, fontSize: 13, color: "#6b7280" },
-
   statusBadge: {
     marginTop: 8,
     alignSelf: "flex-start",
@@ -982,9 +1017,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
   },
-
   statusText: { fontSize: 11, fontWeight: "700" },
-
   assignBtn: {
     marginTop: 12,
     backgroundColor: "#111827",
@@ -992,28 +1025,22 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
-
   btnText: { color: "#fff", fontWeight: "800" },
-
   modal: { flex: 1, padding: 16, backgroundColor: "#f9fafb" },
-
   modalTitle: {
     fontSize: 20,
     fontWeight: "900",
     textAlign: "center",
     marginBottom: 16,
   },
-
   selectedBox: {
     backgroundColor: "#fff",
     padding: 14,
     borderRadius: 14,
     marginBottom: 14,
   },
-
   selectedText: { fontWeight: "800" },
   selectedSub: { color: "#6b7280", marginTop: 4 },
-
   staffCard: {
     backgroundColor: "#fff",
     padding: 14,
@@ -1022,10 +1049,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#e5e7eb",
   },
-
   staffName: { fontWeight: "800" },
   staffSub: { fontSize: 12, color: "#6b7280" },
-
   assignConfirmBtn: {
     marginTop: 14,
     backgroundColor: "#111827",
@@ -1033,7 +1058,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
-
   closeBtn: {
     marginTop: 10,
     backgroundColor: "#ef4444",
