@@ -23,6 +23,7 @@ import {
     View,
 } from "react-native";
 import { auth, db } from "../../../firebase";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProductDetails() {
     const { slug } = useLocalSearchParams();
@@ -109,7 +110,7 @@ export default function ProductDetails() {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: "#000" }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
             <ScrollView
                 style={{ flex: 1 }}
                 contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
@@ -214,7 +215,7 @@ export default function ProductDetails() {
                 </TouchableOpacity>
 
             </ScrollView>
-        </View>
+        </SafeAreaView>
     );
 }
 

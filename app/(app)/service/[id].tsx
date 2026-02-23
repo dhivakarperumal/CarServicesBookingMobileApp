@@ -12,6 +12,7 @@ import {
     View,
 } from "react-native";
 import { db } from "../../../firebase";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ServiceDetails() {
   const { id } = useLocalSearchParams();
@@ -53,6 +54,7 @@ export default function ServiceDetails() {
   }
 
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* BACK BUTTON */}
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
@@ -96,6 +98,7 @@ export default function ServiceDetails() {
         <InfoCard title="WARRANTY" value={service.warranty || "6 Months"} />
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
