@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { auth, db } from "../firebase";
+import { collection, onSnapshot } from "firebase/firestore";
 
 export default function MobileNavbar() {
   const router = useRouter();
@@ -22,20 +23,36 @@ export default function MobileNavbar() {
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const [userData, setUserData] = useState(null);
 
+  const [cartCount, setCartCount] = useState(0);
+
   /* ================= AUTH ================= */
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        setUserData(null);
-        return;
-      }
+useEffect(() => {
+  let unsubCart = null;
 
-      const snap = await getDoc(doc(db, "users", user.uid));
-      if (snap.exists()) setUserData(snap.data());
+  const unsubAuth = onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      setUserData(null);
+      setCartCount(0);
+      return;
+    }
+
+    // get user data
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (snap.exists()) setUserData(snap.data());
+
+    // 🔥 LISTEN TO CART
+    const cartRef = collection(db, "users", user.uid, "cart");
+
+    unsubCart = onSnapshot(cartRef, (snapshot) => {
+      setCartCount(snapshot.size); // number of products
     });
+  });
 
-    return () => unsub();
-  }, []);
+  return () => {
+    unsubAuth();
+    if (unsubCart) unsubCart();
+  };
+}, []);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -60,12 +77,19 @@ export default function MobileNavbar() {
 
           {/* RIGHT ICONS */}
           <View style={styles.rightSection}>
-            {/* CART */}
             <TouchableOpacity
               onPress={() => router.push("/cart")}
               style={styles.iconButton}
             >
               <Ionicons name="cart-outline" size={22} color="#0EA5E9" />
+
+              {cartCount > 0 && (
+                <View style={styles.cartBadge}>
+                  <Text style={styles.cartBadgeText}>
+                    {cartCount}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
 
             {/* AVATAR */}
@@ -90,12 +114,12 @@ export default function MobileNavbar() {
             )}
 
             {/* HAMBURGER */}
-            <TouchableOpacity
+            {/* <TouchableOpacity
               onPress={() => setDrawerOpen(true)}
               style={styles.iconButton}
             >
               <Ionicons name="menu" size={24} color="#0EA5E9" />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
       </SafeAreaView>
@@ -144,7 +168,7 @@ export default function MobileNavbar() {
       </Modal>
 
       {/* ================= DRAWER ================= */}
-      <Modal visible={drawerOpen} transparent animationType="slide">
+      {/* <Modal visible={drawerOpen} transparent animationType="slide">
         <Pressable
           style={styles.overlay}
           onPress={() => setDrawerOpen(false)}
@@ -171,7 +195,7 @@ export default function MobileNavbar() {
             </TouchableOpacity>
           ))}
         </View>
-      </Modal>
+      </Modal> */}
     </>
   );
 }
@@ -226,6 +250,25 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",
+  },
+
+  cartBadge: {
+    position: "absolute",
+    top: -6,
+    right: -8,
+    backgroundColor: "#EF4444",
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+  },
+
+  cartBadgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "bold",
   },
 
   /* ===== AVATAR MENU ===== */
