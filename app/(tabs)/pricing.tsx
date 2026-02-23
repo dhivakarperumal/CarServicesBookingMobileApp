@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     },
     price: {
         color: "white",
-        fontSize: 40,
+        fontSize: 25,
         fontWeight: "bold",
         marginVertical: 8,
     },

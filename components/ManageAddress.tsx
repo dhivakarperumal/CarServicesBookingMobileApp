@@ -71,41 +71,101 @@ export default function ManageAddress() {
   }, []);
 
   /* ================= SAVE ================= */
-  const handleSave = async () => {
-    if (!user) return;
+  const clean = (val: string) =>
+  val?.trim().toLowerCase();
 
-    const { fullName, phone, street, city, pinCode, state } = form;
-    if (!fullName || !phone || !street || !city || !pinCode || !state) {
-      Alert.alert("Error", "Please fill all required fields");
+const handleSave = async () => {
+  if (!user) return;
+
+  let {
+    fullName,
+    phone,
+    email,
+    street,
+    city,
+    pinCode,
+    state,
+    country = "India",
+  } = form;
+
+  // ✅ Trim values
+  fullName = fullName?.trim();
+  phone = phone?.trim();
+  email = email?.trim();
+  street = street?.trim();
+  city = city?.trim();
+  pinCode = pinCode?.trim();
+  state = state?.trim();
+
+  if (!fullName || !phone || !street || !city || !pinCode || !state) {
+    Alert.alert("Error", "Please fill all required fields");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const ref = collection(db, "users", user.uid, "addresses");
+    const snap = await getDocs(ref);
+
+    const duplicate = snap.docs.some((doc) => {
+      if (editId && doc.id === editId) return false; // allow update
+
+      const d = doc.data();
+      return (
+        clean(d.fullName) === clean(fullName) &&
+        clean(d.phone) === clean(phone) &&
+        clean(d.street) === clean(street) &&
+        clean(d.city) === clean(city) &&
+        clean(d.state) === clean(state) &&
+        clean(d.pinCode) === clean(pinCode)
+      );
+    });
+
+    if (duplicate) {
+      Alert.alert("Duplicate", "This address already exists");
       return;
     }
 
-    try {
-      setLoading(true);
-
-      if (editId) {
-        await updateDoc(
-          doc(db, "users", user.uid, "addresses", editId),
-          form
-        );
-        Alert.alert("Success", "Address updated");
-      } else {
-        await addDoc(
-          collection(db, "users", user.uid, "addresses"),
-          { ...form, createdAt: serverTimestamp() }
-        );
-        Alert.alert("Success", "Address added");
-      }
-
-      setForm(initialForm);
-      setEditId(null);
-      fetchAddresses();
-    } catch {
-      Alert.alert("Error", "Failed to save address");
-    } finally {
-      setLoading(false);
+    if (editId) {
+      await updateDoc(
+        doc(db, "users", user.uid, "addresses", editId),
+        {
+          fullName,
+          phone,
+          email,
+          street,
+          city,
+          pinCode,
+          state,
+          country,
+        }
+      );
+      Alert.alert("Success", "Address updated");
+    } else {
+      await addDoc(ref, {
+        fullName,
+        phone,
+        email,
+        street,
+        city,
+        pinCode,
+        state,
+        country,
+        createdAt: serverTimestamp(),
+      });
+      Alert.alert("Success", "Address added");
     }
-  };
+
+    setForm(initialForm);
+    setEditId(null);
+    fetchAddresses();
+  } catch (err) {
+    Alert.alert("Error", "Failed to save address");
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* ================= DELETE ================= */
   const handleDelete = (id: string) => {
