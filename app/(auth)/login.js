@@ -52,7 +52,7 @@ export default function LoginScreen() {
       const role = userSnap.data().role?.toLowerCase();
 
       if (role === "admin") router.replace("/(adminTabs)/home");
-      else if (role === "Mechanic") router.replace("/(EmployeesDash)/dashboard");
+      else if (role === "mechanic") router.replace("/(EmployeesDash)/dashboard");
       else router.replace("/(tabs)/home");
     } catch (error) {
       Alert.alert("Login Failed", error.message);
