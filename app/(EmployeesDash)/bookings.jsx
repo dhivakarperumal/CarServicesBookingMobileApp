@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "../../firebase";
+import { KeyboardAvoidingView, Platform } from "react-native";
 
 export default function AssignedBookings() {
   const [services, setServices] = useState([]);
@@ -129,47 +130,57 @@ export default function AssignedBookings() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* 🔎 SEARCH */}
-      <TextInput
-        placeholder="Search booking, service, customer, car..."
-        placeholderTextColor="#64748b"
-        value={search}
-        onChangeText={setSearch}
-        style={styles.search}
-      />
-
-      {/* 🎛 FILTER TABS */}
-      <View style={styles.filterRow}>
-        {["all", "Assigned", "In Progress", "Parts Added", "Completed"].map(
-          (f) => (
-            <TouchableOpacity
-              key={f}
-              style={[styles.filterBtn, filter === f && styles.activeFilter]}
-              onPress={() => setFilter(f)}
-            >
-              <Text
-                style={[styles.filterText, filter === f && { color: "#fff" }]}
-              >
-                {f}
-              </Text>
-            </TouchableOpacity>
-          ),
-        )}
-      </View>
-
-      {/* 📋 LIST */}
-      {filteredServices.length === 0 ? (
-        <Text style={styles.empty}>No Assigned Services</Text>
-      ) : (
-        <FlatList
-          data={filteredServices}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 140 }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <SafeAreaView style={styles.container}>
+        {/* 🔎 SEARCH */}
+        <TextInput
+          placeholder="Search booking, service, customer, car..."
+          placeholderTextColor="#64748b"
+          value={search}
+          onChangeText={setSearch}
+          style={styles.search}
         />
-      )}
-    </SafeAreaView>
+
+        {/* 🎛 FILTER TABS */}
+        <View style={styles.filterRow}>
+          {["all", "Assigned", "In Progress", "Parts Added", "Completed"].map(
+            (f) => (
+              <TouchableOpacity
+                key={f}
+                style={[styles.filterBtn, filter === f && styles.activeFilter]}
+                onPress={() => setFilter(f)}
+              >
+                <Text
+                  style={[styles.filterText, filter === f && { color: "#fff" }]}
+                >
+                  {f}
+                </Text>
+              </TouchableOpacity>
+            ),
+          )}
+        </View>
+
+        {/* 📋 LIST */}
+        {filteredServices.length === 0 ? (
+          <Text style={styles.empty}>No Assigned Services</Text>
+        ) : (
+          <FlatList
+            data={filteredServices}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: 250,
+              flexGrow: 1,
+            }}
+          />
+        )}
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
