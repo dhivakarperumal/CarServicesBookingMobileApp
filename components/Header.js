@@ -77,7 +77,7 @@ export default function MobileNavbar() {
       <SafeAreaView edges={["top"]} style={styles.safeArea}>
         <View style={styles.header}>
           {/* LOGO */}
-          <TouchableOpacity onPress={() => router.push("/(tabs)/home")}>
+          <TouchableOpacity onPress={() => router.push("/(tabs)")}>
             <Image
               source={require("../assets/images/logo_no_bg.png")}
               style={styles.logo}
