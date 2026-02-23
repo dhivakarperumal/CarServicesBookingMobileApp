@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { auth, db } from "../../firebase";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -66,9 +67,12 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    <KeyboardAwareScrollView
+      style={{ flex: 1, backgroundColor: "#0B1120" }}
+      contentContainerStyle={styles.container}
+      enableOnAndroid={true}
+      extraScrollHeight={20}
+      keyboardShouldPersistTaps="handled"
     >
       {/* Logo */}
       <View style={styles.logoContainer}>
@@ -137,16 +141,15 @@ export default function LoginScreen() {
         Don’t have an account?{" "}
         <Text style={{ color: "#06B6D4" }}>Register</Text>
       </Text>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#0B1120", // full dark card look
-    paddingHorizontal: 24,
+    flexGrow: 1,
     justifyContent: "center",
+    paddingHorizontal: 24,
   },
 
   logoContainer: {

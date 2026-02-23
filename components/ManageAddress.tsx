@@ -23,6 +23,8 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { Picker } from "@react-native-picker/picker";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+
 
 const INDIAN_STATES = [
   "Tamil Nadu","Kerala","Karnataka","Maharashtra",
@@ -127,7 +129,13 @@ export default function ManageAddress() {
   };
 
   return (
-    <ScrollView style={{ flex: 1 }}>
+       <KeyboardAwareScrollView
+      style={{ flex: 1, backgroundColor: "#0B1120" }}
+      enableOnAndroid={true}
+      extraScrollHeight={20}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
 
       {/* ===== SAVED ADDRESSES ===== */}
       {addresses.length > 0 && (
@@ -235,7 +243,7 @@ export default function ManageAddress() {
           </Text>
         )}
       </TouchableOpacity>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 

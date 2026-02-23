@@ -1,25 +1,24 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import {
   collection,
-  onSnapshot,
-  doc,
-  updateDoc,
   deleteDoc,
+  doc,
+  onSnapshot,
+  updateDoc,
 } from "firebase/firestore";
-import { auth, db } from "../firebase";
-import { useRouter } from "expo-router";
-import { FontAwesome } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { auth, db } from "../firebase";
 
 export default function Cart() {
   const [items, setItems] = useState<any[]>([]);
@@ -125,7 +124,7 @@ export default function Cart() {
 
           <TouchableOpacity
             style={styles.shopBtn}
-            onPress={() => router.push("/products")}
+            onPress={() => router.push("/(tabs)/products")}
           >
             <Text style={styles.shopText}>Continue Shopping</Text>
           </TouchableOpacity>
