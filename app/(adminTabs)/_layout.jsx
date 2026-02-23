@@ -83,12 +83,12 @@ function AdminHeader({ title = "Admin" }) {
   };
 
   return (
-   <LinearGradient
-  colors={["#0f172a", "#0f172a"]}
-  start={{ x: 0, y: 0 }}
-  end={{ x: 1, y: 1 }}
-  style={styles.header}
->
+    <LinearGradient
+      colors={["#0f172a", "#0f172a"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.header}
+    >
       <Text style={styles.title}>{title}</Text>
 
       <View style={styles.rightContainer}>
@@ -222,6 +222,15 @@ function AdminHeader({ title = "Admin" }) {
             />
 
             <MenuItem
+              icon="home-outline"
+              label="Home"
+              onPress={() => {
+                setMenuVisible(false);
+                router.push("/"); // correct
+              }}
+            />
+
+            <MenuItem
               icon="log-out-outline"
               label="Logout"
               danger
@@ -307,19 +316,19 @@ export default function AdminTabsLayout() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#0f172a" },
 
-header: {
-  backgroundColor: "#0f172a",
-  paddingHorizontal: 18,
-  paddingTop: 14,
-  paddingBottom: 16,
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  shadowColor: "#000",
-  shadowOpacity: 0.25,
-  shadowRadius: 8,
-  elevation: 8,
-},
+  header: {
+    backgroundColor: "#0f172a",
+    paddingHorizontal: 18,
+    paddingTop: 14,
+    paddingBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
+  },
 
   title: { color: "#fff", fontSize: 20, fontWeight: "bold" },
 
@@ -340,16 +349,16 @@ header: {
 
   badgeText: { color: "#fff", fontSize: 10, fontWeight: "bold" },
 
-profileCircle: {
-  width: 36,
-  height: 36,
-  borderRadius: 18,
-  backgroundColor: "#1e3a8a",
-  alignItems: "center",
-  justifyContent: "center",
-  borderWidth: 1,
-  borderColor: "#38bdf8",
-},
+  profileCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#1e3a8a",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#38bdf8",
+  },
 
   profileText: { color: "#fff", fontWeight: "bold", fontSize: 14 },
 
@@ -371,17 +380,17 @@ profileCircle: {
   },
 
   notifHeader: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  borderBottomWidth: 1,
-  borderColor: "#e5e7eb",
-  paddingBottom: 8,
-  marginBottom: 6,
-  backgroundColor: "#f9fafb", // 👈 add this
-  padding: 10,                // 👈 optional for spacing inside bg
-  borderTopLeftRadius: 8,     // 👈 optional nice UI
-  borderTopRightRadius: 8,
-},
+    flexDirection: "row",
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderColor: "#e5e7eb",
+    paddingBottom: 8,
+    marginBottom: 6,
+    backgroundColor: "#f9fafb", // 👈 add this
+    padding: 10,                // 👈 optional for spacing inside bg
+    borderTopLeftRadius: 8,     // 👈 optional nice UI
+    borderTopRightRadius: 8,
+  },
 
   notifTitle: { fontWeight: "bold", fontSize: 14, color: "#11182" },
 
