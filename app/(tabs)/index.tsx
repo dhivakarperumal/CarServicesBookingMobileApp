@@ -15,15 +15,15 @@ import {
 import { auth, db } from "../../firebase";
 
 const STATUS_FLOW = [
-    "BOOKED",
-    "CALL_VERIFIED",
-    "APPROVED",
-    "PROCESSING",
-    "WAITING_SPARE",
-    "SERVICE_GOING",
-    "BILL_PENDING",
-    "BILL_COMPLETED",
-    "SERVICE_COMPLETED",
+  "BOOKED",
+  "CALL_VERIFIED",
+  "APPROVED",
+  "PROCESSING",
+  "WAITING_SPARE",
+  "SERVICE_GOING",
+  "BILL_PENDING",
+  "BILL_COMPLETED",
+  "SERVICE_COMPLETED",
 ];
 
 const STATUS_LABELS = {
@@ -123,44 +123,44 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-          {/* ACTIVE BOOKING */}
-        {allBookings.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>My Bookings</Text>
+      {/* ACTIVE BOOKING */}
+      {allBookings.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>My Bookings</Text>
 
-           <View style={styles.bookingsContainer}>
-              {allBookings.map((booking) => (
-                <TouchableOpacity
-                  key={booking.id}
-                  style={styles.bookingCard}
-                  onPress={() => setSelectedBooking(booking)}
-                >
-                  <View style={styles.bookingTop}>
-                    <View>
-                      <Text style={styles.carName}>{booking.brand} - {booking.model}</Text>
-                      <Text style={styles.serviceName}>{booking.issue}</Text>
-                    </View>
-                    <View style={styles.statusBadge}>
-                      <Text style={styles.statusText}>{STATUS_LABELS[booking.normalizedStatus]}</Text>
-                    </View>
+          <View style={styles.bookingsContainer}>
+            {allBookings.map((booking) => (
+              <TouchableOpacity
+                key={booking.id}
+                style={styles.bookingCard}
+                onPress={() => setSelectedBooking(booking)}
+              >
+                <View style={styles.bookingTop}>
+                  <View>
+                    <Text style={styles.carName}>{booking.brand} - {booking.model}</Text>
+                    <Text style={styles.serviceName}>{booking.issue}</Text>
                   </View>
-
-                  <View style={styles.bookingFooter}>
-                    <Text style={styles.smallText}>ID: {booking.bookingId}</Text>
-                    <Text style={styles.smallText}>{booking.name}</Text>
+                  <View style={styles.statusBadge}>
+                    <Text style={styles.statusText}>{STATUS_LABELS[booking.normalizedStatus]}</Text>
                   </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+                </View>
 
-            {selectedBooking && (
-              <BookingDetailModal
-                booking={selectedBooking}
-                onClose={() => setSelectedBooking(null)}
-              />
-            )}
-          </>
-        )}
+                <View style={styles.bookingFooter}>
+                  <Text style={styles.smallText}>ID: {booking.bookingId}</Text>
+                  <Text style={styles.smallText}>{booking.name}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {selectedBooking && (
+            <BookingDetailModal
+              booking={selectedBooking}
+              onClose={() => setSelectedBooking(null)}
+            />
+          )}
+        </>
+      )}
 
 
       <View style={styles.contentWrapper}>
@@ -494,13 +494,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-bookingCard: {
-  backgroundColor: "#111827",
-  borderRadius: 16,
-  padding: 18,
-  marginBottom: 16,
-  width: "100%",   // 👈 full width
-},
+  bookingCard: {
+    backgroundColor: "#111827",
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 16,
+    width: "100%",   // 👈 full width
+  },
 
   bookingTop: {
     flexDirection: "row",
@@ -523,17 +523,17 @@ bookingCard: {
   statusBadge: {
     backgroundColor: "#0EA5E9",
     paddingHorizontal: 12,
-    paddingVertical: 0,   
-    borderRadius: 14,     
+    paddingVertical: 0,
+    borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
     minHeight: 10,
-    maxHeight: 20,     
+    maxHeight: 20,
   },
 
   statusText: {
     color: "#fff",
-    fontSize: 12,   
+    fontSize: 12,
     fontWeight: "600",
   },
 
