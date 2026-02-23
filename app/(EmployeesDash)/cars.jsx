@@ -20,6 +20,7 @@ import {
   addDoc,
 } from "firebase/firestore";
 import { db } from "../../firebase";
+import { KeyboardAvoidingView, Platform } from "react-native";
 
 export default function CarsScreen() {
   const [cars, setCars] = useState([]);
@@ -69,9 +70,9 @@ export default function CarsScreen() {
     () =>
       parts.reduce(
         (sum, p) => sum + Number(p.qty || 0) * Number(p.price || 0),
-        0
+        0,
       ),
-    [parts]
+    [parts],
   );
 
   /* 🔥 START SERVICE */
@@ -92,8 +93,7 @@ export default function CarsScreen() {
   const addPartRow = () =>
     setParts([...parts, { partName: "", qty: 1, price: 0 }]);
 
-  const removePartRow = (i) =>
-    setParts(parts.filter((_, idx) => idx !== i));
+  const removePartRow = (i) => setParts(parts.filter((_, idx) => idx !== i));
 
   const handlePartChange = (i, field, value) => {
     const copy = [...parts];
@@ -119,13 +119,12 @@ export default function CarsScreen() {
         db,
         "assignedServices",
         selectedCar.id,
-        "parts"
+        "parts",
       );
 
       for (let p of validParts) {
         await addDoc(partsRef, {
-          serviceId:
-            selectedCar.serviceId || selectedCar.bookingDocId || "",
+          serviceId: selectedCar.serviceId || selectedCar.bookingDocId || "",
           partName: p.partName,
           qty: Number(p.qty),
           price: Number(p.price),
@@ -184,22 +183,16 @@ export default function CarsScreen() {
 
     return (
       <View style={styles.card}>
-        <Text style={styles.number}>
-          Service ID: {item.serviceId || "N/A"}
-        </Text>
+        <Text style={styles.number}>Service ID: {item.serviceId || "N/A"}</Text>
 
         <Text style={styles.model}>
           {item.carBrand} - {item.carModel}
         </Text>
 
-        <Text style={styles.subText}>
-          Mechanic: {item.employeeName || "-"}
-        </Text>
+        <Text style={styles.subText}>Mechanic: {item.employeeName || "-"}</Text>
 
         {item.partsTotalCost ? (
-          <Text style={styles.parts}>
-            Parts Cost: ₹{item.partsTotalCost}
-          </Text>
+          <Text style={styles.parts}>Parts Cost: ₹{item.partsTotalCost}</Text>
         ) : null}
 
         <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
@@ -246,11 +239,16 @@ export default function CarsScreen() {
     );
   }
 
-  return (
+return (
+  <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1 }}
+  >
     <SafeAreaView style={styles.container}>
       {/* 🔎 SEARCH */}
       <TextInput
         placeholder="Search service, car, mechanic..."
+        placeholderTextColor="#94a3b8"
         value={search}
         onChangeText={setSearch}
         style={styles.search}
@@ -262,22 +260,16 @@ export default function CarsScreen() {
           (f) => (
             <TouchableOpacity
               key={f}
-              style={[
-                styles.filterBtn,
-                filter === f && styles.activeFilter,
-              ]}
+              style={[styles.filterBtn, filter === f && styles.activeFilter]}
               onPress={() => setFilter(f)}
             >
               <Text
-                style={[
-                  styles.filterText,
-                  filter === f && { color: "#fff" },
-                ]}
+                style={[styles.filterText, filter === f && { color: "#fff" }]}
               >
                 {f}
               </Text>
             </TouchableOpacity>
-          )
+          ),
         )}
       </View>
 
@@ -288,6 +280,7 @@ export default function CarsScreen() {
           data={filteredCars}
           keyExtractor={(i) => i.id}
           renderItem={renderItem}
+          contentContainerStyle={{ paddingBottom: 140 }}
         />
       )}
 
@@ -302,9 +295,7 @@ export default function CarsScreen() {
                 <TextInput
                   placeholder="Part name"
                   value={item.partName}
-                  onChangeText={(v) =>
-                    handlePartChange(index, "partName", v)
-                  }
+                  onChangeText={(v) => handlePartChange(index, "partName", v)}
                   style={styles.input}
                 />
 
@@ -313,9 +304,7 @@ export default function CarsScreen() {
                     placeholder="Qty"
                     keyboardType="numeric"
                     value={String(item.qty)}
-                    onChangeText={(v) =>
-                      handlePartChange(index, "qty", v)
-                    }
+                    onChangeText={(v) => handlePartChange(index, "qty", v)}
                     style={[styles.input, { flex: 1 }]}
                   />
 
@@ -323,9 +312,7 @@ export default function CarsScreen() {
                     placeholder="Price"
                     keyboardType="numeric"
                     value={String(item.price)}
-                    onChangeText={(v) =>
-                      handlePartChange(index, "price", v)
-                    }
+                    onChangeText={(v) => handlePartChange(index, "price", v)}
                     style={[styles.input, { flex: 1 }]}
                   />
                 </View>
@@ -335,9 +322,7 @@ export default function CarsScreen() {
                 </Text>
 
                 {parts.length > 1 && (
-                  <TouchableOpacity
-                    onPress={() => removePartRow(index)}
-                  >
+                  <TouchableOpacity onPress={() => removePartRow(index)}>
                     <Text style={styles.remove}>Remove</Text>
                   </TouchableOpacity>
                 )}
@@ -349,9 +334,7 @@ export default function CarsScreen() {
             </TouchableOpacity>
           </ScrollView>
 
-          <Text style={styles.grandTotal}>
-            Parts Total: ₹{totalPartsCost}
-          </Text>
+          <Text style={styles.grandTotal}>Parts Total: ₹{totalPartsCost}</Text>
 
           <TouchableOpacity style={styles.saveBtn} onPress={saveParts}>
             {savingParts ? (
@@ -370,11 +353,16 @@ export default function CarsScreen() {
         </SafeAreaView>
       </Modal>
     </SafeAreaView>
+    </KeyboardAvoidingView >
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#f4f6f9" },
+  container: {
+    flex: 1,
+    padding: 14,
+    backgroundColor: "#020617",
+  },
 
   loader: { flex: 1, justifyContent: "center", alignItems: "center" },
 
@@ -389,76 +377,83 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 18, fontWeight: "800", color: "#111827" },
 
   serviceId: {
-  marginTop: 4,
-  fontSize: 12,
-  fontWeight: "700",
-  color: "#2563eb",
-},
+    marginTop: 4,
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#2563eb",
+  },
 
-search: {
-  backgroundColor: "#fff",
-  padding: 12,
-  borderRadius: 10,
-  marginBottom: 12,
-  borderWidth: 1,
-  borderColor: "#e5e7eb",
-},
+  search: {
+    backgroundColor: "#0f172a",
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    color: "#fff",
+  },
 
-filterRow: {
-  flexDirection: "row",
-  flexWrap: "wrap",
-  marginBottom: 12,
-  gap: 6,
-},
+  filterRow: {
+    flexDirection: "row",
+    backgroundColor: "#0f172a",
+    borderRadius: 16,
+    padding: 6,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+  },
 
-filterBtn: {
-  paddingVertical: 6,
-  paddingHorizontal: 10,
-  backgroundColor: "#e5e7eb",
-  borderRadius: 8,
-},
+  filterBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: "center",
+  },
 
-activeFilter: {
-  backgroundColor: "#111827",
-},
+  activeFilter: {
+    backgroundColor: "#2563eb",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+  },
 
-filterText: {
-  fontSize: 12,
-  fontWeight: "700",
-  color: "#374151",
-},
+  filterText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#64748b",
+  },
 
-partCard: {
-  backgroundColor: "#fff",
-  padding: 12,
-  borderRadius: 10,
-  marginBottom: 10,
-},
+  partCard: {
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
 
-total: {
-  marginTop: 6,
-  fontWeight: "bold",
-},
+  total: {
+    marginTop: 6,
+    fontWeight: "bold",
+  },
 
-remove: {
-  marginTop: 6,
-  color: "#dc2626",
-  fontWeight: "600",
-},
+  remove: {
+    marginTop: 6,
+    color: "#dc2626",
+    fontWeight: "600",
+  },
 
-addRow: {
-  backgroundColor: "#111",
-  padding: 12,
-  borderRadius: 10,
-  alignItems: "center",
-  marginBottom: 10,
-},
+  addRow: {
+    backgroundColor: "#111",
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 10,
+  },
 
-grandTotal: {
-  fontSize: 16,
-  fontWeight: "bold",
-  marginBottom: 10,
-},
+  grandTotal: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
 
   empty: {
     textAlign: "center",
@@ -468,111 +463,116 @@ grandTotal: {
     fontWeight: "500",
   },
 
-  parts: {
-  marginTop: 6,
-  fontSize: 13,
-  color: "#374151",
-  fontWeight: "600",
-},
+  partsBtn: {
+    marginTop: 10,
+    backgroundColor: "#38bdf8",
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
 
-partsBtn: {
-  marginTop: 10,
-  backgroundColor: "#3b82f6",
-  paddingVertical: 10,
-  borderRadius: 10,
-  alignItems: "center",
-},
+  completeBtn: {
+    marginTop: 10,
+    backgroundColor: "#10b981",
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
 
-completeBtn: {
-  marginTop: 10,
-  backgroundColor: "#10b981",
-  paddingVertical: 10,
-  borderRadius: 10,
-  alignItems: "center",
-},
+  modal: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#f9fafb",
+  },
 
-modal: {
-  flex: 1,
-  padding: 16,
-  backgroundColor: "#f9fafb",
-},
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    marginBottom: 12,
+  },
 
-modalTitle: {
-  fontSize: 18,
-  fontWeight: "800",
-  marginBottom: 12,
-},
+  input: {
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 10,
+    minHeight: 80,
+    textAlignVertical: "top",
+    marginBottom: 12,
+  },
 
-input: {
-  backgroundColor: "#fff",
-  padding: 12,
-  borderRadius: 10,
-  minHeight: 80,
-  textAlignVertical: "top",
-  marginBottom: 12,
-},
-
-saveBtn: {
-  backgroundColor: "#111",
-  padding: 14,
-  borderRadius: 10,
-  alignItems: "center",
-  marginBottom: 10,
-},
+  saveBtn: {
+    backgroundColor: "#111",
+    padding: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 10,
+  },
 
   /* 🔥 CARD */
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#0f172a",
     padding: 16,
-    borderRadius: 16,
-    marginBottom: 14,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    borderRadius: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
   },
 
   number: {
     fontWeight: "800",
     fontSize: 16,
-    color: "#111827",
+    color: "#38bdf8",
   },
 
   model: {
     marginTop: 4,
     fontSize: 14,
-    color: "#4b5563",
+    color: "#fff",
     fontWeight: "600",
   },
 
   subText: {
     marginTop: 4,
-    fontSize: 13,
-    color: "#6b7280",
+    fontSize: 12,
+    color: "#94a3b8",
+  },
+
+  parts: {
+    marginTop: 6,
+    fontSize: 12,
+    color: "#10b981",
+    fontWeight: "700",
   },
 
   statusBadge: {
-    alignSelf: "flex-start",
-    marginTop: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    position: "absolute",
+    top: 12,
+    right: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    shadowOpacity: 0.4,
   },
 
   statusText: {
     fontSize: 11,
     fontWeight: "700",
   },
-
   updateBtn: {
     marginTop: 12,
-    backgroundColor: "#111",
-    paddingVertical: 10,
-    borderRadius: 10,
+    backgroundColor: "#2563eb",
+    paddingVertical: 12,
+    borderRadius: 12,
     alignItems: "center",
-  },
 
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+  },
   updateText: {
     color: "#fff",
     fontWeight: "700",
