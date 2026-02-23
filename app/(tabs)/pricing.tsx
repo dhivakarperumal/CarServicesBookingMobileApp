@@ -6,14 +6,17 @@ import {
     FlatList,
     StyleSheet,
     ActivityIndicator,
+    Pressable,
 } from "react-native";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import { FontAwesome } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 export default function Pricing() {
     const [packages, setPackages] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchPricingPackages = async () => {
@@ -54,21 +57,42 @@ export default function Pricing() {
                     keyExtractor={(item) => item.id}
                     contentContainerStyle={{ paddingBottom: 30 }}
                     renderItem={({ item }) => (
-                        <View style={styles.card}>
-                            <Text style={styles.cardTitle}>{item.title}</Text>
+                        <>
+                            <View style={styles.card}>
+                                <Text style={styles.cardTitle}>{item.title}</Text>
 
-                            <Text style={styles.price}>
-                                ₹ {item.price}
-                                <Text style={styles.perText}> /service</Text>
-                            </Text>
+                                <Text style={styles.price}>
+                                    ₹ {item.price}
+                                    <Text style={styles.perText}> /service</Text>
+                                </Text>
 
-                            {item.features?.map((feature: string, index: number) => (
-                                <View key={index} style={styles.featureRow}>
-                                    <FontAwesome name="check" size={14} color="#0EA5E9" />
-                                    <Text style={styles.featureText}>{feature}</Text>
-                                </View>
-                            ))}
-                        </View>
+                                {item.features?.map((feature: string, index: number) => (
+                                    <View key={index} style={styles.featureRow}>
+                                        <FontAwesome name="check" size={14} color="#0EA5E9" />
+                                        <Text style={styles.featureText}>{feature}</Text>
+                                    </View>
+                                ))}
+                                <Pressable
+                                    style={({ pressed }) => [
+                                        styles.bookButton,
+                                        pressed && { opacity: 0.7 },
+                                    ]}
+                                    onPress={() =>
+                                        router.push({
+                                            pathname: "/(tabs)/booking",
+                                            params: {
+                                                packageId: item.id,
+                                                title: item.title,
+                                                price: item.price,
+                                            },
+                                        })
+                                    }
+                                >
+                                    <Text style={styles.bookButtonText}>Book Now</Text>
+                                </Pressable>
+                            </View>
+
+                        </>
                     )}
                 />
             </View>
@@ -117,6 +141,19 @@ const styles = StyleSheet.create({
         fontSize: 40,
         fontWeight: "bold",
         marginVertical: 8,
+    },
+    bookButton: {
+        marginTop: 15,
+        backgroundColor: "#0EA5E9",
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: "center",
+    },
+
+    bookButtonText: {
+        color: "white",
+        fontSize: 16,
+        fontWeight: "600",
     },
     perText: {
         fontSize: 14,        // smaller than price
