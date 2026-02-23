@@ -40,81 +40,89 @@ const SettingCard = ({ icon, title, desc, path }) => {
 export default function Settings() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
-      <SettingCard
-        icon={<Ionicons name="person-outline" size={22} color="#38bdf8" />}
-        title="Profile Settings"
-        desc="Update personal information and password."
-        path="/(admin-settings)/profile"
-      />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <SettingCard
+          icon={<Ionicons name="person-outline" size={22} color="#38bdf8" />}
+          title="Profile Settings"
+          desc="Update personal information and password."
+          path="/(admin-settings)/profile"
+        />
 
-      <SettingCard
-        icon={<Ionicons name="people-outline" size={22} color="#38bdf8" />}
-        title="User Management"
-        desc="Manage user roles and accounts."
-        path="/(admin-settings)/users"
-      />
+        <SettingCard
+          icon={<Ionicons name="people-outline" size={22} color="#38bdf8" />}
+          title="User Management"
+          desc="Manage user roles and accounts."
+          path="/(admin-settings)/users"
+        />
 
-      <SettingCard
-        icon={<Ionicons name="construct-outline" size={22} color="#7c3aed" />}
-        title="Service List"
-        desc="View and manage all service bookings."
-        path="/(admin-settings)/servicesListAll"
-      />
+        <SettingCard
+          icon={<Ionicons name="construct-outline" size={22} color="#7c3aed" />}
+          title="Service List"
+          desc="View and manage all service bookings."
+          path="/(admin-settings)/servicesListAll"
+        />
 
-      <SettingCard
-        icon={<MaterialIcons name="price-change" size={22} color="#059669" />}
-        title="Price List"
-        desc="Update service pricing and labour charges."
-        path="/(admin-settings)/priceList"
-      />
+        <SettingCard
+          icon={<MaterialIcons name="price-change" size={22} color="#059669" />}
+          title="Price List"
+          desc="Update service pricing and labour charges."
+          path="/(admin-settings)/priceList"
+        />
 
-      <SettingCard
-        icon={<Ionicons name="cart-outline" size={22} color="#2563eb" />}
-        title="Product Billing"
-        desc="Create product invoices and manage sales."
-        path="/(Products)/ProductBillingScreen"
-      />
+        <SettingCard
+          icon={<Ionicons name="cart-outline" size={22} color="#2563eb" />}
+          title="Product Billing"
+          desc="Create product invoices and manage sales."
+          path="/(Products)/ProductBillingScreen"
+        />
 
-      <SettingCard
-        icon={<Ionicons name="build-outline" size={22} color="#f59e0b" />}
-        title="Service Billing"
-        desc="Generate service bills and manage payments."
-        path="/(serviceslist)/Bllinglistall"
-      />
+        <SettingCard
+          icon={<Ionicons name="build-outline" size={22} color="#f59e0b" />}
+          title="Service Billing"
+          desc="Generate service bills and manage payments."
+          path="/(serviceslist)/Bllinglistall"
+        />
 
-      <SettingCard
-        icon={<Ionicons name="bar-chart-outline" size={22} color="#7c3aed" />}
-        title="Reports"
-        desc="View sales, service and stock reports."
-        path="/(admin-settings)/Report"
-      />
+        <SettingCard
+          icon={<Ionicons name="bar-chart-outline" size={22} color="#7c3aed" />}
+          title="Reports"
+          desc="View sales, service and stock reports."
+          path="/(admin-settings)/Report"
+        />
 
-      <SettingCard
-        icon={<Ionicons name="cube-outline" size={22} color="#059669" />}
-        title="Product Stock Details"
-        desc="View and manage product stock."
-        path="/(admin-settings)/stockDetails"
-      />
+        <SettingCard
+          icon={<Ionicons name="cube-outline" size={22} color="#059669" />}
+          title="Product Stock Details"
+          desc="View and manage product stock."
+          path="/(admin-settings)/stockDetails"
+        />
 
-      <SettingCard
-        icon={<Ionicons name="add-circle-outline" size={22} color="#0ea5e9" />}
-        title="Add Stock"
-        desc="Increase stock for product variants."
-        path="/(admin-settings)/addStock"
-      />
+        <SettingCard
+          icon={<Ionicons name="add-circle-outline" size={22} color="#0ea5e9" />}
+          title="Add Stock"
+          desc="Increase stock for product variants."
+          path="/(admin-settings)/addStock"
+        />
 
-      <SettingCard
-        icon={<FontAwesome5 name="star" size={20} color="#f59e0b" />}
-        title="Customer Reviews & Ratings"
-        desc="View and manage customer feedback."
-        path="/(admin-settings)/review"
-      />
-    </ScrollView>
+        <SettingCard
+          icon={<FontAwesome5 name="star" size={20} color="#f59e0b" />}
+          title="Customer Reviews & Ratings"
+          desc="View and manage customer feedback."
+          path="/(admin-settings)/review"
+        />
+
+        <SettingCard
+          icon={<Ionicons name="cube-outline" size={22} color="#059669" />}
+          title="Employees"
+          desc="View and manage employees."
+          path="/(Employees)/employees"
+        />
+
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -123,13 +131,13 @@ export default function Settings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#020617", 
+    backgroundColor: "#020617",
   },
 
   scrollContent: {
     padding: 16,
     paddingBottom: 60,
-    paddingBottom: 120, 
+    paddingBottom: 120,
   },
 
   card: {

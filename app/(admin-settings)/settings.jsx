@@ -226,6 +226,13 @@ export default function Settings() {
         desc="View and manage customer feedback."
         path="/(admin-settings)/review"
       />
+
+      <SettingCard
+        icon={<Ionicons name="cube-outline" size={22} color="#059669" />}
+        title="Employees"
+        desc="View and manage employees."
+        path="/(Employees)/employees"
+      /> 
     </ScrollView>
   );
 }
