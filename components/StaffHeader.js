@@ -11,12 +11,7 @@ import {
 import { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { signOut, getAuth } from "firebase/auth";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { useRouter, useSegments } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -53,7 +48,7 @@ export default function StaffHeader() {
     }
   };
 
-  /* ================= LOAD NOTIFICATIONS + TODAY COUNT ================= */
+  /* ================= LOAD NOTIFICATIONS ================= */
   const loadNotifications = async () => {
     if (!user) return;
 
@@ -86,7 +81,7 @@ export default function StaffHeader() {
 
   useEffect(() => {
     loadEmployee();
-    loadNotifications(); // load badge count on mount
+    loadNotifications();
   }, []);
 
   const handleLogout = async () => {
@@ -120,7 +115,7 @@ export default function StaffHeader() {
         <Text style={styles.title}>{getTitle()}</Text>
 
         <View style={styles.right}>
-          {/* 🔔 NOTIFICATION BUTTON */}
+          {/* 🔔 NOTIFICATIONS */}
           <TouchableOpacity
             onPress={() => {
               setNotifOpen(!notifOpen);
@@ -149,10 +144,7 @@ export default function StaffHeader() {
 
       {/* 🔔 NOTIFICATION DROPDOWN */}
       {notifOpen && (
-        <Pressable
-          style={styles.overlay}
-          onPress={() => setNotifOpen(false)}
-        >
+        <Pressable style={styles.overlay} onPress={() => setNotifOpen(false)}>
           <View style={styles.notifDropdown}>
             <Text style={styles.notifTitle}>Assigned Jobs</Text>
 
@@ -169,9 +161,7 @@ export default function StaffHeader() {
                     <Text style={styles.notifCar}>
                       {item.carBrand} - {item.carModel}
                     </Text>
-                    <Text style={styles.notifSub}>
-                      {item.carIssue}
-                    </Text>
+                    <Text style={styles.notifSub}>{item.carIssue}</Text>
                     <Text style={styles.notifStatus}>
                       {item.serviceStatus}
                     </Text>
@@ -187,28 +177,30 @@ export default function StaffHeader() {
       {open && (
         <Pressable style={styles.overlay} onPress={() => setOpen(false)}>
           <View style={styles.dropdown}>
+            {/* PROFILE */}
             <TouchableOpacity
               style={styles.item}
               onPress={() => {
                 setOpen(false);
-                router.push("/(staff)/profile");
-              }}
-            >
-              <Ionicons name="home-outline" size={18} />
-              <Text style={styles.itemText}>Home</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.item}
-              onPress={() => {
-                setOpen(false);
-                router.push("/(adminTabs)/home");
+                router.replace("/(staff)/profile");
               }}
             >
               <Ionicons name="person-outline" size={18} />
               <Text style={styles.itemText}>Profile</Text>
             </TouchableOpacity>
+            {/* HOME */}
+            <TouchableOpacity
+              style={styles.item}
+              onPress={() => {
+                setOpen(false);
+                router.replace("/(tabs)");
+              }}
+            >
+              <Ionicons name="home-outline" size={18} color="#111" />
+              <Text style={styles.itemText}>Home</Text>
+            </TouchableOpacity>
 
+            {/* LOGOUT */}
             <TouchableOpacity style={styles.item} onPress={handleLogout}>
               <Ionicons name="log-out-outline" size={18} />
               <Text style={styles.itemText}>Logout</Text>
@@ -232,15 +224,9 @@ const styles = StyleSheet.create({
     borderBottomColor: "#e5e7eb",
   },
 
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
+  title: { fontSize: 18, fontWeight: "bold" },
 
-  right: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+  right: { flexDirection: "row", alignItems: "center" },
 
   profile: {
     width: 38,
@@ -251,11 +237,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  profileText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
+  profileText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 
   badge: {
     position: "absolute",
@@ -270,11 +252,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
 
-  badgeText: {
-    color: "#fff",
-    fontSize: 11,
-    fontWeight: "bold",
-  },
+  badgeText: { color: "#fff", fontSize: 11, fontWeight: "bold" },
 
   overlay: {
     position: "absolute",
@@ -299,10 +277,7 @@ const styles = StyleSheet.create({
     elevation: 15,
   },
 
-  notifTitle: {
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
+  notifTitle: { fontWeight: "bold", marginBottom: 8 },
 
   notifCard: {
     backgroundColor: "#f9fafb",
@@ -311,14 +286,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
-  notifCar: {
-    fontWeight: "bold",
-  },
+  notifCar: { fontWeight: "bold" },
 
-  notifSub: {
-    fontSize: 12,
-    color: "#6b7280",
-  },
+  notifSub: { fontSize: 12, color: "#6b7280" },
 
   notifStatus: {
     fontSize: 11,
@@ -353,8 +323,5 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 
-  itemText: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
+  itemText: { fontSize: 14, fontWeight: "500" },
 });
