@@ -23,6 +23,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useFocusEffect } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function EmployeeDashboard() {
   const auth = getAuth();
@@ -39,7 +40,7 @@ export default function EmployeeDashboard() {
   const loadEmployee = async () => {
     const q = query(
       collection(db, "employees"),
-      where("authUid", "==", user.uid)
+      where("authUid", "==", user.uid),
     );
 
     const snap = await getDocs(q);
@@ -53,7 +54,7 @@ export default function EmployeeDashboard() {
   const loadServices = async () => {
     const q = query(
       collection(db, "assignedServices"),
-      where("employeeAuthUid", "==", user.uid)
+      where("employeeAuthUid", "==", user.uid),
     );
 
     const snap = await getDocs(q);
@@ -84,7 +85,7 @@ export default function EmployeeDashboard() {
     useCallback(() => {
       loadEmployee();
       loadServices();
-    }, [])
+    }, []),
   );
 
   /* 🔄 PULL TO REFRESH */
@@ -151,19 +152,19 @@ export default function EmployeeDashboard() {
 
   /* ================= SUMMARY ================= */
   const assigned = services.filter(
-    (s) => s.serviceStatus === "Assigned"
+    (s) => s.serviceStatus === "Assigned",
   ).length;
 
   const inprogress = services.filter(
-    (s) => s.serviceStatus === "In Progress"
+    (s) => s.serviceStatus === "In Progress",
   ).length;
 
   const completed = services.filter(
-    (s) => s.serviceStatus === "Completed"
+    (s) => s.serviceStatus === "Completed",
   ).length;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f4f6f9" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 14, flexGrow: 1 }}
@@ -174,43 +175,58 @@ export default function EmployeeDashboard() {
       >
         {/* WELCOME CARD */}
         <View style={styles.card}>
+          {/* STATUS BADGE - TOP RIGHT */}
+          <View
+            style={[
+              styles.statusBadge,
+              employee.status === "Active"
+                ? styles.statusActive
+                : styles.statusInactive,
+            ]}
+          >
+            <Text style={styles.statusText}>
+              {employee.status || "Inactive"}
+            </Text>
+          </View>
           <Text style={styles.welcome}>Welcome 👋</Text>
           <Text style={styles.name}>{employee.name}</Text>
           <Text style={styles.sub}>
             {employee.role} • {employee.department}
           </Text>
-
-          <Text
-            style={[
-              styles.badge,
-              employee.status === "Active"
-                ? styles.active
-                : styles.inactive,
-            ]}
-          >
-            {employee.status || "Inactive"}
-          </Text>
         </View>
 
         {/* SUMMARY CARDS */}
         <View style={styles.summaryRow}>
-          <View style={[styles.summaryCard, { backgroundColor: "#fef3c7" }]}>
+          <LinearGradient
+            colors={["#2563eb", "#020617"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.summaryCard}
+          >
             <Text style={styles.summaryNumber}>{assigned}</Text>
             <Text style={styles.summaryLabel}>Assigned</Text>
-          </View>
+          </LinearGradient>
 
-          <View style={[styles.summaryCard, { backgroundColor: "#e0f2fe" }]}>
+          <LinearGradient
+            colors={["#38bdf8", "#020617"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.summaryCard}
+          >
             <Text style={styles.summaryNumber}>{inprogress}</Text>
             <Text style={styles.summaryLabel}>In Progress</Text>
-          </View>
+          </LinearGradient>
 
-          <View style={[styles.summaryCard, { backgroundColor: "#d1fae5" }]}>
+          <LinearGradient
+            colors={["#10b981", "#020617"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.summaryCard}
+          >
             <Text style={styles.summaryNumber}>{completed}</Text>
             <Text style={styles.summaryLabel}>Completed</Text>
-          </View>
+          </LinearGradient>
         </View>
-
-        
 
         {/* TODAY SERVICES */}
         <View style={styles.card}>
@@ -227,17 +243,13 @@ export default function EmployeeDashboard() {
                   {s.carBrand} - {s.carModel}
                 </Text>
                 <Text style={styles.sub}>{s.carIssue}</Text>
-                <Text style={styles.small}>
-                  Status: {s.serviceStatus}
-                </Text>
+                <Text style={styles.small}>Status: {s.serviceStatus}</Text>
               </View>
 
               {s.serviceStatus === "Assigned" && (
                 <TouchableOpacity
                   style={styles.startBtn}
-                  onPress={() =>
-                    updateServiceStatus(s.id, "In Progress")
-                  }
+                  onPress={() => updateServiceStatus(s.id, "In Progress")}
                 >
                   <Text style={styles.btnText}>Start</Text>
                 </TouchableOpacity>
@@ -246,9 +258,7 @@ export default function EmployeeDashboard() {
               {s.serviceStatus === "In Progress" && (
                 <TouchableOpacity
                   style={styles.doneBtn}
-                  onPress={() =>
-                    updateServiceStatus(s.id, "Completed")
-                  }
+                  onPress={() => updateServiceStatus(s.id, "Completed")}
                 >
                   <Text style={styles.btnText}>Done</Text>
                 </TouchableOpacity>
@@ -262,110 +272,164 @@ export default function EmployeeDashboard() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#020617",
+  },
 
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
+    backgroundColor: "#0f172a",
+    borderRadius: 18,
     padding: 16,
-    marginBottom: 70,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
   },
 
-  welcome: { fontSize: 14, color: "#6b7280" },
-  name: { fontSize: 20, fontWeight: "bold" },
-  sub: { color: "#6b7280", marginTop: 2 },
+  welcome: {
+    color: "#94a3b8",
+    fontSize: 13,
+  },
+
+  name: {
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "800",
+  },
+
+  sub: {
+    color: "#94a3b8",
+    marginTop: 2,
+    fontSize: 12,
+  },
+
+  statusBadge: {
+  position: "absolute",
+  top: 14,
+  right: 14,
+  paddingHorizontal: 14,
+  paddingVertical: 6,
+  borderRadius: 20,
+  elevation: 6,
+},
+
+statusText: {
+  color: "#fff",
+  fontSize: 11,
+  fontWeight: "800",
+  letterSpacing: 0.5,
+},
+
+statusActive: {
+  backgroundColor: "#10b981",
+  shadowColor: "#10b981",
+  shadowOpacity: 0.6,
+  shadowRadius: 8,
+},
+
+statusInactive: {
+  backgroundColor: "#ef4444",
+  shadowColor: "#ef4444",
+  shadowOpacity: 0.6,
+  shadowRadius: 8,
+},
 
   badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "700",
     alignSelf: "flex-start",
-    marginTop: 6,
+    marginTop: 8,
+    fontSize: 11,
   },
 
-  active: { backgroundColor: "#10b981" },
-  inactive: { backgroundColor: "#ef4444" },
-
-  label: { fontSize: 14, fontWeight: "bold", marginBottom: 6 },
-
-  timeRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 12,
+  label: {
+    color: "#38bdf8",
+    fontWeight: "800",
+    marginBottom: 10,
   },
 
-  small: { fontSize: 12, color: "#6b7280" },
-  time: { fontSize: 16, fontWeight: "bold" },
-
-  btnRow: { flexDirection: "row", gap: 10 },
-
-  inBtn: {
-    flexDirection: "row",
-    gap: 6,
-    backgroundColor: "#10b981",
-    padding: 10,
-    borderRadius: 10,
+  small: {
+    fontSize: 11,
+    color: "#94a3b8",
   },
-
-  outBtn: {
-    flexDirection: "row",
-    gap: 6,
-    backgroundColor: "#ef4444",
-    padding: 10,
-    borderRadius: 10,
-  },
-
-  btnText: { color: "#fff", fontWeight: "bold" },
 
   serviceItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f9fafb",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 8,
+    backgroundColor: "#020617",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
 
-  serviceTitle: { fontWeight: "bold" },
+  serviceTitle: {
+    color: "#fff",
+    fontWeight: "700",
+  },
 
   startBtn: {
-    backgroundColor: "#3b82f6",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    backgroundColor: "#2563eb",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
   },
 
   doneBtn: {
     backgroundColor: "#10b981",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+
+  btnText: {
+    color: "#fff",
+    fontWeight: "800",
+    fontSize: 12,
   },
 
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 14,
   },
 
   summaryCard: {
     flex: 1,
-    padding: 14,
-    borderRadius: 12,
-    marginHorizontal: 4,
+    padding: 16,
+    borderRadius: 18,
+    marginHorizontal: 5,
     alignItems: "center",
+
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
 
   summaryNumber: {
-    fontSize: 20,
-    fontWeight: "bold",
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "900",
   },
 
   summaryLabel: {
-    fontSize: 12,
-    color: "#374151",
+    fontSize: 11,
+    color: "#94a3b8",
     marginTop: 4,
   },
 });
