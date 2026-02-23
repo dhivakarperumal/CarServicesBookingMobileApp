@@ -126,7 +126,7 @@ export default function ReviewsSettings() {
   const filtered = reviews.filter(
     (r) =>
       r.name?.toLowerCase().includes(search.toLowerCase()) ||
-      r.message?.toLowerCase().includes(search.toLowerCase())
+      r.message?.toLowerCase().includes(search.toLowerCase()),
   );
 
   /* ================= UI ================= */
@@ -135,6 +135,7 @@ export default function ReviewsSettings() {
       {/* SEARCH */}
       <TextInput
         placeholder="Search reviews..."
+        placeholderTextColor="#9ca3af"
         value={search}
         onChangeText={setSearch}
         style={styles.search}
@@ -239,7 +240,7 @@ export default function ReviewsSettings() {
             </Text>
 
             <TouchableOpacity onPress={() => setShowModal(false)}>
-              <Ionicons name="close" size={24} color="#000" />
+              <Ionicons name="close" size={24} color="#38bdf8" />
             </TouchableOpacity>
           </View>
 
@@ -247,6 +248,7 @@ export default function ReviewsSettings() {
           <ScrollView contentContainerStyle={{ padding: 16 }}>
             <TextInput
               placeholder="Name"
+              placeholderTextColor="#9ca3af"
               style={styles.input}
               value={form.name}
               onChangeText={(t) => setForm({ ...form, name: t })}
@@ -275,6 +277,7 @@ export default function ReviewsSettings() {
 
             <TextInput
               placeholder="Message"
+              placeholderTextColor="#9ca3af"
               style={styles.input}
               multiline
               value={form.message}
@@ -304,22 +307,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: "#020617",
   },
 
   search: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
+    backgroundColor: "#0f172a",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    color: "#fff",
   },
 
   card: {
     flexDirection: "row",
-    gap: 10,
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 10,
+    gap: 12,
+    backgroundColor: "#0f172a",
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
 
   avatar: { width: 50, height: 50, borderRadius: 25 },
@@ -328,16 +341,24 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#f3f4f6",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: "#020617",
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
 
-  name: { fontWeight: "600", fontSize: 15 },
+  name: {
+    fontWeight: "700",
+    fontSize: 15,
+    color: "#fff",
+  },
 
   starRow: { flexDirection: "row", marginTop: 2 },
 
-  message: { fontSize: 13, color: "#6b7280", marginTop: 4 },
+  message: {
+    fontSize: 13,
+    color: "#94a3b8",
+    marginTop: 4,
+  },
 
   actions: {
     justifyContent: "space-between",
@@ -354,16 +375,14 @@ const styles = StyleSheet.create({
     bottom: 20,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#000",
+    backgroundColor: "#2563eb",
     paddingVertical: 14,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     borderRadius: 40,
-    elevation: 8,
-    zIndex: 999,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 10,
   },
 
   addText: {
@@ -378,11 +397,13 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 10 },
 
   input: {
+    backgroundColor: "#0f172a",
     borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
+    borderColor: "#0b3b6f",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    color: "#fff",
   },
 
   imageBtn: {
@@ -409,7 +430,7 @@ const styles = StyleSheet.create({
 
   modalContainer: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#020617",
   },
 
   modalHeader: {
@@ -420,17 +441,19 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderColor: "#e5e7eb",
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#0f172a",
+    borderColor: "#0b3b6f",
   },
 
   modalHeaderTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
+    color: "#38bdf8",
   },
 
   saveBtn: {
-    backgroundColor: "#000",
-    padding: 10,
-    borderRadius: 10,
+    backgroundColor: "#2563eb",
+    padding: 12,
+    borderRadius: 12,
   },
 });
