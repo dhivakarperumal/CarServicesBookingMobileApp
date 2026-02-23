@@ -394,7 +394,7 @@ export default function Services() {
                   style={{
                     backgroundColor: "#020617",
                     borderWidth: 1,
-                    borderColor: "#0b3b6f",
+                    borderColor: "#38bdf8",
                     borderRadius: 12,
                     marginTop: 10,
                     overflow: "hidden",
