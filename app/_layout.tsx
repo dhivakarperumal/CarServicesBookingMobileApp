@@ -17,17 +17,7 @@ export default function RootLayout() {
     return unsub;
   }, []);
 
-  useEffect(() => {
-    if (user === undefined) return;
-
-    const inAuthGroup = segments[0] === "(auth)";
-
-    if (!user && !inAuthGroup) {
-      router.replace("/(auth)/login");
-    } else if (user && inAuthGroup) {
-      router.replace("/(tabs)");
-    }
-  }, [user, segments]);
+  useEffect(() => { if (user === undefined) return; const inAuthGroup = segments[0] === "(auth)"; if (!user && !inAuthGroup) { router.replace("/(auth)/login"); } else if (user && inAuthGroup) { router.replace("/(tabs)"); } }, [user, segments]);
 
   // ✅ Loading screen instead of null
   if (user === undefined) {
