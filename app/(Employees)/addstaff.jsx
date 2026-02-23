@@ -26,6 +26,7 @@ import {
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { db } from "../../firebase";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { KeyboardAvoidingView, Platform } from "react-native";
 
 const auth = getAuth();
 
@@ -162,7 +163,7 @@ export default function AddEditStaffScreen() {
         const cred = await createUserWithEmailAndPassword(
           auth,
           form.email,
-          form.password
+          form.password,
         );
 
         data.authUid = cred.user.uid;
@@ -204,11 +205,11 @@ export default function AddEditStaffScreen() {
   /* ================= UI ================= */
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
       {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#111" />
+          <MaterialCommunityIcons name="arrow-left" size={22} color="#38bdf8" />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>
@@ -218,9 +219,20 @@ export default function AddEditStaffScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView
+  style={{ flex: 1 }}
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+>
+
+<ScrollView
+  style={styles.container}
+  contentContainerStyle={{ paddingBottom: 200 }}
+  showsVerticalScrollIndicator={false}
+  keyboardShouldPersistTaps="handled"
+>
         <TextInput
           placeholder="Full Name"
+          placeholderTextColor="#64748b"
           style={styles.input}
           value={form.name}
           onChangeText={(t) => setForm({ ...form, name: t })}
@@ -228,6 +240,7 @@ export default function AddEditStaffScreen() {
 
         <TextInput
           placeholder="Email"
+          placeholderTextColor="#64748b"
           style={styles.input}
           value={form.email}
           onChangeText={(t) => setForm({ ...form, email: t })}
@@ -235,18 +248,18 @@ export default function AddEditStaffScreen() {
 
         <TextInput
           placeholder="Phone"
+          placeholderTextColor="#64748b"
           style={styles.input}
           keyboardType="number-pad"
           value={form.phone}
-          onChangeText={(t) =>
-            setForm({ ...form, phone: t, password: t })
-          }
+          onChangeText={(t) => setForm({ ...form, phone: t, password: t })}
         />
 
         {!isEdit && (
           <TextInput
             placeholder="Generated Password"
-            style={[styles.input, { backgroundColor: "#eee" }]}
+            placeholderTextColor="#64748b"
+            style={[styles.input, { backgroundColor: "#0f172a" }]}
             value={form.password}
             editable={false}
           />
@@ -257,6 +270,8 @@ export default function AddEditStaffScreen() {
           <Picker
             selectedValue={form.role}
             onValueChange={(v) => setForm({ ...form, role: v })}
+            dropdownIconColor="#38bdf8"
+            style={{ color: "#fff" }}
           >
             <Picker.Item label="Select Role" value="" />
             {roles.map((r) => (
@@ -270,6 +285,8 @@ export default function AddEditStaffScreen() {
           <Picker
             selectedValue={form.department}
             onValueChange={(v) => setForm({ ...form, department: v })}
+            dropdownIconColor="#38bdf8"
+            style={{ color: "#fff" }}
           >
             <Picker.Item label="Select Department" value="" />
             {departments.map((d) => (
@@ -283,6 +300,8 @@ export default function AddEditStaffScreen() {
           <Picker
             selectedValue={form.shift}
             onValueChange={(v) => setForm({ ...form, shift: v })}
+            dropdownIconColor="#38bdf8"
+            style={{ color: "#fff" }}
           >
             <Picker.Item label="Select Shift" value="" />
             {shifts.map((s) => (
@@ -293,6 +312,7 @@ export default function AddEditStaffScreen() {
 
         <TextInput
           placeholder="Salary"
+          placeholderTextColor="#64748b"
           style={styles.input}
           keyboardType="numeric"
           value={form.salary}
@@ -304,6 +324,8 @@ export default function AddEditStaffScreen() {
           <Picker
             selectedValue={form.gender}
             onValueChange={(v) => setForm({ ...form, gender: v })}
+            dropdownIconColor="#38bdf8"
+            style={{ color: "#fff" }}
           >
             <Picker.Item label="Select Gender" value="" />
             {genders.map((g) => (
@@ -313,22 +335,20 @@ export default function AddEditStaffScreen() {
         </View>
 
         {/* DATE */}
-        <TouchableOpacity
-          onPress={() => setShowDate("dob")}
-        >
+        <TouchableOpacity onPress={() => setShowDate("dob")}>
           <TextInput
             placeholder="Date of Birth"
+            placeholderTextColor="#64748b"
             style={styles.input}
             value={form.dob}
             editable={false}
           />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => setShowDate("joining")}
-        >
+        <TouchableOpacity onPress={() => setShowDate("joining")}>
           <TextInput
             placeholder="Joining Date"
+            placeholderTextColor="#64748b"
             style={styles.input}
             value={form.joiningDate}
             editable={false}
@@ -339,6 +359,7 @@ export default function AddEditStaffScreen() {
         <TouchableOpacity onPress={() => setShowTime("timeIn")}>
           <TextInput
             placeholder="Time In"
+            placeholderTextColor="#64748b"
             style={styles.input}
             value={form.timeIn}
             editable={false}
@@ -348,6 +369,7 @@ export default function AddEditStaffScreen() {
         <TouchableOpacity onPress={() => setShowTime("timeOut")}>
           <TextInput
             placeholder="Time Out"
+            placeholderTextColor="#64748b"
             style={styles.input}
             value={form.timeOut}
             editable={false}
@@ -356,7 +378,8 @@ export default function AddEditStaffScreen() {
 
         <TextInput
           placeholder="Address"
-          style={[styles.input, { height: 100 }]}
+          placeholderTextColor="#64748b"
+          style={[styles.input, { height: 120, textAlignVertical: "top" }]}
           multiline
           value={form.address}
           onChangeText={(t) => setForm({ ...form, address: t })}
@@ -376,6 +399,7 @@ export default function AddEditStaffScreen() {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* DATE PICKERS */}
       {showDate === "dob" && (
@@ -431,58 +455,89 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
+    backgroundColor: "#0f172a",
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
-    backgroundColor: "#fff",
+    borderColor: "#0b3b6f",
   },
+
   backBtn: {
     width: 40,
     height: 40,
-    borderRadius: 10,
-    backgroundColor: "#f3f4f6",
+    borderRadius: 12,
+    backgroundColor: "#020617",
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
   },
+
   headerTitle: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#111",
+    fontWeight: "700",
+    color: "#fff",
   },
 
-  container: { flex: 1, backgroundColor: "#f4f6f9", padding: 14 },
+  container: {
+    flex: 1,
+    backgroundColor: "#020617",
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 40,
+  },
 
   input: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 10,
+    backgroundColor: "#0f172a",
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    color: "#fff",
   },
 
   pickerBox: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    marginBottom: 10,
+    backgroundColor: "#0f172a",
+    borderRadius: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
     overflow: "hidden",
   },
 
   uploadBtn: {
-    backgroundColor: "#e5e7eb",
-    padding: 12,
-    borderRadius: 10,
+    backgroundColor: "#020617",
+    paddingVertical: 16,
+    borderRadius: 14,
     alignItems: "center",
-    marginBottom: 10,
+    marginTop: 4,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#38bdf8",
   },
 
-  uploadText: { fontWeight: "bold" },
+  uploadText: {
+    color: "#38bdf8",
+    fontWeight: "700",
+  },
 
   saveBtn: {
-    backgroundColor: "#111",
-    padding: 14,
-    borderRadius: 12,
+    backgroundColor: "#2563eb",
+    paddingVertical: 18,
+    borderRadius: 16,
     alignItems: "center",
-    marginBottom: 40,
+    marginTop: 10,
+    marginBottom: 60,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 8,
   },
 
-  saveText: { color: "#fff", fontWeight: "bold" },
+  saveText: {
+    color: "#fff",
+    fontWeight: "800",
+    fontSize: 15,
+  },
 });

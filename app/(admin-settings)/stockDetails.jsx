@@ -139,7 +139,7 @@ export default function StockDetails() {
                 }
                 style={styles.manageBtn}
               >
-                <Text style={{ color: "#000" }}>
+                <Text style={{ color: "#fff", fontWeight: "700" }}>
                   {expanded === item.docId ? "Hide" : "Manage"}
                 </Text>
               </TouchableOpacity>
@@ -249,15 +249,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#38bdf8",
   },
-  manageBtn: {
-    marginTop: 10,
-    backgroundColor: "#020617",
-    paddingVertical: 10,
-    borderRadius: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#38bdf8",
-  },
+manageBtn: {
+  marginTop: 12,
+  backgroundColor: "transparent",
+  paddingVertical: 11,
+  borderRadius: 12,
+  alignItems: "center",
+  borderWidth: 1.5,
+  borderColor: "#38bdf8",
+},
   variantCard: {
     backgroundColor: "#020617",
     borderWidth: 1,
