@@ -363,20 +363,18 @@ export default function ProductBillingScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: "#0f172a",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    height: 60,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
+    paddingHorizontal: 16,
+    backgroundColor: "#0f172a",
     borderBottomWidth: 1,
     borderColor: "#0b3b6f",
   },
 
   headerTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
     color: "#fff",
   },
@@ -397,14 +395,14 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 
-picker: {
-  backgroundColor: "#0f172a",
-  borderRadius: 12,
-  marginBottom: 12,
-  borderWidth: 1,
-  borderColor: "#0b3b6f",
-  overflow: "hidden", 
-},
+  picker: {
+    backgroundColor: "#0f172a",
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+    overflow: "hidden",
+  },
 
   addBtn: {
     backgroundColor: "#2563eb",

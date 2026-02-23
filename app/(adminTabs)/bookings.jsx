@@ -217,47 +217,94 @@ export default function ShowAllBookings() {
     }
   };
 
+  const getBookingStatusColor = (status) => {
+    switch (status) {
+      case "Approved":
+        return "#6366f1";
+      case "Call Verified":
+        return "#f59e0b";
+      case "Booked":
+        return "#64748b";
+      case "Cancelled":
+        return "#ef4444";
+      default:
+        return "#6b7280";
+    }
+  };
+
   /* 🧾 CARD ITEM */
   const renderCard = ({ item }) => {
-    const statusStyle = getStatusCardStyle(item.status);
-
     return (
-      <LinearGradient
-        colors={["#0f172a", "#0b3b6f"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[styles.card]}
+      <View
+        style={{
+          backgroundColor: "#0f172a",
+          padding: 16,
+          borderRadius: 16,
+          marginBottom: 12,
+          borderWidth: 1,
+          borderColor: "#0b3b6f",
+          position: "relative",
+        }}
       >
-        <View style={styles.rowBetween}>
-          <Text style={styles.bookingId}>{item.bookingId}</Text>
-          <View
-            style={[
-              styles.statusBadge,
-              { backgroundColor: getStatusTextColor(item.status) },
-            ]}
-          >
-            <Text style={styles.statusText}>{item.status}</Text>
-          </View>
+        {/* BOOKING ID */}
+        <Text style={{ fontWeight: "700", color: "#38bdf8" }}>
+          {item.bookingId}
+        </Text>
+
+        {/* CUSTOMER */}
+        <Text style={{ color: "#fff", marginTop: 18 }}>{item.name}</Text>
+        <Text style={{ color: "#94a3b8" }}>{item.phone}</Text>
+        <Text style={{ color: "#94a3b8" }}>
+          {item.brand} {item.model}
+        </Text>
+
+        {/* STATUS CHIP TOP RIGHT */}
+        <View
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            backgroundColor: getBookingStatusColor(item.status),
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+            borderRadius: 12,
+          }}
+        >
+          <Text style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}>
+            {item.status}
+          </Text>
         </View>
 
-        <Text style={styles.text}>
-          {item.brand} • {item.model}
+        {/* DATE */}
+        <Text style={{ color: "#94a3b8", fontSize: 11, marginTop: 4 }}>
+          {formatDate(item.createdAt)}
         </Text>
-        <Text style={styles.text}>{item.name}</Text>
-        <Text style={styles.text}>{item.phone}</Text>
-        <Text style={styles.date}>{formatDate(item.createdAt)}</Text>
 
-        <Picker
-          selectedValue={item.status}
-          style={styles.cardPicker}
-          dropdownIconColor="#38bdf8"
-          onValueChange={(val) => handleStatusChange(item, val)}
+        {/* STATUS DROPDOWN */}
+        <View
+          style={{
+            backgroundColor: "#020617", 
+            borderWidth: 1,
+            borderColor: "#38bdf8",
+            borderRadius: 14,
+            marginTop: 12,
+            paddingHorizontal: 4,
+            overflow: "hidden",
+          }}
         >
-          {BOOKING_STATUS.slice(1).map((s) => (
-            <Picker.Item key={s} label={s} value={s} />
-          ))}
-        </Picker>
-      </LinearGradient>
+          <Picker
+            selectedValue={item.status}
+            onValueChange={(val) => handleStatusChange(item, val)}
+            dropdownIconColor="#38bdf8"
+            style={{ color: "#fff" }}
+            itemStyle={{ color: "#fff" }}
+          >
+            {BOOKING_STATUS.slice(1).map((s) => (
+              <Picker.Item key={s} label={s} value={s} />
+            ))}
+          </Picker>
+        </View>
+      </View>
     );
   };
 

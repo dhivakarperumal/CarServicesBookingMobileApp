@@ -369,6 +369,8 @@ export default function AddProduct() {
             onValueChange={(v) =>
               setProduct({ ...product, warrantyAvailable: v })
             }
+            trackColor={{ false: "#1e293b", true: "#2563eb" }}
+            thumbColor={product.warrantyAvailable ? "#38bdf8" : "#64748b"}
           />
         </View>
 
@@ -391,6 +393,8 @@ export default function AddProduct() {
             onValueChange={(v) =>
               setProduct({ ...product, returnAvailable: v })
             }
+            trackColor={{ false: "#1e293b", true: "#2563eb" }}
+            thumbColor={product.returnAvailable ? "#38bdf8" : "#64748b"}
           />
         </View>
 
@@ -417,6 +421,8 @@ export default function AddProduct() {
           <Switch
             value={product.isFeatured}
             onValueChange={(v) => setProduct({ ...product, isFeatured: v })}
+            trackColor={{ false: "#1e293b", true: "#2563eb" }}
+            thumbColor={product.isFeatured ? "#38bdf8" : "#64748b"}
           />
         </View>
 
@@ -425,6 +431,8 @@ export default function AddProduct() {
           <Switch
             value={product.isActive}
             onValueChange={(v) => setProduct({ ...product, isActive: v })}
+            trackColor={{ false: "#1e293b", true: "#2563eb" }}
+            thumbColor={product.isActive ? "#38bdf8" : "#64748b"}
           />
         </View>
 
