@@ -194,6 +194,17 @@ export default function StaffHeader() {
                 router.push("/(staff)/profile");
               }}
             >
+              <Ionicons name="home-outline" size={18} />
+              <Text style={styles.itemText}>Home</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.item}
+              onPress={() => {
+                setOpen(false);
+                router.push("/(adminTabs)/home");
+              }}
+            >
               <Ionicons name="person-outline" size={18} />
               <Text style={styles.itemText}>Profile</Text>
             </TouchableOpacity>
