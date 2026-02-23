@@ -324,153 +324,157 @@ export default function Services() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
-  <View style={{ flex: 1, padding: 12 }}>
-      <TextInput
-        placeholder="Search booking, name, phone, car"
-        placeholderTextColor="#64748b"
-        value={search}
-        onChangeText={setSearch}
-        style={{
-          backgroundColor: "#0f172a",
-          borderWidth: 1,
-          borderColor: "#0b3b6f",
-          padding: 16,
-          borderRadius: 12,
-          marginBottom: 12,
-          color: "#fff",
-        }}
-      />
+      <View style={{ flex: 1, padding: 12 }}>
+        <TextInput
+          placeholder="Search booking, name, phone, car"
+          placeholderTextColor="#64748b"
+          value={search}
+          onChangeText={setSearch}
+          style={{
+            backgroundColor: "#0f172a",
+            borderWidth: 1,
+            borderColor: "#0b3b6f",
+            padding: 16,
+            borderRadius: 12,
+            marginBottom: 12,
+            color: "#fff",
+          }}
+        />
 
-      <FlatList
-        data={filteredServices}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 140 }}
-        renderItem={({ item }) => (
-          <View
-            style={{
-              backgroundColor: "#0f172a",
-              padding: 14,
-              borderRadius: 16,
-              marginBottom: 12,
-              borderWidth: 1,
-              borderColor: "#0b3b6f",
-            }}
-          >
-            <Text style={{ fontWeight: "700", color: "#38bdf8" }}>
-              {item.bookingId || "No Booking"}
-            </Text>
-
-            <Text style={{ color: "#fff" }}>{item.name}</Text>
-            <Text style={{ color: "#94a3b8" }}>{item.phone}</Text>
-            <Text style={{ color: "#94a3b8" }}>
-              {item.brand} {item.model}
-            </Text>
-
-            {/* STATUS CHIP */}
+        <FlatList
+          data={filteredServices}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingBottom: 140 }}
+          renderItem={({ item }) => (
             <View
               style={{
-                backgroundColor: getStatusColor(item.serviceStatus),
-                paddingVertical: 6,
-                paddingHorizontal: 12,
-                borderRadius: 20,
-                alignSelf: "flex-start",
-                marginTop: 8,
+                backgroundColor: "#0f172a",
+                padding: 16,
+                borderRadius: 16,
+                marginBottom: 12,
+                borderWidth: 1,
+                borderColor: "#0b3b6f",
+                position: "relative",
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 12, fontWeight: "600" }}>
-                {item.serviceStatus}
+              <Text style={{ fontWeight: "700", color: "#38bdf8" }}>
+                {item.bookingId || "No Booking"}
               </Text>
-            </View>
 
-            {/* STATUS DROPDOWN */}
-            {updatingId === item.id ? (
-              <ActivityIndicator style={{ marginTop: 10 }} />
-            ) : (
+              <Text style={{ color: "#fff", marginTop: 18 }}>{item.name}</Text>
+              <Text style={{ color: "#94a3b8" }}>{item.phone}</Text>
+              <Text style={{ color: "#94a3b8" }}>
+                {item.brand} {item.model}
+              </Text>
+
+              {/* 🔹 STATUS TOP RIGHT */}
               <View
                 style={{
-                  backgroundColor: "#020617",
-                  borderWidth: 1,
-                  borderColor: "#0b3b6f",
+                  position: "absolute",
+                  top: 10,
+                  right: 10,
+                  backgroundColor: getStatusColor(item.serviceStatus),
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
                   borderRadius: 12,
-                  marginTop: 10,
-                  overflow: "hidden",
                 }}
               >
-                <Picker
-                  selectedValue={item.serviceStatus}
-                  onValueChange={(value) => handleStatusChange(item, value)}
-                  dropdownIconColor="#38bdf8"
-                  style={{ color: "#fff" }}
-                  itemStyle={{ color: "#fff" }}
+                <Text
+                  style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}
                 >
-                  {BOOKING_STATUS.map((status) => (
-                    <Picker.Item key={status} label={status} value={status} />
-                  ))}
-                </Picker>
+                  {item.serviceStatus}
+                </Text>
               </View>
-            )}
 
-            {/* ACTION ROW */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginTop: 12,
-                alignItems: "center",
-              }}
-            >
-              {/* LEFT → GENERATE BILL */}
-              {item.serviceStatus === "Bill Pending" && (
-                <TouchableOpacity
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(serviceslist)/ServiceBillingScreen",
-                      params: { id: item.id },
-                    })
-                  }
-                  style={{
-                    marginTop: 10,
-                    backgroundColor: "#2563eb",
-                    paddingVertical: 10,
-                    paddingHorizontal: 16,
-                    borderRadius: 12,
-                    shadowColor: "#38bdf8",
-                    shadowOpacity: 0.4,
-                    shadowRadius: 8,
-                  }}
-                >
-                  <Text style={{ color: "#fff", textAlign: "center" }}>
-                    Generate Bill
-                  </Text>
-                </TouchableOpacity>
-              )}
-
-              {/* RIGHT → ADD PARTS */}
-              {item.serviceStatus === "Service Going on" && (
-                <TouchableOpacity
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(serviceslist)/addserviceparts",
-                      params: { serviceId: item.id },
-                    })
-                  }
+              {/* STATUS DROPDOWN */}
+              {updatingId === item.id ? (
+                <ActivityIndicator style={{ marginTop: 10 }} />
+              ) : (
+                <View
                   style={{
                     backgroundColor: "#020617",
-                    paddingVertical: 8,
-                    paddingHorizontal: 14,
-                    borderRadius: 12,
                     borderWidth: 1,
-                    borderColor: "#38bdf8",
+                    borderColor: "#0b3b6f",
+                    borderRadius: 12,
+                    marginTop: 10,
+                    overflow: "hidden",
                   }}
                 >
-                  <Text style={{ color: "#fff" }}>+ Add Parts</Text>
-                </TouchableOpacity>
+                  <Picker
+                    selectedValue={item.serviceStatus}
+                    onValueChange={(value) => handleStatusChange(item, value)}
+                    dropdownIconColor="#38bdf8"
+                    style={{ color: "#fff" }}
+                    itemStyle={{ color: "#fff" }}
+                  >
+                    {BOOKING_STATUS.map((status) => (
+                      <Picker.Item key={status} label={status} value={status} />
+                    ))}
+                  </Picker>
+                </View>
               )}
+
+              {/* ACTION ROW */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  marginTop: 12,
+                  alignItems: "center",
+                }}
+              >
+                {/* LEFT → GENERATE BILL */}
+                {item.serviceStatus === "Bill Pending" && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push({
+                        pathname: "/(serviceslist)/ServiceBillingScreen",
+                        params: { id: item.id },
+                      })
+                    }
+                    style={{
+                      marginTop: 10,
+                      backgroundColor: "#2563eb",
+                      paddingVertical: 10,
+                      paddingHorizontal: 16,
+                      borderRadius: 12,
+                      shadowColor: "#38bdf8",
+                      shadowOpacity: 0.4,
+                      shadowRadius: 8,
+                    }}
+                  >
+                    <Text style={{ color: "#fff", textAlign: "center" }}>
+                      Generate Bill
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                {/* RIGHT → ADD PARTS */}
+                {item.serviceStatus === "Service Going on" && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push({
+                        pathname: "/(serviceslist)/addserviceparts",
+                        params: { serviceId: item.id },
+                      })
+                    }
+                    style={{
+                      backgroundColor: "#020617",
+                      paddingVertical: 8,
+                      paddingHorizontal: 14,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: "#38bdf8",
+                    }}
+                  >
+                    <Text style={{ color: "#fff" }}>+ Add Parts</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
-          </View>
-        )}
-      />
+          )}
+        />
       </View>
-</SafeAreaView>
+    </SafeAreaView>
   );
 }
