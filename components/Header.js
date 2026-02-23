@@ -166,6 +166,20 @@ export default function MobileNavbar() {
             </TouchableOpacity>
           )}
 
+          {userData?.role === "mechanic" && (
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setAvatarMenuOpen(false);
+                router.push("/(EmployeesDash)/dashboard");
+              }}
+            >
+              <Text style={[styles.menuText, { color: "#22C55E" }]}>
+                Employee Dashboard
+              </Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
             style={styles.menuItem}
             onPress={handleLogout}
