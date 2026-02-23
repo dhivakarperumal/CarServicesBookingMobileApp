@@ -13,6 +13,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import MyOrder from "../../components/MyOrder";
 import ManageAddress from "../../components/ManageAddress";
+import ChangePassword from "../../components/ChangePassword";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function AccountScreen() {
@@ -108,6 +109,9 @@ export default function AccountScreen() {
           </View>
         );
 
+      case "changepassword":  
+      return <ChangePassword />;
+
       case "orders":
         return <MyOrder />;
 
@@ -149,8 +153,10 @@ export default function AccountScreen() {
         {[
           ["servicestatus", "Service"],
           ["personal", "Profile"],
+          ["changepassword", "Change Password"],
           ["orders", "Orders"],
           ["address", "Address"],
+          
         ].map(([key, label]) => {
           const active = activeTab === key;
           return (
