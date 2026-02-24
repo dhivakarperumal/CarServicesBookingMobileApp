@@ -14,7 +14,8 @@ import {
   View
 } from "react-native";
 import { auth, db } from "../../firebase";
-import { Dimensions } from "react-native";
+import { Dimensions, Image } from "react-native";
+import { WebView } from "react-native-webview";
 
 const STATUS_FLOW = [
   "BOOKED",
@@ -103,7 +104,7 @@ const HORIZONTAL_PADDING = 20; // same as ScrollView paddingHorizontal
 const CARD_MARGIN = 12;
 
 const CARD_WIDTH =
-  (width - HORIZONTAL_PADDING * 2 - CARD_MARGIN * 2) / 3;
+  (width - HORIZONTAL_PADDING * 2 - CARD_MARGIN) / 2;
 
 const extendedWhyData = [...whyData, ...whyData];
 
@@ -116,6 +117,8 @@ export default function HomeScreen({ navigation }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
+
+  const [reviews, setReviews] = useState([]);
 
   const carAnim = useRef(new Animated.Value(0)).current;
 
@@ -213,6 +216,26 @@ export default function HomeScreen({ navigation }) {
     return () => unsub();
   }, [user]);
 
+  // Fetch reviews
+  useEffect(() => {
+  const q = query(
+    collection(db, "reviews"),
+    where("status", "==", true),
+    orderBy("createdAt", "desc")
+  );
+
+  const unsub = onSnapshot(q, (snap) => {
+    const data = snap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    setReviews(data);
+  });
+
+  return () => unsub();
+}, []);
+
   // why swiper auto-scroll
   useEffect(() => {
     let index = 0;
@@ -244,7 +267,7 @@ export default function HomeScreen({ navigation }) {
   }, []);
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
 
       {/* PREMIUM WELCOME BANNER */}
       <LinearGradient
@@ -269,8 +292,6 @@ export default function HomeScreen({ navigation }) {
         >
           <FontAwesome5 name="car-side" size={60} color="#fff" />
         </Animated.View>
-
-
 
         <Text style={styles.bannerTitle}>
           Premium Car Care Service
@@ -387,9 +408,65 @@ export default function HomeScreen({ navigation }) {
           </View>
         )}
         contentContainerStyle={{ paddingHorizontal: 10 }}
-        snapToInterval={CARD_WIDTH + 12}
+        snapToInterval={CARD_WIDTH + CARD_MARGIN}
         decelerationRate="fast"
       />
+
+      {/* customer reviews */}
+      <View style={styles.premiumSectionHeader}>
+  <View style={styles.premiumAccent} />
+  <Ionicons name="star-outline" size={18} color="#0EA5E9" style={{ marginRight: 6 }} />
+  <Text style={styles.premiumSectionTitle}>
+    Customer Reviews
+  </Text>
+</View>
+
+<ScrollView
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={{ paddingRight: 20 }}
+>
+  {reviews.map((item) => (
+    <View key={item.id} style={styles.reviewCard}>
+      
+      {/* Profile Row */}
+      <View style={styles.reviewHeader}>
+        <View style={styles.reviewAvatar}>
+          {item.image ? (
+            <Image
+              source={{ uri: item.image }}
+              style={styles.reviewImage}
+            />
+          ) : (
+            <Ionicons name="person" size={20} color="#0EA5E9" />
+          )}
+        </View>
+
+        <View style={{ marginLeft: 10 }}>
+          <Text style={styles.reviewName}>{item.name}</Text>
+          
+          {/* Rating */}
+          <View style={styles.ratingRow}>
+            {[1,2,3,4,5].map((star) => (
+              <Ionicons
+                key={star}
+                name={star <= item.rating ? "star" : "star-outline"}
+                size={14}
+                color="#FBBF24"
+              />
+            ))}
+          </View>
+        </View>
+      </View>
+
+      {/* Message */}
+      <Text style={styles.reviewMessage}>
+        "{item.message}"
+      </Text>
+
+    </View>
+  ))}
+</ScrollView>
 
     </ScrollView>
   );
@@ -710,7 +787,55 @@ const styles = StyleSheet.create({
   },
   // why choose us end
 
+  // reviews
+  reviewCard: {
+  width: 260,
+  backgroundColor: "#111827",
+  borderRadius: 22,
+  padding: 16,
+  marginRight: 16,
+  borderWidth: 1,
+  borderColor: "rgba(14,165,233,0.15)",
+},
 
+reviewHeader: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 12,
+},
+
+reviewAvatar: {
+  width: 45,
+  height: 45,
+  borderRadius: 22,
+  backgroundColor: "rgba(14,165,233,0.1)",
+  justifyContent: "center",
+  alignItems: "center",
+  overflow: "hidden",
+},
+
+reviewImage: {
+  width: "100%",
+  height: "100%",
+},
+
+reviewName: {
+  color: "#FFFFFF",
+  fontSize: 14,
+  fontWeight: "700",
+},
+
+ratingRow: {
+  flexDirection: "row",
+  marginTop: 4,
+},
+
+reviewMessage: {
+  color: "#9CA3AF",
+  fontSize: 13,
+  marginTop: 8,
+  lineHeight: 18,
+},
 
 
  
