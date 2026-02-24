@@ -21,6 +21,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebase";
 import { KeyboardAvoidingView, Platform } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function CarsScreen() {
   const [cars, setCars] = useState([]);
@@ -291,6 +292,12 @@ export default function CarsScreen() {
           onRequestClose={() => setPartsModal(false)}
         >
           <SafeAreaView style={styles.modal}>
+            <TouchableOpacity
+              onPress={() => setPartsModal(false)}
+              style={styles.closeIcon}
+            >
+              <Ionicons name="close" size={26} color="#fff" />
+            </TouchableOpacity>
             <Text style={styles.modalTitle}>Add Parts</Text>
 
             <ScrollView>
@@ -351,13 +358,6 @@ export default function CarsScreen() {
               ) : (
                 <Text style={styles.updateText}>Save Parts</Text>
               )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.closeBtn}
-              onPress={() => setPartsModal(false)}
-            >
-              <Text style={styles.updateText}>Cancel</Text>
             </TouchableOpacity>
           </SafeAreaView>
         </Modal>
@@ -434,16 +434,17 @@ const styles = StyleSheet.create({
 
   partCard: {
     backgroundColor: "#0f172a",
-    padding: 14,
-    borderRadius: 16,
-    marginBottom: 12,
+    padding: 18, // was 14
+    borderRadius: 18,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: "rgba(56,189,248,0.15)",
   },
 
   total: {
-    marginTop: 8,
+    marginTop: 10,
     fontWeight: "800",
+    fontSize: 16, // NEW
     color: "#10b981",
   },
   remove: {
@@ -455,17 +456,17 @@ const styles = StyleSheet.create({
 
   addRow: {
     backgroundColor: "#38bdf8",
-    padding: 14,
-    borderRadius: 14,
+    padding: 16, // was 14
+    borderRadius: 16,
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 18,
   },
 
   grandTotal: {
-    fontSize: 18,
+    fontSize: 20, // was 18
     fontWeight: "900",
     color: "#38bdf8",
-    marginBottom: 16,
+    marginBottom: 18,
   },
 
   empty: {
@@ -477,57 +478,59 @@ const styles = StyleSheet.create({
   },
 
   partsBtn: {
-    marginTop: 10,
+    marginTop: 14,
     backgroundColor: "#38bdf8",
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: "center",
   },
 
   completeBtn: {
-    marginTop: 10,
+    marginTop: 14,
     backgroundColor: "#10b981",
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: "center",
   },
 
   modal: {
     flex: 1,
-    padding: 16,
+    padding: 22, // was 16
     backgroundColor: "#020617",
   },
 
   modalTitle: {
-    fontSize: 20,
+    fontSize: 24, // was 20
     fontWeight: "900",
-    marginBottom: 16,
+    marginBottom: 20,
     color: "#e5e7eb",
   },
   input: {
     backgroundColor: "#020617",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
+    padding: 14, // was 10
+    borderRadius: 12,
+    marginBottom: 14,
     color: "#fff",
+    fontSize: 16, // NEW
     borderWidth: 1,
     borderColor: "rgba(56,189,248,0.2)",
   },
 
   saveBtn: {
     backgroundColor: "#10b981",
-    paddingVertical: 14,
-    borderRadius: 14,
+    paddingVertical: 16, // was 14
+    borderRadius: 16,
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 14,
   },
 
   /* 🔥 CARD */
   card: {
     backgroundColor: "#0f172a",
-    padding: 16,
-    borderRadius: 18,
-    marginBottom: 16,
+    padding: 22,
+    borderRadius: 20,
+    marginBottom: 18,
+    minHeight: 180,
     borderWidth: 1,
     borderColor: "#0b3b6f",
 
@@ -538,26 +541,26 @@ const styles = StyleSheet.create({
 
   number: {
     fontWeight: "800",
-    fontSize: 16,
+    fontSize: 18, // was 16
     color: "#38bdf8",
   },
 
   model: {
-    marginTop: 4,
-    fontSize: 14,
+    marginTop: 6,
+    fontSize: 16, // was 14
     color: "#fff",
-    fontWeight: "600",
+    fontWeight: "700",
   },
 
   subText: {
-    marginTop: 4,
-    fontSize: 12,
+    marginTop: 6,
+    fontSize: 14, // was 12
     color: "#94a3b8",
   },
 
   parts: {
-    marginTop: 6,
-    fontSize: 12,
+    marginTop: 8,
+    fontSize: 14, // was 12
     color: "#10b981",
     fontWeight: "700",
   },
@@ -577,10 +580,10 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   updateBtn: {
-    marginTop: 12,
+    marginTop: 14,
     backgroundColor: "#2563eb",
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 14, // was 12
+    borderRadius: 14,
     alignItems: "center",
 
     shadowColor: "#38bdf8",
@@ -591,5 +594,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
     fontSize: 13,
+  },
+  closeIcon: {
+    position: "absolute",
+    right: 20,
+    top: 20,
+    zIndex: 50,
   },
 });
