@@ -270,16 +270,6 @@ export default function HomeScreen({ navigation }) {
         </>
       )}
 
-      <View style={styles.contentWrapper}>
-        {/* BOOK BUTTON */}
-        <TouchableOpacity
-          style={styles.bookButton}
-          onPress={() => router.push("/(tabs)/booking")}
-        >
-          <Ionicons name="add-circle-outline" size={20} color="#fff" />
-          <Text style={styles.bookButtonText}>Book New Service</Text>
-        </TouchableOpacity>
-      </View>
     </ScrollView>
   );
 }
