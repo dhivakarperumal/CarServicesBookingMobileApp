@@ -14,7 +14,7 @@ import {
   View
 } from "react-native";
 import { auth, db } from "../../firebase";
-import { Dimensions, Image } from "react-native";
+import { Dimensions, Image, Linking } from "react-native";
 import { WebView } from "react-native-webview";
 
 const STATUS_FLOW = [
@@ -218,23 +218,23 @@ export default function HomeScreen({ navigation }) {
 
   // Fetch reviews
   useEffect(() => {
-  const q = query(
-    collection(db, "reviews"),
-    where("status", "==", true),
-    orderBy("createdAt", "desc")
-  );
+    const q = query(
+      collection(db, "reviews"),
+      where("status", "==", true),
+      orderBy("createdAt", "desc")
+    );
 
-  const unsub = onSnapshot(q, (snap) => {
-    const data = snap.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
-    setReviews(data);
-  });
+      setReviews(data);
+    });
 
-  return () => unsub();
-}, []);
+    return () => unsub();
+  }, []);
 
   // why swiper auto-scroll
   useEffect(() => {
@@ -414,59 +414,108 @@ export default function HomeScreen({ navigation }) {
 
       {/* customer reviews */}
       <View style={styles.premiumSectionHeader}>
-  <View style={styles.premiumAccent} />
-  <Ionicons name="star-outline" size={18} color="#0EA5E9" style={{ marginRight: 6 }} />
-  <Text style={styles.premiumSectionTitle}>
-    Customer Reviews
-  </Text>
-</View>
-
-<ScrollView
-  horizontal
-  showsHorizontalScrollIndicator={false}
-  contentContainerStyle={{ paddingRight: 20 }}
->
-  {reviews.map((item) => (
-    <View key={item.id} style={styles.reviewCard}>
-      
-      {/* Profile Row */}
-      <View style={styles.reviewHeader}>
-        <View style={styles.reviewAvatar}>
-          {item.image ? (
-            <Image
-              source={{ uri: item.image }}
-              style={styles.reviewImage}
-            />
-          ) : (
-            <Ionicons name="person" size={20} color="#0EA5E9" />
-          )}
-        </View>
-
-        <View style={{ marginLeft: 10 }}>
-          <Text style={styles.reviewName}>{item.name}</Text>
-          
-          {/* Rating */}
-          <View style={styles.ratingRow}>
-            {[1,2,3,4,5].map((star) => (
-              <Ionicons
-                key={star}
-                name={star <= item.rating ? "star" : "star-outline"}
-                size={14}
-                color="#FBBF24"
-              />
-            ))}
-          </View>
-        </View>
+        <View style={styles.premiumAccent} />
+        <Ionicons name="star-outline" size={18} color="#0EA5E9" style={{ marginRight: 6 }} />
+        <Text style={styles.premiumSectionTitle}>
+          Customer Reviews
+        </Text>
       </View>
 
-      {/* Message */}
-      <Text style={styles.reviewMessage}>
-        "{item.message}"
-      </Text>
 
-    </View>
-  ))}
-</ScrollView>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingRight: 20 }}
+      >
+        {reviews.map((item) => (
+          <View key={item.id} style={styles.reviewCard}>
+
+            {/* Profile Row */}
+            <View style={styles.reviewHeader}>
+              <View style={styles.reviewAvatar}>
+                {item.image ? (
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.reviewImage}
+                  />
+                ) : (
+                  <Ionicons name="person" size={20} color="#0EA5E9" />
+                )}
+              </View>
+
+              <View style={{ marginLeft: 10 }}>
+                <Text style={styles.reviewName}>{item.name}</Text>
+
+                {/* Rating */}
+                <View style={styles.ratingRow}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Ionicons
+                      key={star}
+                      name={star <= item.rating ? "star" : "star-outline"}
+                      size={14}
+                      color="#FBBF24"
+                    />
+                  ))}
+                </View>
+              </View>
+            </View>
+
+            {/* Message */}
+            <Text style={styles.reviewMessage}>
+              "{item.message}"
+            </Text>
+
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* CONTACT US */}
+      <View style={styles.premiumSectionHeader}>
+        <View style={styles.premiumAccent} />
+        <Ionicons name="call-outline" size={18} color="#0EA5E9" style={{ marginRight: 6 }} />
+        <Text style={styles.premiumSectionTitle}>
+          Contact Us
+        </Text>
+      </View>
+
+      <View style={styles.contactCard}>
+
+        {/* Phone */}
+        <View style={styles.contactRow}>
+          <Ionicons name="call" size={18} color="#0EA5E9" />
+          <Text style={styles.contactText}>+91 95000 73858</Text>
+        </View>
+
+        {/* Email */}
+        <View style={styles.contactRow}>
+          <Ionicons name="mail" size={18} color="#0EA5E9" />
+          <Text style={styles.contactText}>support@carservice.com</Text>
+        </View>
+
+        {/* Address */}
+         <View style={styles.contactRow}>
+        <Ionicons name="location" size={18} color="#0EA5E9" />
+        <Text style={styles.contactText}>
+          No. 24, Anna Nagar, Chennai, Tamil Nadu
+        </Text>
+        </View>
+
+      </View>
+
+      {/* Map */}
+      <TouchableOpacity
+        style={styles.mapButton}
+        onPress={() =>
+          Linking.openURL(
+            "https://maps.app.goo.gl/kv7qjVpYMpcXuzx17"
+          )
+        }
+      >
+        <Ionicons name="navigate" size={18} color="#fff" />
+        <Text style={{ color: "#fff", marginLeft: 8 }}>
+          Get Directions
+        </Text>
+      </TouchableOpacity>
 
     </ScrollView>
   );
@@ -789,56 +838,56 @@ const styles = StyleSheet.create({
 
   // reviews
   reviewCard: {
-  width: 260,
-  backgroundColor: "#111827",
-  borderRadius: 22,
-  padding: 16,
-  marginRight: 16,
-  borderWidth: 1,
-  borderColor: "rgba(14,165,233,0.15)",
-},
+    width: 260,
+    backgroundColor: "#111827",
+    borderRadius: 22,
+    padding: 16,
+    marginRight: 16,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.15)",
+  },
 
-reviewHeader: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 12,
-},
+  reviewHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
 
-reviewAvatar: {
-  width: 45,
-  height: 45,
-  borderRadius: 22,
-  backgroundColor: "rgba(14,165,233,0.1)",
-  justifyContent: "center",
-  alignItems: "center",
-  overflow: "hidden",
-},
+  reviewAvatar: {
+    width: 45,
+    height: 45,
+    borderRadius: 22,
+    backgroundColor: "rgba(14,165,233,0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
 
-reviewImage: {
-  width: "100%",
-  height: "100%",
-},
+  reviewImage: {
+    width: "100%",
+    height: "100%",
+  },
 
-reviewName: {
-  color: "#FFFFFF",
-  fontSize: 14,
-  fontWeight: "700",
-},
+  reviewName: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
+  },
 
-ratingRow: {
-  flexDirection: "row",
-  marginTop: 4,
-},
+  ratingRow: {
+    flexDirection: "row",
+    marginTop: 4,
+  },
 
-reviewMessage: {
-  color: "#9CA3AF",
-  fontSize: 13,
-  marginTop: 8,
-  lineHeight: 18,
-},
+  reviewMessage: {
+    color: "#9CA3AF",
+    fontSize: 13,
+    marginTop: 8,
+    lineHeight: 18,
+  },
 
 
- 
+
   container: {
     flex: 1,
     backgroundColor: "#0B1120",
@@ -979,6 +1028,46 @@ reviewMessage: {
     fontWeight: "700",
     marginLeft: 8,
     fontSize: 15,
+  },
+
+  // contact us
+  contactCard: {
+    backgroundColor: "#111827",
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.15)",
+    marginBottom: 20,
+  },
+
+  contactRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  contactText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    marginLeft: 10,
+  },
+
+  mapContainer: {
+    height: 200,
+    borderRadius: 20,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.15)",
+  },
+
+  mapButton: {
+    flexDirection: "row",
+    backgroundColor: "#0EA5E9",
+    paddingVertical: 12,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 16,
   },
 
   /* Modal Styles */
