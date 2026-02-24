@@ -42,7 +42,7 @@ export default function Cart() {
         // prefer router.canGoBack if available
         if (typeof router.canGoBack === "function") {
             if (router.canGoBack()) return router.back();
-            return router.replace("/(tabs)/index");
+            return router.replace("/(tabs)");
         }
 
         // fallback: try back then replace to home
