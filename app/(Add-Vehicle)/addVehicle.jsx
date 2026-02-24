@@ -19,6 +19,7 @@ import {
   runTransaction,
   serverTimestamp,
 } from "firebase/firestore";
+import { KeyboardAvoidingView, Platform } from "react-native";
 
 export default function BookService({ navigation }) {
   const [currentUser, setCurrentUser] = useState(null);
@@ -90,14 +91,11 @@ export default function BookService({ navigation }) {
         createdAt: serverTimestamp(),
       };
 
-      const bookingRef = await addDoc(
-        collection(db, "bookings"),
-        bookingData
-      );
+      const bookingRef = await addDoc(collection(db, "bookings"), bookingData);
 
       await setDoc(
         doc(db, "users", currentUser.uid, "bookings", bookingRef.id),
-        { ...bookingData, docId: bookingRef.id }
+        { ...bookingData, docId: bookingRef.id },
       );
 
       Alert.alert("Success", `Booking Created: ${bookingId}`);
@@ -124,93 +122,111 @@ export default function BookService({ navigation }) {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Book Service</Text>
-
-      <TextInput
-        placeholder="Full Name"
-        style={styles.input}
-        value={formData.name}
-        onChangeText={(v) => handleChange("name", v)}
-      />
-
-      <TextInput
-        placeholder="Phone"
-        style={styles.input}
-        keyboardType="numeric"
-        value={formData.phone}
-        onChangeText={(v) => handleChange("phone", v)}
-      />
-
-      <TextInput
-        placeholder="Email"
-        style={styles.input}
-        value={formData.email}
-        onChangeText={(v) => handleChange("email", v)}
-      />
-
-      {/* VEHICLE TYPE */}
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={formData.vehicleType}
-          onValueChange={(v) => handleChange("vehicleType", v)}
-        >
-          <Picker.Item label="Select Vehicle Type" value="" />
-          <Picker.Item label="Two Wheeler" value="Two Wheeler" />
-          <Picker.Item label="Four Wheeler" value="Four Wheeler" />
-        </Picker>
-      </View>
-
-      {/* VEHICLE NUMBER */}
-      <TextInput
-        placeholder="Vehicle Number"
-        style={styles.input}
-        value={formData.vehicleNumber}
-        onChangeText={(v) => handleChange("vehicleNumber", v)}
-      />
-
-      {/* BRAND */}
-      <TextInput
-        placeholder="Brand"
-        style={styles.input}
-        value={formData.brand}
-        onChangeText={(v) => handleChange("brand", v)}
-      />
-
-      {/* MODEL */}
-      <TextInput
-        placeholder="Model"
-        style={styles.input}
-        value={formData.model}
-        onChangeText={(v) => handleChange("model", v)}
-      />
-
-      {/* ISSUE */}
-      <TextInput
-        placeholder="Issue"
-        style={styles.input}
-        value={formData.issue}
-        onChangeText={(v) => handleChange("issue", v)}
-      />
-
-      {/* ADDRESS */}
-      <TextInput
-        placeholder="Service Address"
-        style={styles.input}
-        value={formData.address}
-        onChangeText={(v) => handleChange("address", v)}
-      />
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleSubmit}
-        disabled={submitting}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingTop: 50, paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.buttonText}>
-          {submitting ? "Booking..." : "Book Service"}
-        </Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <Text style={styles.title}>Book Service</Text>
+
+        <TextInput
+          placeholder="Full Name"
+          placeholderTextColor="#94a3b8"
+          style={styles.input}
+          value={formData.name}
+          onChangeText={(v) => handleChange("name", v)}
+        />
+
+        <TextInput
+          placeholder="Phone"
+          placeholderTextColor="#94a3b8"
+          style={styles.input}
+          keyboardType="numeric"
+          value={formData.phone}
+          onChangeText={(v) => handleChange("phone", v)}
+        />
+
+        <TextInput
+          placeholder="Email"
+          placeholderTextColor="#94a3b8"
+          style={styles.input}
+          value={formData.email}
+          onChangeText={(v) => handleChange("email", v)}
+        />
+
+        {/* VEHICLE TYPE */}
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={formData.vehicleType}
+            onValueChange={(v) => handleChange("vehicleType", v)}
+            dropdownIconColor="#38bdf8" 
+          >
+            <Picker.Item label="Select Vehicle Type" value="" />
+            <Picker.Item label="Two Wheeler" value="Two Wheeler" />
+            <Picker.Item label="Four Wheeler" value="Four Wheeler" />
+          </Picker>
+        </View>
+
+        {/* VEHICLE NUMBER */}
+        <TextInput
+          placeholder="Vehicle Number"
+          placeholderTextColor="#94a3b8"
+          style={styles.input}
+          value={formData.vehicleNumber}
+          onChangeText={(v) => handleChange("vehicleNumber", v)}
+        />
+
+        {/* BRAND */}
+        <TextInput
+          placeholder="Brand"
+          placeholderTextColor="#94a3b8"
+          style={styles.input}
+          value={formData.brand}
+          onChangeText={(v) => handleChange("brand", v)}
+        />
+
+        {/* MODEL */}
+        <TextInput
+          placeholder="Model"
+          placeholderTextColor="#94a3b8"
+          style={styles.input}
+          value={formData.model}
+          onChangeText={(v) => handleChange("model", v)}
+        />
+
+        {/* ISSUE */}
+        <TextInput
+          placeholder="Issue"
+          placeholderTextColor="#94a3b8"
+          style={styles.input}
+          value={formData.issue}
+          onChangeText={(v) => handleChange("issue", v)}
+        />
+
+        {/* ADDRESS */}
+        <TextInput
+          placeholder="Service Address"
+          placeholderTextColor="#94a3b8"
+          style={styles.input}
+          value={formData.address}
+          onChangeText={(v) => handleChange("address", v)}
+        />
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleSubmit}
+          disabled={submitting}
+        >
+          <Text style={styles.buttonText}>
+            {submitting ? "Booking..." : "Book Service"}
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -220,31 +236,64 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#020617",
   },
+
   title: {
-    fontSize: 22,
-    color: "#fff",
-    marginBottom: 20,
-    fontWeight: "bold",
+    fontSize: 24,
+    color: "#38bdf8",
+    marginBottom: 24,
+    fontWeight: "900",
+    letterSpacing: 0.5,
   },
+
   input: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  pickerContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  button: {
-    backgroundColor: "#0ea5e9",
+    backgroundColor: "#0f172a",
     padding: 14,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  buttonText: {
+    borderRadius: 14,
+    marginBottom: 14,
     color: "#fff",
-    fontWeight: "bold",
+
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.25)",
+
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+
+  picker: {
+    color: "#ffffff",
+    paddingHorizontal: 10,
+  },
+
+  pickerContainer: {
+    backgroundColor: "#0f172a",
+    borderRadius: 14,
+    marginBottom: 14,
+
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.25)",
+
+    overflow: "hidden",
+  },
+
+  button: {
+    backgroundColor: "#2563eb",
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    marginTop: 10,
+
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+
+  buttonText: {
+    color: "#020617",
+    fontWeight: "900",
+    fontSize: 16,
+    letterSpacing: 0.5,
   },
 });
