@@ -22,7 +22,7 @@ import { db } from "../../firebase";
 import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 const BOOKING_STATUS = [
   "Approved",
@@ -36,7 +36,6 @@ const BOOKING_STATUS = [
 
 export default function Services() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
 
   const [services, setServices] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -299,7 +298,9 @@ export default function Services() {
                   shadowRadius: 6,
                 }}
               >
-                <Text style={{ color: "#fff", fontSize: 12, fontWeight: "800" }}>
+                <Text
+                  style={{ color: "#fff", fontSize: 12, fontWeight: "800" }}
+                >
                   {item.serviceStatus || "Approved"}
                 </Text>
               </View>
@@ -345,7 +346,7 @@ export default function Services() {
                   style={{
                     color: "#4ade80",
                     marginTop: 6,
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: "700",
                   }}
                 >
@@ -375,7 +376,7 @@ export default function Services() {
                     setModalVisible(true);
                   }}
                   style={{
-                    backgroundColor: "#38bdf8",
+                    backgroundColor: "#2563eb", 
                     paddingVertical: 12,
                     borderRadius: 14,
                     shadowColor: "#38bdf8",
@@ -387,7 +388,7 @@ export default function Services() {
                 >
                   <Text
                     style={{
-                      color: "#020617",
+                      color: "#fff",
                       fontWeight: "900",
                       fontSize: 15,
                     }}
@@ -408,17 +409,21 @@ export default function Services() {
           }}
           style={{
             position: "absolute",
-            bottom: insets.bottom + 70,
+            bottom: 60,
             right: 20,
-            backgroundColor: "#38bdf8",
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            justifyContent: "center",
+            backgroundColor: "#2563eb",   
+            width: 56,
+            height: 56,
+            borderRadius: 28,
             alignItems: "center",
+            justifyContent: "center",
+            shadowColor: "#38bdf8",
+            shadowOpacity: 0.4,
+            shadowRadius: 10,
+            elevation: 8,
           }}
         >
-          <Text style={{ color: "#020617", fontSize: 28 }}>+</Text>
+          <Ionicons name="add" size={26} color="#fff" />
         </TouchableOpacity>
 
         {/* 🪟 ASSIGN MODAL */}
