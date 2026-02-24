@@ -163,8 +163,10 @@ export default function Home() {
   }, []);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 120 }}>
-
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 120 }}
+    >
       {/* 🔹 STATS GRID */}
       <View style={styles.grid}>
         <StatCard
@@ -228,21 +230,21 @@ export default function Home() {
           title="Price List"
           icon="pricetag-outline"
           iconSet="Ionicons"
-          onPress={() => router.push("/(adminTabs)/priceList")}
+          onPress={() => router.push("/(admin-settings)/priceList")}
         />
 
         <QuickButton
           title="Service List"
           icon="settings-outline"
           iconSet="Ionicons"
-          onPress={() => router.push("/(adminTabs)/services")}
+          onPress={() => router.push("/(admin-settings)/servicesListAll")}
         />
 
         <QuickButton
-          title="Add Booking"
-          icon="calendar-outline"
+          title="Products"
+          icon="cube-outline"
           iconSet="Ionicons"
-          onPress={() => router.push("/(adminTabs)/addBooking")}
+          onPress={() => router.push("/(adminTabs)/products")}
         />
       </View>
 
@@ -320,7 +322,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#020617",
     paddingHorizontal: 16,
-    paddingTop:40 ,
+    paddingTop: 40,
   },
 
   header: {
@@ -380,16 +382,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 
-quickBtn: {
-  height: 80,
-  borderRadius: 10,
-  justifyContent: "center",
-  alignItems: "center",
-  shadowColor: "#38bdf8",
-  shadowOpacity: 0.4,
-  shadowRadius: 10,
-  elevation: 6,
-},
+  quickBtn: {
+    height: 80,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 6,
+  },
 
   quickText: {
     color: "#fff",

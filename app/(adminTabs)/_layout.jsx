@@ -302,11 +302,11 @@ export default function AdminTabsLayout() {
           tabBarActiveBackgroundColor: "#1e293b",
         }}
       >
-        <Tabs.Screen name="home" options={{ tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} /> }} />
-        <Tabs.Screen name="bookings" options={{ tabBarIcon: ({ color, size }) => <FontAwesome5 name="clipboard-list" size={size} color={color} /> }} />
-        <Tabs.Screen name="services" options={{ tabBarIcon: ({ color, size }) => <MaterialIcons name="miscellaneous-services" size={size} color={color} /> }} />
-        <Tabs.Screen name="products" options={{ tabBarIcon: ({ color, size }) => <MaterialIcons name="inventory" size={size} color={color} /> }} />
-        <Tabs.Screen name="settings" options={{ tabBarIcon: ({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} /> }} />
+        <Tabs.Screen name="home" options={{ tabBarLabel: "Home", tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} /> }} />
+        <Tabs.Screen name="bookings" options={{ tabBarLabel: "Bookings", tabBarIcon: ({ color, size }) => <FontAwesome5 name="clipboard-list" size={size} color={color} /> }} />
+        <Tabs.Screen name="services" options={{ tabBarLabel: "Services", tabBarIcon: ({ color, size }) => <MaterialIcons name="miscellaneous-services" size={size} color={color} /> }} />
+        <Tabs.Screen name="products" options={{ tabBarLabel: "Products", tabBarIcon: ({ color, size }) => <MaterialIcons name="inventory" size={size} color={color} /> }} />
+        <Tabs.Screen name="settings" options={{ tabBarLabel: "Settings", tabBarIcon: ({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} /> }} />
       </Tabs>
     </SafeAreaView>
   );

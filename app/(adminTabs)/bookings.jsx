@@ -37,7 +37,7 @@ const DATE_FILTERS = ["All", "Today", "This Week", "This Month", "Last Month"];
 export default function ShowAllBookings() {
   const [bookings, setBookings] = useState([]);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("Booked");
   const [dateFilter, setDateFilter] = useState("All");
 
   const [popup, setPopup] = useState(null);

@@ -182,7 +182,7 @@ export default function StaffHeader() {
               style={styles.item}
               onPress={() => {
                 setOpen(false);
-                router.replace("/(staff)/profile");
+                router.replace("/(EmployeesDash)/profile");
               }}
             >
               <Ionicons name="person-outline" size={18} color="#38bdf8" />
@@ -196,13 +196,13 @@ export default function StaffHeader() {
                 router.replace("/(tabs)");
               }}
             >
-              <Ionicons name="home-outline" size={18} color="#111" />
+              <Ionicons name="home-outline" size={18} color="#38bdf8" />
               <Text style={styles.itemText}>Home</Text>
             </TouchableOpacity>
 
             {/* LOGOUT */}
             <TouchableOpacity style={styles.item} onPress={handleLogout}>
-              <Ionicons name="log-out-outline" size={18} />
+              <Ionicons name="log-out-outline" size={18} color="#ef4444" />
               <Text style={styles.itemText}>Logout</Text>
             </TouchableOpacity>
           </View>

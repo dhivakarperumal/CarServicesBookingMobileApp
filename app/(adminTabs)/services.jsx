@@ -166,7 +166,7 @@ export default function Services() {
       const serviceDocId = selectedBooking.id;
 
       const selectedEmployee = availableEmployees.find(
-        (emp) => emp.id === selectedEmployeeId
+        (emp) => emp.id === selectedEmployeeId,
       );
 
       if (!selectedEmployee) {
@@ -230,38 +230,59 @@ export default function Services() {
           }}
         />
 
-       {/* 📋 LIST */}
-<FlatList
-  data={filteredServices}
-  keyExtractor={(item) => item.id}
-  contentContainerStyle={{ paddingBottom: 140 }}
-  ListEmptyComponent={
-    <Text
-      style={{
-        color: "#94a3b8",
-        textAlign: "center",
-        marginTop: 40,
-      }}
-    >
-      No services found
-    </Text>
-  }
-  renderItem={({ item }) => (
-    <View
-      style={{
-        backgroundColor: "#0f172a",
-        padding: 16,
-        borderRadius: 16,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: item.assignedEmployeeId ? "#0b3b6f" : "#f59e0b",
-        position: "relative",
-      }}
-    >
-      {/* BS ID */}
-      <Text style={{ color: "#38bdf8", fontWeight: "700", fontSize: 15 }}>
-        {item.bookingId}
-      </Text>
+        {/* 🔘 STATUS DROPDOWN */}
+        <View
+          style={{
+            backgroundColor: "#020617",
+            borderWidth: 1,
+            borderColor: "#38bdf8",
+            borderRadius: 14,
+            marginBottom: 10,
+            paddingHorizontal: 4,
+            overflow: "hidden",
+          }}
+        >
+          <Picker
+            selectedValue={statusFilter}
+            onValueChange={(v) => setStatusFilter(v)}
+            dropdownIconColor="#38bdf8"
+            style={{ color: "#fff" }}
+            itemStyle={{ color: "#fff" }}
+          >
+            <Picker.Item label="All" value="All" />
+
+            {BOOKING_STATUS.map((s) => (
+              <Picker.Item key={s} label={s} value={s} />
+            ))}
+          </Picker>
+        </View>
+
+        {/* 📋 LIST */}
+        <FlatList
+          data={filteredServices}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingBottom: 140 }}
+          renderItem={({ item }) => (
+            <View
+              style={{
+                backgroundColor: "#0f172a",
+                padding: 16,
+                borderRadius: 16,
+                marginBottom: 12,
+                borderWidth: 1,
+                borderColor: "#0b3b6f",
+                position: "relative",
+              }}
+            >
+              <Text style={{ fontWeight: "700", color: "#38bdf8" }}>
+                {item.bookingId || "No Booking"}
+              </Text>
+
+              <Text style={{ color: "#fff", marginTop: 18 }}>{item.name}</Text>
+              <Text style={{ color: "#94a3b8" }}>{item.phone}</Text>
+              <Text style={{ color: "#94a3b8" }}>
+                {item.brand} {item.model}
+              </Text>
 
       {/* STATUS BADGE */}
       <View
@@ -399,7 +420,7 @@ export default function Services() {
                   selectedValue={selectedBooking?.id || ""}
                   onValueChange={(val) =>
                     setSelectedBooking(
-                      unassignedServices.find((s) => s.id === val)
+                      unassignedServices.find((s) => s.id === val),
                     )
                   }
                   dropdownIconColor="#38bdf8"
