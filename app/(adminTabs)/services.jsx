@@ -1,5 +1,3 @@
-
-
 import { useEffect, useMemo, useState } from "react";
 import {
   View,
@@ -24,6 +22,7 @@ import { db } from "../../firebase";
 import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const BOOKING_STATUS = [
   "Approved",
@@ -37,6 +36,7 @@ const BOOKING_STATUS = [
 
 export default function Services() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const [services, setServices] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -81,7 +81,7 @@ export default function Services() {
       .filter((s) =>
         statusFilter === "All"
           ? true
-          : (s.serviceStatus || "Approved") === statusFilter
+          : (s.serviceStatus || "Approved") === statusFilter,
       )
       .filter((s) => {
         const text = `
@@ -265,102 +265,140 @@ export default function Services() {
           renderItem={({ item }) => (
             <View
               style={{
-                backgroundColor: "#0f172a",
-                padding: 16,
-                borderRadius: 16,
-                marginBottom: 12,
+                backgroundColor: "#020617",
+                padding: 18,
+                borderRadius: 20,
+                marginBottom: 14,
                 borderWidth: 1,
-                borderColor: "#0b3b6f",
+                borderColor: "rgba(56,189,248,0.25)",
+                shadowColor: "#38bdf8",
+                shadowOpacity: 0.15,
+                shadowRadius: 10,
+                elevation: 6,
                 position: "relative",
               }}
             >
-              <Text style={{ fontWeight: "700", color: "#38bdf8" }}>
+              <Text
+                style={{ fontWeight: "900", fontSize: 15, color: "#38bdf8" }}
+              >
                 {item.bookingId || "No Booking"}
               </Text>
 
-              <Text style={{ color: "#fff", marginTop: 18 }}>{item.name}</Text>
-              <Text style={{ color: "#94a3b8" }}>{item.phone}</Text>
-              <Text style={{ color: "#94a3b8" }}>
+              {/* STATUS BADGE */}
+              <View
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  right: 10,
+                  backgroundColor: getStatusColor(item.serviceStatus),
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 14,
+                  shadowColor: "#000",
+                  shadowOpacity: 0.3,
+                  shadowRadius: 6,
+                }}
+              >
+                <Text style={{ color: "#fff", fontSize: 12, fontWeight: "800" }}>
+                  {item.serviceStatus || "Approved"}
+                </Text>
+              </View>
+
+              {/* CUSTOMER */}
+              <Text
+                style={{
+                  color: "#f8fafc",
+                  marginTop: 14,
+                  fontSize: 16,
+                  fontWeight: "700",
+                }}
+              >
+                {item.name}
+              </Text>
+
+              <Text style={{ color: "#cbd5f5", fontSize: 14 }}>
+                {item.phone}
+              </Text>
+
+              {/* CAR DETAILS */}
+              <Text style={{ color: "#cbd5f5", fontSize: 14 }}>
                 {item.brand} {item.model}
               </Text>
 
-      {/* STATUS BADGE */}
-      <View
-        style={{
-          position: "absolute",
-          top: 10,
-          right: 10,
-          backgroundColor: getStatusColor(item.serviceStatus),
-          paddingHorizontal: 10,
-          paddingVertical: 4,
-          borderRadius: 12,
-        }}
-      >
-        <Text style={{ color: "#fff", fontSize: 11 }}>
-          {item.serviceStatus || "Approved"}
-        </Text>
-      </View>
+              {/* ISSUE */}
+              {item.issue && (
+                <Text
+                  style={{
+                    color: "#facc15",
+                    marginTop: 6,
+                    fontSize: 19,
+                    fontWeight: "600",
+                  }}
+                >
+                  {item.issue}
+                </Text>
+              )}
 
-      {/* CUSTOMER */}
-      <Text style={{ color: "#fff", marginTop: 18, fontWeight: "600" }}>
-        {item.name}
-      </Text>
+              {/* TRACK NUMBER */}
+              {item.trackNumber && (
+                <Text
+                  style={{
+                    color: "#4ade80",
+                    marginTop: 6,
+                    fontSize: 18,
+                    fontWeight: "700",
+                  }}
+                >
+                  Track: {item.trackNumber}
+                </Text>
+              )}
 
-      <Text style={{ color: "#94a3b8" }}>{item.phone}</Text>
+              {/* ASSIGNED MECHANIC */}
+              {item.assignedEmployeeName && (
+                <Text
+                  style={{
+                    color: "#38bdf8",
+                    marginTop: 8,
+                    fontSize: 14,
+                    fontWeight: "700",
+                  }}
+                >
+                  {item.assignedEmployeeName}
+                </Text>
+              )}
 
-      {/* CAR DETAILS */}
-      <Text style={{ color: "#94a3b8", marginTop: 2 }}>
-         {item.brand} {item.model}
-      </Text>
-
-      {/* ISSUE */}
-      {item.issue && (
-        <Text style={{ color: "#eab308", marginTop: 4 }}>
-           {item.issue}
-        </Text>
-      )}
-
-      {/* TRACK NUMBER */}
-      {item.trackNumber && (
-        <Text style={{ color: "#22c55e", marginTop: 4 }}>
-           Track: {item.trackNumber}
-        </Text>
-      )}
-
-   
-
-      
-
-      {/* ASSIGNED MECHANIC */}
-      {item.assignedEmployeeName && (
-        <Text style={{ color: "#22c55e", marginTop: 6 }}>
-          {item.assignedEmployeeName}
-        </Text>
-      )}
-
-      {/* ASSIGN BUTTON */}
-      {!item.assignedEmployeeId && (
-        <TouchableOpacity
-          onPress={() => {
-            setSelectedBooking(item);
-            setModalVisible(true);
-          }}
-          style={{
-            backgroundColor: "#38bdf8",
-            paddingVertical: 10,
-            borderRadius: 12,
-            marginTop: 12,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ color: "#020617", fontWeight: "700" }}>
-            Assign Mechanic
-          </Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  )}
-/>
+              {/* ASSIGN BUTTON */}
+              {!item.assignedEmployeeId && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedBooking(item);
+                    setModalVisible(true);
+                  }}
+                  style={{
+                    backgroundColor: "#38bdf8",
+                    paddingVertical: 12,
+                    borderRadius: 14,
+                    shadowColor: "#38bdf8",
+                    shadowOpacity: 0.4,
+                    shadowRadius: 8,
+                    marginTop: 12,
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#020617",
+                      fontWeight: "900",
+                      fontSize: 15,
+                    }}
+                  >
+                    Assign Mechanic
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+        />
 
         {/* ➕ FAB BUTTON */}
         <TouchableOpacity
@@ -370,7 +408,7 @@ export default function Services() {
           }}
           style={{
             position: "absolute",
-            bottom: 30,
+            bottom: insets.bottom + 70,
             right: 20,
             backgroundColor: "#38bdf8",
             width: 60,
