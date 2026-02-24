@@ -256,45 +256,82 @@ function BookingDetailModal({ booking, onClose }) {
                             <Text style={styles.detailValue}>{booking.address}</Text>
                         </View>
 
-                        {/* Service Tracker */}
-                        <View style={styles.trackerSection}>
-                            <Text style={styles.detailLabel}>Service Status</Text>
-                            {booking.normalizedStatus !== "CANCELLED" ? (
-                                <View style={styles.trackerContainer}>
-                                    {STATUS_FLOW.map((status, index) => {
-                                        const isCompleted =
-                                            index <= STATUS_FLOW.indexOf(booking.normalizedStatus);
+                        <View style={styles.trackerMainContainer}>
+                            {/* Line + Circles Row */}
+                            <View style={styles.lineContainer}>
+                                {STATUS_FLOW.map((status, index) => {
+                                    const currentIndex = STATUS_FLOW.indexOf(
+                                        booking.normalizedStatus
+                                    );
+                                    const isCompleted = index <= currentIndex;
 
-                                        return (
-                                            <View key={status} style={styles.stepWrapper}>
-                                                {/* Circle */}
-                                                <View
+                                    return (
+                                        <View
+                                            key={status}
+                                            style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+                                        >
+                                            <View
+                                                style={[
+                                                    styles.trackerCircle,
+                                                    isCompleted && styles.trackerActiveCircle,
+                                                ]}
+                                            >
+                                                <Text
                                                     style={[
-                                                        styles.circle,
-                                                        isCompleted && styles.activeCircle,
+                                                        styles.trackerCircleText,
+                                                        isCompleted && styles.trackerActiveText,
                                                     ]}
                                                 >
-                                                    <Text
-                                                        style={[
-                                                            styles.stepText,
-                                                            isCompleted && styles.activeText,
-                                                        ]}
-                                                    >
-                                                        {index + 1}
-                                                    </Text>
-                                                </View>
-
-                                                {/* Label */}
-                                                <Text style={styles.stepLabel}>
-                                                    {status.replace(/_/g, " ")}
+                                                    {index + 1}
                                                 </Text>
                                             </View>
-                                        );
-                                    })}
-                                </View>
-                            ) : (
-                                <Text style={styles.cancelledText}>❌ Service Cancelled</Text>
-                            )}
+
+                                            {index !== STATUS_FLOW.length - 1 && (
+                                                <View
+                                                    style={[
+                                                        styles.trackerLine,
+                                                        index < currentIndex && styles.trackerActiveLine,
+                                                    ]}
+                                                />
+                                            )}
+                                        </View>
+                                    );
+                                })}
+                            </View>
+
+                            {/* CURRENT STATUS SECTION */}
+                            <View style={styles.currentStatusContainer}>
+                                <Text style={styles.currentStatusLabel}>
+                                    Current Status
+                                </Text>
+
+                                <Text style={styles.currentStatusValue}>
+                                    {STATUS_LABELS[booking.normalizedStatus]}
+                                </Text>
+                            </View>
+
+                            {/* LEGEND LIST */}
+                            <View style={styles.statusLegendContainer}>
+                                {STATUS_FLOW.map((status, index) => {
+                                    const currentIndex = STATUS_FLOW.indexOf(
+                                        booking.normalizedStatus
+                                    );
+                                    const isCurrent = index === currentIndex;
+
+                                    return (
+                                        <View key={status} style={styles.legendRow}>
+                                            <Text
+                                                style={[
+                                                    styles.statusLegendText,
+                                                    isCurrent && styles.statusLegendActiveText,
+                                                ]}
+                                            >
+                                                {index + 1} - {STATUS_LABELS[status]}
+                                            </Text>
+                                        </View>
+                                    );
+                                })}
+                            </View>
                         </View>
 
                         {/* Close Button */}
@@ -438,7 +475,7 @@ const styles = StyleSheet.create({
     },
 
     closeModalButton: {
-        backgroundColor: "#ef4444",
+        backgroundColor: "#0ea5e9",
         paddingVertical: 12,
         borderRadius: 12,
         alignItems: "center",
@@ -458,66 +495,114 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
 
-    trackerContainer: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        justifyContent: "space-between",
-        paddingVertical: 16,
-    },
-
-    stepWrapper: {
-        alignItems: "center",
-        width: "48%",
-        marginBottom: 24,
-    },
-
-    circle: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        borderWidth: 2,
-        borderColor: "#4b5563",
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "transparent",
-    },
-
-    activeCircle: {
-        backgroundColor: "#38bdf8",
-        borderColor: "#38bdf8",
-    },
-
-    stepText: {
-        color: "#9ca3af",
-        fontWeight: "700",
-        fontSize: 18,
-    },
-
-    activeText: {
-        color: "#000",
-    },
-
-    stepLabel: {
-        marginTop: 8,
-        fontSize: 11,
-        textAlign: "center",
-        color: "#d1d5db",
-        width: 110,
-    },
-
-    line: {
-        display: "none",
-    },
-
-    activeLine: {
-        display: "none",
-    },
-
     cancelledText: {
         color: "#ef4444",
         fontWeight: "600",
         textAlign: "center",
         fontSize: 16,
         marginVertical: 12,
+    },
+
+    trackerMainContainer: {
+        marginTop: 20,
+        marginBottom: 30,
+    },
+
+    lineContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+
+    trackerCircle: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        backgroundColor: "#1f2937",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 2,
+    },
+
+    trackerActiveCircle: {
+        backgroundColor: "#38bdf8",
+    },
+
+    trackerCircleText: {
+        color: "#9ca3af",
+        fontWeight: "700",
+        fontSize: 12,
+    },
+
+    trackerActiveText: {
+        color: "#000",
+    },
+
+    trackerLine: {
+        flex: 1,
+        height: 3,
+        backgroundColor: "#374151",
+    },
+
+    trackerActiveLine: {
+        backgroundColor: "#38bdf8",
+    },
+
+    /* NEW CLEAN STATUS TEXT */
+
+    currentStatusContainer: {
+        marginTop: 20,
+        alignItems: "center",
+    },
+
+    currentStatusLabel: {
+        color: "#94a3b8",
+        fontSize: 13,
+        marginBottom: 6,
+    },
+
+    currentStatusValue: {
+        color: "#38bdf8",
+        fontSize: 18,
+        fontWeight: "700",
+    },
+
+    statusLegendContainer: {
+        marginTop: 20,
+        borderTopWidth: 1,
+        borderTopColor: "rgba(56, 189, 248, 0.2)",
+        paddingTop: 15,
+    },
+
+    statusLegendText: {
+        color: "#cbd5e1",
+        fontSize: 13,
+        marginBottom: 6,
+    },
+    legendRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 8,
+    },
+
+    legendDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: "#475569",
+        marginRight: 8,
+    },
+
+    legendDotActive: {
+        backgroundColor: "#38bdf8",
+    },
+
+    statusLegendText: {
+        color: "#cbd5e1",
+        fontSize: 13,
+    },
+
+    statusLegendActiveText: {
+        color: "#38bdf8",
+        fontWeight: "700",
     },
 });
