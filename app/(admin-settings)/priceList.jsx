@@ -9,6 +9,8 @@ import {
   StyleSheet,
   Alert,
   Dimensions,
+  KeyboardAvoidingView,   
+  Platform,              
 } from "react-native";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -73,7 +75,11 @@ export default function PriceList() {
 
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 
-  return (
+return (
+  <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1 }}
+  >
     <View style={styles.container}>
       {/* 🔹 SEARCH */}
       <TextInput
@@ -143,6 +149,7 @@ export default function PriceList() {
         <Ionicons name="add" size={28} color="#fff" />
       </TouchableOpacity>
     </View>
+    </KeyboardAvoidingView>
   );
 }
 
