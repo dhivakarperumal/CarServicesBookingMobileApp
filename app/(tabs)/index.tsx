@@ -284,14 +284,14 @@ export default function HomeScreen({ navigation }) {
           {" 👋"}
         </Text>
         {/* Animated Car */}
-        <Animated.View
+        {/* <Animated.View
           style={[
             styles.carTopWrapper,
             { transform: [{ translateX: carAnim }] },
           ]}
         >
           <FontAwesome5 name="car-side" size={60} color="#fff" />
-        </Animated.View>
+        </Animated.View> */}
 
         <Text style={styles.bannerTitle}>
           Premium Car Care Service
@@ -483,7 +483,7 @@ export default function HomeScreen({ navigation }) {
         {/* Phone */}
         <View style={styles.contactRow}>
           <Ionicons name="call" size={18} color="#0EA5E9" />
-          <Text style={styles.contactText}>+91 95000 73858</Text>
+          <Text style={styles.contactText}>+91 98765 43210</Text>
         </View>
 
         {/* Email */}
@@ -493,28 +493,35 @@ export default function HomeScreen({ navigation }) {
         </View>
 
         {/* Address */}
-         <View style={styles.contactRow}>
-        <Ionicons name="location" size={18} color="#0EA5E9" />
-        <Text style={styles.contactText}>
-          No. 24, Anna Nagar, Chennai, Tamil Nadu
-        </Text>
+        <View style={styles.contactRow}>
+          <Ionicons name="location" size={18} color="#0EA5E9" />
+          <Text style={styles.contactText}>
+            No. 24, Anna Nagar, Chennai, Tamil Nadu
+          </Text>
         </View>
 
       </View>
 
       {/* Map */}
       <TouchableOpacity
-        style={styles.mapButton}
+        activeOpacity={0.8}
         onPress={() =>
           Linking.openURL(
             "https://maps.app.goo.gl/kv7qjVpYMpcXuzx17"
           )
         }
       >
-        <Ionicons name="navigate" size={18} color="#fff" />
-        <Text style={{ color: "#fff", marginLeft: 8 }}>
-          Get Directions
-        </Text>
+        <LinearGradient
+          colors={["#0EA5E9", "#2563EB"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientMapButton}
+        >
+          <Ionicons name="navigate" size={18} color="#fff" />
+          <Text style={styles.gradientMapText}>
+            Get Directions
+          </Text>
+        </LinearGradient>
       </TouchableOpacity>
 
     </ScrollView>
@@ -984,6 +991,23 @@ const styles = StyleSheet.create({
     color: "#94A3B8",
     fontSize: 13,
     marginTop: 4,
+  },
+
+  gradientMapButton: {
+    flexDirection: "row",
+    paddingVertical: 14,
+    borderRadius: 50,          // 👈 fully rounded
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 16,
+  },
+
+  gradientMapText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 15,
+    marginLeft: 8,
+    letterSpacing: 0.5,
   },
 
   statusBadge: {

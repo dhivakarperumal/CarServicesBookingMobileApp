@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import { auth, db } from "../../firebase";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { LinearGradient } from "expo-linear-gradient";
 
 const BOOKING_STATUS = {
   BOOKED: "Booked",
@@ -123,11 +124,15 @@ export default function BookingScreen() {
   return (
     <KeyboardAwareScrollView
       style={{ flex: 1, backgroundColor: "#0B1120" }}
-      contentContainerStyle={{ padding: 20 }}
+      contentContainerStyle={{
+        padding: 20,
+        paddingBottom: 50,   // 👈 add this
+      }}
       enableOnAndroid={true}
       extraScrollHeight={20}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
+
     >
       <Text style={styles.title}>Book Service</Text>
 
@@ -182,12 +187,19 @@ export default function BookingScreen() {
       <Input label="Location" value={formData.location} onChange={(v) => handleChange("location", v)} />
       <Input label="Service Address" value={formData.address} onChange={(v) => handleChange("address", v)} multiline />
 
-      <TouchableOpacity style={styles.button} onPress={handleBooking} disabled={loading}>
-        {loading ? (
-          <ActivityIndicator color="#000" />
-        ) : (
-          <Text style={styles.buttonText}>Book Service</Text>
-        )}
+      <TouchableOpacity onPress={handleBooking} disabled={loading} activeOpacity={0.8}>
+        <LinearGradient
+          colors={["#0EA5E9", "#2563EB"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientButton}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.gradientButtonText}>Book Service</Text>
+          )}
+        </LinearGradient>
       </TouchableOpacity>
     </KeyboardAwareScrollView>
   );
@@ -258,18 +270,17 @@ const styles = StyleSheet.create({
     borderColor: "rgba(14,165,233,0.3)",
     marginBottom: 16,
   },
-
-  button: {
-    backgroundColor: "#0EA5E9",
+  gradientButton: {
     paddingVertical: 16,
-    borderRadius: 18,
+    borderRadius: 50,          // 👈 fully rounded
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 20,
   },
 
-  buttonText: {
-    color: "#000",
+  gradientButtonText: {
+    color: "#FFFFFF",
     fontWeight: "700",
     fontSize: 16,
+    letterSpacing: 0.5,
   },
 });
