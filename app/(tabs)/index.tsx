@@ -118,6 +118,8 @@ export default function HomeScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
 
+  const [myVehicles, setMyVehicles] = useState([]);
+
   const [reviews, setReviews] = useState([]);
 
   const carAnim = useRef(new Animated.Value(0)).current;
@@ -211,6 +213,22 @@ export default function HomeScreen({ navigation }) {
 
       // Show all bookings (not filtered)
       setAllBookings(data);
+
+      // 🔥 Extract unique vehicles
+      const vehiclesMap = {};
+
+      data.forEach((item) => {
+        if (item.vehicleNumber && item.vehicleType) {
+          vehiclesMap[item.vehicleNumber] = {
+            vehicleNumber: item.vehicleNumber,
+            vehicleType: item.vehicleType,
+            brand: item.brand,
+            model: item.model,
+          };
+        }
+      });
+
+      setMyVehicles(Object.values(vehiclesMap));
     });
 
     return () => unsub();
@@ -310,79 +328,128 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </LinearGradient>
 
-      {/* ACTIVE BOOKING */}
-      {allBookings.length > 0 && (
+      {/* MY VEHICLES SECTION */}
+      {myVehicles.length > 0 && (
         <>
           <View style={styles.premiumSectionHeader}>
             <View style={styles.premiumAccent} />
+            <Ionicons
+              name="car-sport-outline"
+              size={18}
+              color="#0EA5E9"
+              style={{ marginRight: 6 }}
+            />
             <Text style={styles.premiumSectionTitle}>
-              My Bookings
+              My Vehicles
             </Text>
           </View>
 
-          <View style={styles.bookingsContainer}>
-            {allBookings.map((booking) => (
-              <TouchableOpacity
-                key={booking.id}
-                style={styles.premiumCard}
-                onPress={() => setSelectedBooking(booking)}
-                activeOpacity={0.85}
-              >
-                {/* Top Row */}
-                <View style={styles.cardTopRow}>
-                  <View style={styles.carIconBox}>
-                    <FontAwesome5 name="car" size={18} color="#0EA5E9" />
-                  </View>
-
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={styles.premiumCarName}>
-                      {booking.brand} {booking.model}
-                    </Text>
-                    <Text style={styles.premiumService}>
-                      {booking.issue}
-                    </Text>
-                  </View>
-
-                  <View
-                    style={[
-                      styles.premiumStatus,
-                      { backgroundColor: getStatusColor(booking.normalizedStatus) },
-                    ]}
-                  >
-                    <Text style={styles.premiumStatusText}>
-                      {STATUS_LABELS[booking.normalizedStatus]}
-                    </Text>
-                  </View>
+          <View style={{ marginBottom: 20 }}>
+            {myVehicles.map((vehicle, index) => (
+              <View key={index} style={styles.vehicleCard}>
+                <View style={styles.vehicleIconBox}>
+                  <Ionicons name="car" size={22} color="#0EA5E9" />
                 </View>
 
-                {/* Divider */}
-                <View style={styles.cardDivider} />
-
-                {/* Bottom Row */}
-                <View style={styles.cardBottomRow}>
-                  <Text style={styles.bookingIdText}>
-                    ID: {booking.bookingId}
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                  <Text style={styles.vehicleNumber}>
+                    {vehicle.vehicleNumber}
                   </Text>
-
-                  <View style={styles.viewDetailsRow}>
-                    <Text style={styles.viewDetailsText}>
-                      Tap to view details
-                    </Text>
-                    <Ionicons name="chevron-forward" size={16} color="#0EA5E9" />
-                  </View>
+                  <Text style={styles.vehicleDetails}>
+                    {vehicle.brand} {vehicle.model} • {vehicle.vehicleType}
+                  </Text>
                 </View>
-              </TouchableOpacity>
+              </View>
             ))}
           </View>
-
-          {selectedBooking && (
-            <BookingDetailModal
-              booking={selectedBooking}
-              onClose={() => setSelectedBooking(null)}
-            />
-          )}
         </>
       )}
+
+      {/* ACTIVE BOOKING */}
+      {allBookings
+        .filter(
+          (booking) =>
+            !booking?.vehicleNumber ||
+            !booking?.vehicleType
+        )
+        .length > 0 && (
+          <>
+            <View style={styles.premiumSectionHeader}>
+              <View style={styles.premiumAccent} />
+              <Text style={styles.premiumSectionTitle}>
+                My Bookings
+              </Text>
+            </View>
+
+            <View style={styles.bookingsContainer}>
+              {allBookings
+                .filter(
+                  (booking) =>
+                    !booking?.vehicleNumber ||
+                    !booking?.vehicleType
+                )
+                .map((booking) => (
+                  <TouchableOpacity
+                    key={booking.id}
+                    style={styles.premiumCard}
+                    onPress={() => setSelectedBooking(booking)}
+                    activeOpacity={0.85}
+                  >
+                    {/* Top Row */}
+                    <View style={styles.cardTopRow}>
+                      <View style={styles.carIconBox}>
+                        <FontAwesome5 name="car" size={18} color="#0EA5E9" />
+                      </View>
+
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <Text style={styles.premiumCarName}>
+                          {booking.brand} {booking.model}
+                        </Text>
+                        <Text style={styles.premiumService}>
+                          {booking.issue}
+                        </Text>
+                      </View>
+
+                      <View
+                        style={[
+                          styles.premiumStatus,
+                          { backgroundColor: getStatusColor(booking.normalizedStatus) },
+                        ]}
+                      >
+                        <Text style={styles.premiumStatusText}>
+                          {STATUS_LABELS[booking.normalizedStatus]}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Divider */}
+                    <View style={styles.cardDivider} />
+
+                    {/* Bottom Row */}
+                    <View style={styles.cardBottomRow}>
+                      <Text style={styles.bookingIdText}>
+                        ID: {booking.bookingId}
+                      </Text>
+
+                      <View style={styles.viewDetailsRow}>
+                        <Text style={styles.viewDetailsText}>
+                          Tap to view details
+                        </Text>
+                        <Ionicons name="chevron-forward" size={16} color="#0EA5E9" />
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+            </View>
+
+            {selectedBooking && (
+              <BookingDetailModal
+                booking={selectedBooking}
+                onClose={() => setSelectedBooking(null)}
+              />
+            )}
+          </>
+        )}
 
       {/* WHY CHOOSE US */}
       <View style={styles.premiumSectionHeader}>
@@ -420,7 +487,7 @@ export default function HomeScreen({ navigation }) {
           Customer Reviews
         </Text>
       </View>
-      
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -606,82 +673,82 @@ function BookingDetailModal({ booking, onClose }) {
 
             {/* Service Tracker */}
             <View style={styles.trackerMainContainer}>
-  {/* Line + Circles Row */}
-  <View style={styles.lineContainer}>
-    {STATUS_FLOW.map((status, index) => {
-      const currentIndex = STATUS_FLOW.indexOf(
-        booking.normalizedStatus
-      );
-      const isCompleted = index <= currentIndex;
+              {/* Line + Circles Row */}
+              <View style={styles.lineContainer}>
+                {STATUS_FLOW.map((status, index) => {
+                  const currentIndex = STATUS_FLOW.indexOf(
+                    booking.normalizedStatus
+                  );
+                  const isCompleted = index <= currentIndex;
 
-      return (
-        <View
-          key={status}
-          style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
-        >
-          <View
-            style={[
-              styles.trackerCircle,
-              isCompleted && styles.trackerActiveCircle,
-            ]}
-          >
-            <Text
-              style={[
-                styles.trackerCircleText,
-                isCompleted && styles.trackerActiveText,
-              ]}
-            >
-              {index + 1}
-            </Text>
-          </View>
+                  return (
+                    <View
+                      key={status}
+                      style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+                    >
+                      <View
+                        style={[
+                          styles.trackerCircle,
+                          isCompleted && styles.trackerActiveCircle,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.trackerCircleText,
+                            isCompleted && styles.trackerActiveText,
+                          ]}
+                        >
+                          {index + 1}
+                        </Text>
+                      </View>
 
-          {index !== STATUS_FLOW.length - 1 && (
-            <View
-              style={[
-                styles.trackerLine,
-                index < currentIndex && styles.trackerActiveLine,
-              ]}
-            />
-          )}
-        </View>
-      );
-    })}
-  </View>
+                      {index !== STATUS_FLOW.length - 1 && (
+                        <View
+                          style={[
+                            styles.trackerLine,
+                            index < currentIndex && styles.trackerActiveLine,
+                          ]}
+                        />
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
 
-  {/* CURRENT STATUS */}
-  <View style={styles.currentStatusContainer}>
-    <Text style={styles.currentStatusLabel}>
-      Current Status
-    </Text>
+              {/* CURRENT STATUS */}
+              <View style={styles.currentStatusContainer}>
+                <Text style={styles.currentStatusLabel}>
+                  Current Status
+                </Text>
 
-    <Text style={styles.currentStatusValue}>
-      {STATUS_LABELS[booking.normalizedStatus]}
-    </Text>
-  </View>
+                <Text style={styles.currentStatusValue}>
+                  {STATUS_LABELS[booking.normalizedStatus]}
+                </Text>
+              </View>
 
-  {/* LEGEND LIST */}
-  <View style={styles.statusLegendContainer}>
-    {STATUS_FLOW.map((status, index) => {
-      const currentIndex = STATUS_FLOW.indexOf(
-        booking.normalizedStatus
-      );
-      const isCurrent = index === currentIndex;
+              {/* LEGEND LIST */}
+              <View style={styles.statusLegendContainer}>
+                {STATUS_FLOW.map((status, index) => {
+                  const currentIndex = STATUS_FLOW.indexOf(
+                    booking.normalizedStatus
+                  );
+                  const isCurrent = index === currentIndex;
 
-      return (
-        <View key={status} style={styles.legendRow}>
-          <Text
-            style={[
-              styles.statusLegendText,
-              isCurrent && styles.statusLegendActiveText,
-            ]}
-          >
-            {index + 1} - {STATUS_LABELS[status]}
-          </Text>
-        </View>
-      );
-    })}
-  </View>
-</View>
+                  return (
+                    <View key={status} style={styles.legendRow}>
+                      <Text
+                        style={[
+                          styles.statusLegendText,
+                          isCurrent && styles.statusLegendActiveText,
+                        ]}
+                      >
+                        {index + 1} - {STATUS_LABELS[status]}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
 
             {/* Close Button */}
             <TouchableOpacity
@@ -1054,8 +1121,8 @@ const styles = StyleSheet.create({
   gradientMapButton: {
     flexDirection: "row",
     paddingVertical: 13,
-     paddingHorizontal: 24,  
-    borderRadius: 50,          
+    paddingHorizontal: 24,
+    borderRadius: 50,
     justifyContent: "center",
     alignItems: "center",
     marginTop: 16,
@@ -1285,86 +1352,115 @@ const styles = StyleSheet.create({
   },
 
   trackerMainContainer: {
-  marginTop: 20,
-  marginBottom: 30,
-},
+    marginTop: 20,
+    marginBottom: 30,
+  },
 
-lineContainer: {
-  flexDirection: "row",
-  alignItems: "center",
-},
+  lineContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-trackerCircle: {
-  width: 30,
-  height: 30,
-  borderRadius: 15,
-  backgroundColor: "#1f2937",
-  justifyContent: "center",
-  alignItems: "center",
-  zIndex: 2,
-},
+  trackerCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#1f2937",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2,
+  },
 
-trackerActiveCircle: {
-  backgroundColor: "#38bdf8",
-},
+  trackerActiveCircle: {
+    backgroundColor: "#38bdf8",
+  },
 
-trackerCircleText: {
-  color: "#9ca3af",
-  fontWeight: "700",
-  fontSize: 12,
-},
+  trackerCircleText: {
+    color: "#9ca3af",
+    fontWeight: "700",
+    fontSize: 12,
+  },
 
-trackerActiveText: {
-  color: "#000",
-},
+  trackerActiveText: {
+    color: "#000",
+  },
 
-trackerLine: {
-  flex: 1,
-  height: 3,
-  backgroundColor: "#374151",
-},
+  trackerLine: {
+    flex: 1,
+    height: 3,
+    backgroundColor: "#374151",
+  },
 
-trackerActiveLine: {
-  backgroundColor: "#38bdf8",
-},
+  trackerActiveLine: {
+    backgroundColor: "#38bdf8",
+  },
 
-currentStatusContainer: {
-  marginTop: 20,
-  alignItems: "center",
-},
+  currentStatusContainer: {
+    marginTop: 20,
+    alignItems: "center",
+  },
 
-currentStatusLabel: {
-  color: "#94a3b8",
-  fontSize: 13,
-  marginBottom: 6,
-},
+  currentStatusLabel: {
+    color: "#94a3b8",
+    fontSize: 13,
+    marginBottom: 6,
+  },
 
-currentStatusValue: {
-  color: "#38bdf8",
-  fontSize: 18,
-  fontWeight: "700",
-},
+  currentStatusValue: {
+    color: "#38bdf8",
+    fontSize: 18,
+    fontWeight: "700",
+  },
 
-statusLegendContainer: {
-  marginTop: 20,
-  borderTopWidth: 1,
-  borderTopColor: "rgba(56, 189, 248, 0.2)",
-  paddingTop: 15,
-},
+  statusLegendContainer: {
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(56, 189, 248, 0.2)",
+    paddingTop: 15,
+  },
 
-legendRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 8,
-},
+  legendRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
 
-statusLegendText: {
-  color: "#cbd5e1",
-  fontSize: 13,
-},
+  statusLegendText: {
+    color: "#cbd5e1",
+    fontSize: 13,
+  },
 
-statusLegendActiveText: {
-  color: "#38bdf8",
-  fontWeight: "700",
-},
+  statusLegendActiveText: {
+    color: "#38bdf8",
+    fontWeight: "700",
+  },
+
+  vehicleCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#111827",
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.15)",
+  },
+
+  vehicleIconBox: {
+    backgroundColor: "rgba(14,165,233,0.1)",
+    padding: 12,
+    borderRadius: 14,
+  },
+
+  vehicleNumber: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+
+  vehicleDetails: {
+    color: "#9CA3AF",
+    fontSize: 13,
+    marginTop: 4,
+  },
 });
