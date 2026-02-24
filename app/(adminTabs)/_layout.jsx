@@ -217,7 +217,7 @@ function AdminHeader({ title = "Admin" }) {
               label="Settings"
               onPress={() => {
                 setMenuVisible(false);
-                router.push("/(admin-settings)/settings");
+                router.push("/(adminTabs)/settings");
               }}
             />
 
@@ -255,7 +255,7 @@ function MenuItem({ icon, label, onPress, danger }) {
       <Ionicons
         name={icon}
         size={18}
-        color={danger ? "#ef4444" : "#374151"}
+        color={danger ? "#ef4444" : "#38bdf8"}
       />
       <Text
         style={[
@@ -367,22 +367,29 @@ const styles = StyleSheet.create({
 
   profileText: { color: "#fff", fontWeight: "bold", fontSize: 14 },
 
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.2)",
-    alignItems: "flex-end",
-    paddingTop: 70,
-    paddingRight: 16,
-  },
+overlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.65)",
+  alignItems: "flex-end",
+  paddingTop: 70,
+  paddingRight: 16,
+},
 
   dropdown: {
-    width: 260,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    elevation: 8,
-  },
+  width: 220,
+  backgroundColor: "#020617",
+  borderRadius: 18,
+
+  borderWidth: 1,
+  borderColor: "rgba(56,189,248,0.35)",
+
+  shadowColor: "#38bdf8",
+  shadowOpacity: 0.45,
+  shadowRadius: 12,
+  elevation: 20,
+
+  paddingVertical: 6,
+},
 
   notifHeader: {
     flexDirection: "row",
@@ -391,9 +398,9 @@ const styles = StyleSheet.create({
     borderColor: "#e5e7eb",
     paddingBottom: 8,
     marginBottom: 6,
-    backgroundColor: "#f9fafb", // 👈 add this
-    padding: 10,                // 👈 optional for spacing inside bg
-    borderTopLeftRadius: 8,     // 👈 optional nice UI
+    backgroundColor: "#f9fafb",
+    padding: 10,                
+    borderTopLeftRadius: 8,     
     borderTopRightRadius: 8,
   },
 
@@ -421,14 +428,19 @@ const styles = StyleSheet.create({
 
   emptySub: { fontSize: 12, color: "#9ca3af" },
 
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
+menuItem: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 16,
+  paddingVertical: 14,
+},
 
-  menuText: { fontSize: 14, color: "#374151", marginLeft: 10 },
+  menuText: {
+  fontSize: 14,
+  color: "#e5e7eb",
+  marginLeft: 12,
+  fontWeight: "700",
+},
 
   tabBar: {
     position: "absolute",
