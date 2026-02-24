@@ -420,8 +420,7 @@ export default function HomeScreen({ navigation }) {
           Customer Reviews
         </Text>
       </View>
-
-
+      
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -845,7 +844,7 @@ const styles = StyleSheet.create({
 
   // reviews
   reviewCard: {
-    width: 260,
+    width: width - 40,
     backgroundColor: "#111827",
     borderRadius: 22,
     padding: 16,
@@ -996,10 +995,12 @@ const styles = StyleSheet.create({
   gradientMapButton: {
     flexDirection: "row",
     paddingVertical: 14,
-    borderRadius: 50,          // 👈 fully rounded
+     paddingHorizontal: 24,  
+    borderRadius: 50,          
     justifyContent: "center",
     alignItems: "center",
     marginTop: 16,
+    alignSelf: "center",
   },
 
   gradientMapText: {
