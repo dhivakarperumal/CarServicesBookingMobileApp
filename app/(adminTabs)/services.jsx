@@ -409,7 +409,7 @@ export default function Services() {
           }}
           style={{
             position: "absolute",
-            bottom: 65,
+            bottom: 60,
             right: 20,
             backgroundColor: "#2563eb",   
             width: 56,

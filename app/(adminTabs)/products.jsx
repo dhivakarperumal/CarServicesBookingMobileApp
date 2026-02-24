@@ -305,6 +305,8 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { db } from "../../firebase";
 import {
@@ -340,7 +342,7 @@ export default function AllProducts() {
 
   /* 🔍 SEARCH FILTER */
   const filtered = products.filter((p) =>
-    p.name?.toLowerCase().includes(search.toLowerCase())
+    p.name?.toLowerCase().includes(search.toLowerCase()),
   );
 
   /* 🗑️ DELETE */
@@ -385,13 +387,9 @@ export default function AllProducts() {
           {item.name}
         </Text>
 
-        <Text style={styles.price}>
-          ₹ {item.offerPrice || item.mrp}
-        </Text>
+        <Text style={styles.price}>₹ {item.offerPrice || item.mrp}</Text>
 
-        <Text style={styles.stock}>
-          Stock: {item.totalStock || 0}
-        </Text>
+        <Text style={styles.stock}>Stock: {item.totalStock || 0}</Text>
 
         <View style={styles.row}>
           <Text style={styles.rating}>⭐ {item.rating || 0}</Text>
@@ -438,37 +436,44 @@ export default function AllProducts() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* 🔍 SEARCH */}
-      <TextInput
-        placeholder="Search products..."
-        placeholderTextColor="#9ca3af"
-        style={styles.search}
-        value={search}
-        onChangeText={setSearch}
-      />
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={80}
+    >
+      <View style={styles.container}>
+        {/* 🔍 SEARCH */}
+        <TextInput
+          placeholder="Search products..."
+          placeholderTextColor="#9ca3af"
+          style={styles.search}
+          value={search}
+          onChangeText={setSearch}
+        />
 
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.docId}
-        renderItem={renderItem}
-        numColumns={2} // ✅ 2 COLUMN GRID
-        columnWrapperStyle={{ justifyContent: "space-between" }}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <Text style={styles.empty}>No products found</Text>
-        }
-        contentContainerStyle={{ paddingBottom: 80 }}
-      />
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item.docId}
+          renderItem={renderItem}
+          numColumns={2}
+          columnWrapperStyle={{ justifyContent: "space-between" }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={
+            <Text style={styles.empty}>No products found</Text>
+          }
+          contentContainerStyle={{ paddingBottom: 120 }}
+        />
 
-      {/* ➕ ADD BUTTON */}
-      <TouchableOpacity
-        style={styles.addBtn}
-        onPress={() => router.push("/(Products)/addproducts")}
-      >
-        <Ionicons name="add" size={26} color="#fff" />
-      </TouchableOpacity>
-    </View>
+        {/* ➕ ADD BUTTON */}
+        <TouchableOpacity
+          style={styles.addBtn}
+          onPress={() => router.push("/(Products)/addproducts")}
+        >
+          <Ionicons name="add" size={26} color="#fff" />
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -591,7 +596,7 @@ const styles = StyleSheet.create({
 
   addBtn: {
     position: "absolute",
-    bottom: 90,
+    bottom: 70,
     right: 20,
     backgroundColor: "#2563eb",
     width: 56,
