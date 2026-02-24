@@ -605,24 +605,83 @@ function BookingDetailModal({ booking, onClose }) {
             </View>
 
             {/* Service Tracker */}
-            <View style={styles.trackerSection}>
-              <Text style={styles.sectionTitle}>Service Progress</Text>
-              <View style={styles.trackerContainer}>
-                {STATUS_FLOW.map((status, index) => {
-                  const isCompleted = index <= STATUS_FLOW.indexOf(booking.normalizedStatus || "");
-                  return (
-                    <View key={status} style={styles.stepWrapper}>
-                      <View style={[styles.circle, isCompleted && styles.activeCircle]}>
-                        <Text style={[styles.stepText, isCompleted && styles.activeText]}>
-                          {index + 1}
-                        </Text>
-                      </View>
-                      <Text style={styles.stepLabel}>{status.replace(/_/g, " ")}</Text>
-                    </View>
-                  );
-                })}
-              </View>
-            </View>
+            <View style={styles.trackerMainContainer}>
+  {/* Line + Circles Row */}
+  <View style={styles.lineContainer}>
+    {STATUS_FLOW.map((status, index) => {
+      const currentIndex = STATUS_FLOW.indexOf(
+        booking.normalizedStatus
+      );
+      const isCompleted = index <= currentIndex;
+
+      return (
+        <View
+          key={status}
+          style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+        >
+          <View
+            style={[
+              styles.trackerCircle,
+              isCompleted && styles.trackerActiveCircle,
+            ]}
+          >
+            <Text
+              style={[
+                styles.trackerCircleText,
+                isCompleted && styles.trackerActiveText,
+              ]}
+            >
+              {index + 1}
+            </Text>
+          </View>
+
+          {index !== STATUS_FLOW.length - 1 && (
+            <View
+              style={[
+                styles.trackerLine,
+                index < currentIndex && styles.trackerActiveLine,
+              ]}
+            />
+          )}
+        </View>
+      );
+    })}
+  </View>
+
+  {/* CURRENT STATUS */}
+  <View style={styles.currentStatusContainer}>
+    <Text style={styles.currentStatusLabel}>
+      Current Status
+    </Text>
+
+    <Text style={styles.currentStatusValue}>
+      {STATUS_LABELS[booking.normalizedStatus]}
+    </Text>
+  </View>
+
+  {/* LEGEND LIST */}
+  <View style={styles.statusLegendContainer}>
+    {STATUS_FLOW.map((status, index) => {
+      const currentIndex = STATUS_FLOW.indexOf(
+        booking.normalizedStatus
+      );
+      const isCurrent = index === currentIndex;
+
+      return (
+        <View key={status} style={styles.legendRow}>
+          <Text
+            style={[
+              styles.statusLegendText,
+              isCurrent && styles.statusLegendActiveText,
+            ]}
+          >
+            {index + 1} - {STATUS_LABELS[status]}
+          </Text>
+        </View>
+      );
+    })}
+  </View>
+</View>
 
             {/* Close Button */}
             <TouchableOpacity
@@ -1224,4 +1283,88 @@ const styles = StyleSheet.create({
     color: "#d1d5db",
     width: 110,
   },
+
+  trackerMainContainer: {
+  marginTop: 20,
+  marginBottom: 30,
+},
+
+lineContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+trackerCircle: {
+  width: 30,
+  height: 30,
+  borderRadius: 15,
+  backgroundColor: "#1f2937",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 2,
+},
+
+trackerActiveCircle: {
+  backgroundColor: "#38bdf8",
+},
+
+trackerCircleText: {
+  color: "#9ca3af",
+  fontWeight: "700",
+  fontSize: 12,
+},
+
+trackerActiveText: {
+  color: "#000",
+},
+
+trackerLine: {
+  flex: 1,
+  height: 3,
+  backgroundColor: "#374151",
+},
+
+trackerActiveLine: {
+  backgroundColor: "#38bdf8",
+},
+
+currentStatusContainer: {
+  marginTop: 20,
+  alignItems: "center",
+},
+
+currentStatusLabel: {
+  color: "#94a3b8",
+  fontSize: 13,
+  marginBottom: 6,
+},
+
+currentStatusValue: {
+  color: "#38bdf8",
+  fontSize: 18,
+  fontWeight: "700",
+},
+
+statusLegendContainer: {
+  marginTop: 20,
+  borderTopWidth: 1,
+  borderTopColor: "rgba(56, 189, 248, 0.2)",
+  paddingTop: 15,
+},
+
+legendRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 8,
+},
+
+statusLegendText: {
+  color: "#cbd5e1",
+  fontSize: 13,
+},
+
+statusLegendActiveText: {
+  color: "#38bdf8",
+  fontWeight: "700",
+},
 });
