@@ -42,7 +42,7 @@ export default function Checkout() {
     const router = useRouter();
     const params = useLocalSearchParams();
     const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
-const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+    const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
     const [uid, setUid] = useState<string | null>(null);
     const [items, setItems] = useState<any[]>([]);
@@ -62,52 +62,69 @@ const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
     useEffect(() => {
         if (!uid) return;
 
-        const loadCart = async () => {
-            const snap = await getDocs(collection(db, "users", uid, "cart"));
-            setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        const loadData = async () => {
+            // 🟢 BUY NOW FLOW
+            if (isBuyNow) {
+                setItems([
+                    {
+                        id: params.docId,
+                        docId: params.docId,
+                        name: params.name,
+                        price: Number(params.price),
+                        image: params.image,
+                        sku: params.sku,
+                        quantity: Number(params.quantity),
+                    },
+                ]);
+            }
+            // 🔵 NORMAL CART FLOW
+            else {
+                const snap = await getDocs(collection(db, "users", uid, "cart"));
+                setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+            }
         };
 
-        loadCart();
-    }, [uid]);
+        loadData();
+    }, [uid, isBuyNow]);
 
     useEffect(() => {
-    if (!uid) return;
+        if (!uid) return;
 
-    const loadAddresses = async () => {
-        const snap = await getDocs(
-            collection(db, "users", uid, "addresses")
-        );
+        const loadAddresses = async () => {
+            const snap = await getDocs(
+                collection(db, "users", uid, "addresses")
+            );
 
-        const list = snap.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-        }));
+            const list = snap.docs.map((d) => ({
+                id: d.id,
+                ...d.data(),
+            }));
 
-        setSavedAddresses(list);
+            setSavedAddresses(list);
 
-        // ✅ Auto select first address (optional)
-        if (list.length > 0) {
-            selectAddress(list[0]);
-        }
+            // ✅ Auto select first address (optional)
+            if (list.length > 0) {
+                selectAddress(list[0]);
+            }
+        };
+
+        loadAddresses();
+    }, [uid]);
+
+    const selectAddress = (addr: any) => {
+        setSelectedAddressId(addr.id);
+
+        setShipping({
+            name: addr.fullName,
+            email: addr.email || "",
+            phone: addr.phone,
+            address: addr.street,
+            city: addr.city,
+            state: addr.state,
+            zip: addr.pinCode,
+            country: addr.country || "India",
+        });
     };
-
-    loadAddresses();
-}, [uid]);
-
-const selectAddress = (addr: any) => {
-    setSelectedAddressId(addr.id);
-
-    setShipping({
-        name: addr.fullName,
-        email: addr.email || "",
-        phone: addr.phone,
-        address: addr.street,
-        city: addr.city,
-        state: addr.state,
-        zip: addr.pinCode,
-        country: addr.country || "India",
-    });
-};
 
     // ================= SHIPPING =================
     const [shipping, setShipping] = useState({
@@ -159,22 +176,22 @@ const selectAddress = (addr: any) => {
 
         await reduceStockAfterPurchase(items);
 
-       try {
-    await saveUserAddress(uid, {
-        fullName: shipping.name,
-        email: shipping.email,
-        phone: shipping.phone,
-        street: shipping.address,
-        city: shipping.city,
-        state: shipping.state,
-        pinCode: shipping.zip,
-    });
-} catch (err: any) {
-    if (err.message !== "DUPLICATE_ADDRESS") {
-        throw err; // real error
-    }
-    // duplicate address → ignore and continue order
-}
+        try {
+            await saveUserAddress(uid, {
+                fullName: shipping.name,
+                email: shipping.email,
+                phone: shipping.phone,
+                street: shipping.address,
+                city: shipping.city,
+                state: shipping.state,
+                pinCode: shipping.zip,
+            });
+        } catch (err: any) {
+            if (err.message !== "DUPLICATE_ADDRESS") {
+                throw err; // real error
+            }
+            // duplicate address → ignore and continue order
+        }
 
         const orderNumber = await generateOrderNumber();
 
@@ -206,7 +223,9 @@ const selectAddress = (addr: any) => {
             setDoc(userOrderRef, orderData),
         ]);
 
-        await clearCart();
+        if (!isBuyNow) {
+            await clearCart();
+        }
 
         Alert.alert("Success", `Order ${orderNumber} placed`);
         router.push({
@@ -216,96 +235,96 @@ const selectAddress = (addr: any) => {
     };
 
     // ================= PLACE ORDER =================
-   const placeOrder = async () => {
-    if (!items.length) {
-        Alert.alert("Cart is empty");
-        return;
-    }
-
-    if (!shipping.name || !shipping.phone || !shipping.address) {
-        Alert.alert("Fill delivery details");
-        return;
-    }
-
-    setPlacing(true);
-
-    try {
-        // 🟢 CASH FLOW
-        if (paymentMethod === "CASH") {
-            await saveOrder();
+    const placeOrder = async () => {
+        if (!items.length) {
+            Alert.alert("Cart is empty");
+            return;
         }
 
-        // 🔵 ONLINE FLOW
-        if (paymentMethod === "ONLINE") {
-            const options = {
-                key: "rzp_test_SGj8n5SyKSE10b", // replace later with live key
-                amount: total * 100,
-                currency: "INR",
-                name: "Car Service Booking",
-                description: "Order Payment",
-                prefill: {
-                    name: shipping.name,
-                    email: shipping.email,
-                    contact: shipping.phone,
-                },
-                theme: { color: "#0EA5E9" },
-            };
-
-            const data = await RazorpayCheckout.open(options);
-
-            // Payment success → save order
-            await saveOrder();
+        if (!shipping.name || !shipping.phone || !shipping.address) {
+            Alert.alert("Fill delivery details");
+            return;
         }
-    } catch (err: any) {
-        Alert.alert("Payment Failed", err?.description || err?.message);
-    } finally {
-        setPlacing(false);
-    }
-};
+
+        setPlacing(true);
+
+        try {
+            // 🟢 CASH FLOW
+            if (paymentMethod === "CASH") {
+                await saveOrder();
+            }
+
+            // 🔵 ONLINE FLOW
+            if (paymentMethod === "ONLINE") {
+                const options = {
+                    key: "rzp_test_SGj8n5SyKSE10b", // replace later with live key
+                    amount: total * 100,
+                    currency: "INR",
+                    name: "Car Service Booking",
+                    description: "Order Payment",
+                    prefill: {
+                        name: shipping.name,
+                        email: shipping.email,
+                        contact: shipping.phone,
+                    },
+                    theme: { color: "#0EA5E9" },
+                };
+
+                const data = await RazorpayCheckout.open(options);
+
+                // Payment success → save order
+                await saveOrder();
+            }
+        } catch (err: any) {
+            Alert.alert("Payment Failed", err?.description || err?.message);
+        } finally {
+            setPlacing(false);
+        }
+    };
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
-           <KeyboardAwareScrollView
-  style={{ flex: 1 }}
-  contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
-  enableOnAndroid={true}
-  extraScrollHeight={20}
-  keyboardShouldPersistTaps="handled"
-  showsVerticalScrollIndicator={false}
->
+            <KeyboardAwareScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+                enableOnAndroid={true}
+                extraScrollHeight={20}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+            >
                 <Text style={styles.heading}>Checkout</Text>
 
                 {/* SAVED ADDRESSES */}
-{savedAddresses.length > 0 && (
-    <>
-        <Text style={styles.section}>Saved Addresses</Text>
+                {savedAddresses.length > 0 && (
+                    <>
+                        <Text style={styles.section}>Saved Addresses</Text>
 
-        {savedAddresses.map((addr) => (
-            <TouchableOpacity
-                key={addr.id}
-                onPress={() => selectAddress(addr)}
-                style={[
-                    styles.addressCard,
-                    selectedAddressId === addr.id && {
-                        borderColor: "#0EA5E9",
-                        borderWidth: 2,
-                    },
-                ]}
-            >
-                <Text style={styles.itemText}>{addr.fullName}</Text>
-                <Text style={{ color: "#94A3B8", fontSize: 13 }}>
-                    {addr.street}, {addr.city}
-                </Text>
-                <Text style={{ color: "#94A3B8", fontSize: 13 }}>
-                    {addr.state} - {addr.pinCode}
-                </Text>
-                <Text style={{ color: "#94A3B8", fontSize: 13 }}>
-                    {addr.phone}
-                </Text>
-            </TouchableOpacity>
-        ))}
-    </>
-)}
+                        {savedAddresses.map((addr) => (
+                            <TouchableOpacity
+                                key={addr.id}
+                                onPress={() => selectAddress(addr)}
+                                style={[
+                                    styles.addressCard,
+                                    selectedAddressId === addr.id && {
+                                        borderColor: "#0EA5E9",
+                                        borderWidth: 2,
+                                    },
+                                ]}
+                            >
+                                <Text style={styles.itemText}>{addr.fullName}</Text>
+                                <Text style={{ color: "#94A3B8", fontSize: 13 }}>
+                                    {addr.street}, {addr.city}
+                                </Text>
+                                <Text style={{ color: "#94A3B8", fontSize: 13 }}>
+                                    {addr.state} - {addr.pinCode}
+                                </Text>
+                                <Text style={{ color: "#94A3B8", fontSize: 13 }}>
+                                    {addr.phone}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </>
+                )}
 
                 {/* SHIPPING */}
                 <Text style={styles.section}>Shipping</Text>
@@ -460,11 +479,11 @@ const styles = StyleSheet.create({
         color: "#FFF",
     },
     addressCard: {
-    backgroundColor: "#111827",
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 12,
-},
+        backgroundColor: "#111827",
+        padding: 14,
+        borderRadius: 12,
+        marginBottom: 12,
+    },
     totalRow: {
         flexDirection: "row",
         justifyContent: "space-between",

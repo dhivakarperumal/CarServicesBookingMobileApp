@@ -209,7 +209,20 @@ export default function ProductDetails() {
 
                 <TouchableOpacity
                     style={styles.buyBtn}
-                    onPress={() => router.push("/(app)/checkout")}
+                    onPress={() =>
+                        router.push({
+                            pathname: "/(app)/checkout",
+                            params: {
+                                isBuyNow: "true",
+                                docId: product.docId,
+                                name: product.name,
+                                price: product.offerPrice,
+                                image: product.images?.[0],
+                                sku: variant.sku,
+                                quantity: qty,
+                            },
+                        })
+                    }
                 >
                     <Text style={styles.buyText}>Buy Now</Text>
                 </TouchableOpacity>

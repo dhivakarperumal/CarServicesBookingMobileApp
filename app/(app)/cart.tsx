@@ -1,4 +1,4 @@
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
     collection,
@@ -26,11 +26,23 @@ export default function Cart() {
     const router = useRouter();
     const user = auth.currentUser;
 
+    // if the cart screen is the app's entry point (no back history)
+    // expo-router tends to preserve the last visited path across reloads,
+    // which meant reloading while on /cart would reopen the cart. admins
+    // and normal users expect to start on the home tab instead. we only
+    // redirect when there's no ability to go back, so a normal navigation
+    // to cart from home still works.
+    useEffect(() => {
+        if (typeof router.canGoBack === "function" && !router.canGoBack()) {
+            router.replace("/(tabs)");
+        }
+    }, []);
+
     const handleBack = () => {
         // prefer router.canGoBack if available
         if (typeof router.canGoBack === "function") {
             if (router.canGoBack()) return router.back();
-            return router.replace("/(tabs)/index");
+            return router.replace("/(tabs)");
         }
 
         // fallback: try back then replace to home

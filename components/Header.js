@@ -4,13 +4,13 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
-  Image,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Image,
+    Modal,
+    Pressable,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { auth, db } from "../firebase";
@@ -41,12 +41,18 @@ export default function MobileNavbar() {
         const data = snap.data();
         setUserData(data);
 
-        // 🔥 AUTO REDIRECT BASED ON ROLE
-        if (data.role === "admin") {
-          router.replace("/(adminTabs)/home");
-        } else if (data.role === "mechanic") {
-          router.replace("/(EmployeesDash)/dashboard");
-        }
+        // 🔥 previously we used to auto‑redirect here based on role.
+      //    that made sense during login, but Header is mounted on every
+      //    public screen (tabs/app) so it would kick an admin back to the
+      //    admin panel whenever they tried to visit the normal homepage.
+      //    the login page already handles role redirects, so drop this
+      //    logic entirely to let admins stay on (tabs) if they choose.
+      //
+      // if (data.role === "admin") {
+      //   router.replace("/(adminTabs)/home");
+      // } else if (data.role === "mechanic") {
+      //   router.replace("/(EmployeesDash)/dashboard");
+      // }
       }
 
       // 🔥 LISTEN TO CART

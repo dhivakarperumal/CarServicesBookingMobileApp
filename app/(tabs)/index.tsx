@@ -1,9 +1,10 @@
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import { Animated } from "react-native";
+import { collection, onSnapshot, orderBy, query, where, doc, getDoc } from "firebase/firestore";
 import {
   Modal,
   ScrollView,
@@ -13,6 +14,8 @@ import {
   View
 } from "react-native";
 import { auth, db } from "../../firebase";
+import { Dimensions, Image, Linking } from "react-native";
+import { WebView } from "react-native-webview";
 
 const STATUS_FLOW = [
   "BOOKED",
@@ -52,20 +55,124 @@ const STATUS_NORMALIZER = {
   Cancelled: "CANCELLED",
 };
 
+const whyData = [
+  {
+    title: "Certified Mechanics",
+    subtitle: "Experienced & verified professionals",
+    icon: <FontAwesome5 name="tools" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "Pickup & Drop",
+    subtitle: "Doorstep vehicle collection",
+    icon: <Ionicons name="car-sport-outline" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "Genuine Parts",
+    subtitle: "100% authentic spare parts",
+    icon: <Ionicons name="shield-checkmark-outline" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "Quick Service",
+    subtitle: "Fast turnaround time",
+    icon: <Ionicons name="flash-outline" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "Affordable Pricing",
+    subtitle: "Transparent pricing system",
+    icon: <Ionicons name="cash-outline" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "Service Warranty",
+    subtitle: "Guaranteed workmanship",
+    icon: <Ionicons name="ribbon-outline" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "24/7 Support",
+    subtitle: "Always available for help",
+    icon: <Ionicons name="headset-outline" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "Live Tracking",
+    subtitle: "Track service progress",
+    icon: <Ionicons name="location-outline" size={20} color="#0EA5E9" />,
+  },
+];
+
+const { width } = Dimensions.get("window");
+
+const HORIZONTAL_PADDING = 20; // same as ScrollView paddingHorizontal
+const CARD_MARGIN = 12;
+
+const CARD_WIDTH =
+  (width - HORIZONTAL_PADDING * 2 - CARD_MARGIN) / 2;
+
+const extendedWhyData = [...whyData, ...whyData];
+
 export default function HomeScreen({ navigation }) {
+
   const router = useRouter();
   const [services, setServices] = useState([]);
   const [allBookings, setAllBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [username, setUsername] = useState("");
+
+  const [reviews, setReviews] = useState([]);
+
+  const carAnim = useRef(new Animated.Value(0)).current;
+
+  const whyListRef = useRef(null);
+  const scrollX = useRef(0);
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "BOOKED":
+        return "#3B82F6";
+      case "PROCESSING":
+      case "SERVICE_GOING":
+        return "#F59E0B";
+      case "SERVICE_COMPLETED":
+        return "#10B981";
+      case "CANCELLED":
+        return "#EF4444";
+      default:
+        return "#0EA5E9";
+    }
+  };
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(carAnim, {
+          toValue: 10,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(carAnim, {
+          toValue: -10,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   // Fetch current user
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      if (u) {
+        setUser(u);
+
+        // 🔥 Fetch username from Firestore
+        const userDoc = await getDoc(doc(db, "users", u.uid));
+        if (userDoc.exists()) {
+          setUsername(userDoc.data().username);
+        }
+      }
       setLoading(false);
     });
+
     return unsub;
   }, []);
 
@@ -108,46 +215,161 @@ export default function HomeScreen({ navigation }) {
 
     return () => unsub();
   }, [user]);
+
+  // Fetch reviews
+  useEffect(() => {
+    const q = query(
+      collection(db, "reviews"),
+      where("status", "==", true),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setReviews(data);
+    });
+
+    return () => unsub();
+  }, []);
+
+  // why swiper auto-scroll
+  useEffect(() => {
+    let index = 0;
+
+    const interval = setInterval(() => {
+      if (!whyListRef.current) return;
+
+      index++;
+
+      whyListRef.current.scrollToOffset({
+        offset: index * (CARD_WIDTH + CARD_MARGIN),
+        animated: true,
+      });
+
+      // reset silently after half (no visible jump)
+      if (index >= whyData.length) {
+        index = 0;
+
+        setTimeout(() => {
+          whyListRef.current?.scrollToOffset({
+            offset: 0,
+            animated: false,
+          });
+        }, 400);
+      }
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
 
-      {/* HEADER */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.welcome}>Welcome Back 👋</Text>
-          <Text style={styles.title}>Car Care Service</Text>
-        </View>
+      {/* PREMIUM WELCOME BANNER */}
+      <LinearGradient
+        colors={["#0EA5E9", "#2563EB"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.bannerContainer}
+      >
+        <Text style={styles.bannerWelcome}>
+          Welcome Back
+          {username ? (
+            <Text style={styles.highlightName}>, {username}</Text>
+          ) : null}
+          {" 👋"}
+        </Text>
+        {/* Animated Car */}
+        {/* <Animated.View
+          style={[
+            styles.carTopWrapper,
+            { transform: [{ translateX: carAnim }] },
+          ]}
+        >
+          <FontAwesome5 name="car-side" size={60} color="#fff" />
+        </Animated.View> */}
 
-        <TouchableOpacity style={styles.iconCircle}>
-          <Ionicons name="notifications-outline" size={22} color="#0EA5E9" />
+        <Text style={styles.bannerTitle}>
+          Premium Car Care Service
+        </Text>
+
+        <Text style={styles.bannerSubtitle}>
+          Book trusted mechanics at your doorstep
+        </Text>
+
+        <TouchableOpacity
+          style={styles.bannerButton}
+          onPress={() => router.push("/(tabs)/booking")}
+        >
+          <Ionicons name="car-outline" size={18} color="#0EA5E9" />
+          <Text style={styles.bannerButtonText}>Book Now</Text>
         </TouchableOpacity>
-      </View>
+      </LinearGradient>
 
       {/* ACTIVE BOOKING */}
       {allBookings.length > 0 && (
         <>
-          <Text style={styles.sectionTitle}>My Bookings</Text>
+          <View style={styles.premiumSectionHeader}>
+            <View style={styles.premiumAccent} />
+            <Text style={styles.premiumSectionTitle}>
+              My Bookings
+            </Text>
+          </View>
 
           <View style={styles.bookingsContainer}>
             {allBookings.map((booking) => (
               <TouchableOpacity
                 key={booking.id}
-                style={styles.bookingCard}
+                style={styles.premiumCard}
                 onPress={() => setSelectedBooking(booking)}
+                activeOpacity={0.85}
               >
-                <View style={styles.bookingTop}>
-                  <View>
-                    <Text style={styles.carName}>{booking.brand} - {booking.model}</Text>
-                    <Text style={styles.serviceName}>{booking.issue}</Text>
+                {/* Top Row */}
+                <View style={styles.cardTopRow}>
+                  <View style={styles.carIconBox}>
+                    <FontAwesome5 name="car" size={18} color="#0EA5E9" />
                   </View>
-                  <View style={styles.statusBadge}>
-                    <Text style={styles.statusText}>{STATUS_LABELS[booking.normalizedStatus]}</Text>
+
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={styles.premiumCarName}>
+                      {booking.brand} {booking.model}
+                    </Text>
+                    <Text style={styles.premiumService}>
+                      {booking.issue}
+                    </Text>
+                  </View>
+
+                  <View
+                    style={[
+                      styles.premiumStatus,
+                      { backgroundColor: getStatusColor(booking.normalizedStatus) },
+                    ]}
+                  >
+                    <Text style={styles.premiumStatusText}>
+                      {STATUS_LABELS[booking.normalizedStatus]}
+                    </Text>
                   </View>
                 </View>
 
-                <View style={styles.bookingFooter}>
-                  <Text style={styles.smallText}>ID: {booking.bookingId}</Text>
-                  <Text style={styles.smallText}>{booking.name}</Text>
+                {/* Divider */}
+                <View style={styles.cardDivider} />
+
+                {/* Bottom Row */}
+                <View style={styles.cardBottomRow}>
+                  <Text style={styles.bookingIdText}>
+                    ID: {booking.bookingId}
+                  </Text>
+
+                  <View style={styles.viewDetailsRow}>
+                    <Text style={styles.viewDetailsText}>
+                      Tap to view details
+                    </Text>
+                    <Ionicons name="chevron-forward" size={16} color="#0EA5E9" />
+                  </View>
                 </View>
               </TouchableOpacity>
             ))}
@@ -162,48 +384,146 @@ export default function HomeScreen({ navigation }) {
         </>
       )}
 
-
-      <View style={styles.contentWrapper}>
-
-        {/* SERVICES */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Services</Text>
-          <TouchableOpacity onPress={() => router.push("/(tabs)/services")}>
-            <Text style={styles.linkText}>View All →</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.servicesGrid}>
-          {services.map((service) => (
-            <ServiceCard
-              key={service.id}
-              icon={<FontAwesome5 name="car" size={24} color="#0EA5E9" />}
-              title={service.name}
-            />
-          ))}
-        </View>
-
-        {/* BOOK BUTTON */}
-        <TouchableOpacity
-          style={styles.bookButton}
-          onPress={() => router.push("/(tabs)/booking")}
-        >
-          <Ionicons name="add-circle-outline" size={20} color="#fff" />
-          <Text style={styles.bookButtonText}>Book New Service</Text>
-        </TouchableOpacity>
+      {/* WHY CHOOSE US */}
+      <View style={styles.premiumSectionHeader}>
+        <View style={styles.premiumAccent} />
+        <Text style={styles.premiumSectionTitle}>
+          Why Choose Us
+        </Text>
       </View>
+
+      <Animated.FlatList
+        ref={whyListRef}
+        data={extendedWhyData}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.whySwiperCard}>
+            <View style={styles.whyIconBoxLarge}>
+              {item.icon}
+            </View>
+            <Text style={styles.whySwiperTitle}>{item.title}</Text>
+            <Text style={styles.whySwiperSubtitle}>{item.subtitle}</Text>
+          </View>
+        )}
+        contentContainerStyle={{ paddingHorizontal: 10 }}
+        snapToInterval={CARD_WIDTH + CARD_MARGIN}
+        decelerationRate="fast"
+      />
+
+      {/* customer reviews */}
+      <View style={styles.premiumSectionHeader}>
+        <View style={styles.premiumAccent} />
+        <Ionicons name="star-outline" size={18} color="#0EA5E9" style={{ marginRight: 6 }} />
+        <Text style={styles.premiumSectionTitle}>
+          Customer Reviews
+        </Text>
+      </View>
+      
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingRight: 20 }}
+      >
+        {reviews.map((item) => (
+          <View key={item.id} style={styles.reviewCard}>
+
+            {/* Profile Row */}
+            <View style={styles.reviewHeader}>
+              <View style={styles.reviewAvatar}>
+                {item.image ? (
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.reviewImage}
+                  />
+                ) : (
+                  <Ionicons name="person" size={20} color="#0EA5E9" />
+                )}
+              </View>
+
+              <View style={{ marginLeft: 10 }}>
+                <Text style={styles.reviewName}>{item.name}</Text>
+
+                {/* Rating */}
+                <View style={styles.ratingRow}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Ionicons
+                      key={star}
+                      name={star <= item.rating ? "star" : "star-outline"}
+                      size={14}
+                      color="#FBBF24"
+                    />
+                  ))}
+                </View>
+              </View>
+            </View>
+
+            {/* Message */}
+            <Text style={styles.reviewMessage}>
+              "{item.message}"
+            </Text>
+
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* CONTACT US */}
+      <View style={styles.premiumSectionHeader}>
+        <View style={styles.premiumAccent} />
+        <Ionicons name="call-outline" size={18} color="#0EA5E9" style={{ marginRight: 6 }} />
+        <Text style={styles.premiumSectionTitle}>
+          Contact Us
+        </Text>
+      </View>
+
+      <View style={styles.contactCard}>
+
+        {/* Phone */}
+        <View style={styles.contactRow}>
+          <Ionicons name="call" size={18} color="#0EA5E9" />
+          <Text style={styles.contactText}>+91 98765 43210</Text>
+        </View>
+
+        {/* Email */}
+        <View style={styles.contactRow}>
+          <Ionicons name="mail" size={18} color="#0EA5E9" />
+          <Text style={styles.contactText}>support@carservice.com</Text>
+        </View>
+
+        {/* Address */}
+        <View style={styles.contactRow}>
+          <Ionicons name="location" size={18} color="#0EA5E9" />
+          <Text style={styles.contactText}>
+            No. 24, Anna Nagar, Chennai, Tamil Nadu
+          </Text>
+        </View>
+
+      </View>
+
+      {/* Map */}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() =>
+          Linking.openURL(
+            "https://maps.app.goo.gl/kv7qjVpYMpcXuzx17"
+          )
+        }
+      >
+        <LinearGradient
+          colors={["#0EA5E9", "#2563EB"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientMapButton}
+        >
+          <Ionicons name="navigate" size={18} color="#fff" />
+          <Text style={styles.gradientMapText}>
+            Get Directions
+          </Text>
+        </LinearGradient>
+      </TouchableOpacity>
+
     </ScrollView>
-  );
-}
-
-/* ================= SERVICE CARD COMPONENT ================= */
-
-function ServiceCard({ icon, title }) {
-  return (
-    <TouchableOpacity style={styles.serviceCard}>
-      <View style={styles.serviceIcon}>{icon}</View>
-      <Text style={styles.serviceText}>{title}</Text>
-    </TouchableOpacity>
   );
 }
 
@@ -322,9 +642,138 @@ function BookingDetailModal({ booking, onClose }) {
 
 const styles = StyleSheet.create({
 
+  bannerContainer: {
+    borderRadius: 24,
+    padding: 18,
+    marginBottom: 30,
+    alignItems: "center",
+  },
+
+  carTopWrapper: {
+    marginBottom: 1,
+  },
+
+  bannerWelcome: {
+    color: "#E0F2FE",
+    fontSize: 13,
+    fontWeight: "500",
+    textAlign: "center",
+    paddingBottom: 10,
+  },
+
+  bannerTitle: {
+    color: "#FFFFFF",
+    fontSize: 22,
+    fontWeight: "800",
+    marginTop: 6,
+    textAlign: "center",
+  },
+
+  highlightName: {
+    color: "#FFFFFF",
+    fontWeight: "800",
+    fontSize: 17,
+  },
+
+  bannerSubtitle: {
+    color: "#DBEAFE",
+    fontSize: 13,
+    marginTop: 6,
+    textAlign: "center",
+  },
+
+  bannerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 50,
+    marginTop: 18,
+  },
+
+  bannerButtonText: {
+    color: "#0EA5E9",
+    fontWeight: "700",
+    marginLeft: 6,
+  },
+
   contentWrapper: {
     paddingHorizontal: 16,
     paddingVertical: 24,
+  },
+
+  premiumCard: {
+    backgroundColor: "#111827",
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.15)",
+  },
+
+  cardTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  carIconBox: {
+    backgroundColor: "rgba(14,165,233,0.1)",
+    padding: 10,
+    borderRadius: 12,
+  },
+
+  premiumCarName: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
+  premiumService: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    marginTop: 4,
+  },
+
+  premiumStatus: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+  },
+
+  premiumStatusText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  cardDivider: {
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    marginVertical: 14,
+  },
+
+  cardBottomRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  bookingIdText: {
+    color: "#6B7280",
+    fontSize: 12,
+  },
+
+  viewDetailsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  viewDetailsText: {
+    color: "#0EA5E9",
+    fontSize: 12,
+    fontWeight: "600",
+    marginRight: 4,
   },
 
   statsContainer: {
@@ -333,50 +782,118 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
 
-  gradientCard: {
-    flex: 1,
-    padding: 20,
-    borderRadius: 16,
+  // heading 
+  premiumSectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 30,
+    marginBottom: 18,
+  },
+
+  premiumAccent: {
+    width: 2,
+    height: 22,
+    backgroundColor: "#ffffff",
+    borderRadius: 4,
     marginRight: 10,
   },
 
-  statRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  premiumSectionTitle: {
+    color: "#0EA5E9",
+    fontSize: 16,
+    fontWeight: "800",
+    letterSpacing: 0.5,
   },
 
-  statLabelWhite: {
+  // why choose us 
+
+  whyScrollContainer: {
+    paddingRight: 20,
+  },
+
+  whySwiperCard: {
+    width: CARD_WIDTH,
+    backgroundColor: "#111827",
+    borderRadius: 22,
+    padding: 14,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.15)",
+  },
+
+  whyIconBoxLarge: {
+    backgroundColor: "rgba(14,165,233,0.1)",
+    padding: 14,
+    borderRadius: 16,
+    alignSelf: "flex-start",
+    marginBottom: 12,
+  },
+
+  whySwiperTitle: {
     color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "500",
-    marginBottom: 4,
-  },
-
-  statLabelGreen: {
-    color: "#D1FAE5",
-    fontSize: 12,
-    fontWeight: "500",
-    marginBottom: 4,
-  },
-
-  statNumberWhite: {
-    color: "#FFFFFF",
-    fontSize: 28,
+    fontSize: 14,
     fontWeight: "700",
   },
 
-  iconWrapperDark: {
-    backgroundColor: "rgba(0,0,0,0.2)",
-    padding: 12,
-    borderRadius: 50,
+  whySwiperSubtitle: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    marginTop: 6,
+  },
+  // why choose us end
+
+  // reviews
+  reviewCard: {
+    width: width - 40,
+    backgroundColor: "#111827",
+    borderRadius: 22,
+    padding: 16,
+    marginRight: 16,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.15)",
   },
 
-  iconWrapperLight: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    padding: 12,
-    borderRadius: 50,
+  reviewHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
   },
+
+  reviewAvatar: {
+    width: 45,
+    height: 45,
+    borderRadius: 22,
+    backgroundColor: "rgba(14,165,233,0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+
+  reviewImage: {
+    width: "100%",
+    height: "100%",
+  },
+
+  reviewName: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+
+  ratingRow: {
+    flexDirection: "row",
+    marginTop: 4,
+  },
+
+  reviewMessage: {
+    color: "#9CA3AF",
+    fontSize: 13,
+    marginTop: 8,
+    lineHeight: 18,
+  },
+
+
+
   container: {
     flex: 1,
     backgroundColor: "#0B1120",
@@ -384,55 +901,10 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
 
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 30,
-  },
-
-  welcome: {
-    color: "#94A3B8",
-    fontSize: 14,
-  },
-
   title: {
     color: "#FFFFFF",
     fontSize: 22,
     fontWeight: "700",
-    marginTop: 4,
-  },
-
-  iconCircle: {
-    backgroundColor: "#111827",
-    padding: 10,
-    borderRadius: 50,
-  },
-
-  statsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 30,
-  },
-
-  statCard: {
-    width: "48%",
-    backgroundColor: "#111827",
-    borderRadius: 16,
-    padding: 20,
-    alignItems: "center",
-  },
-
-  statNumber: {
-    color: "#FFFFFF",
-    fontSize: 22,
-    fontWeight: "700",
-    marginTop: 8,
-  },
-
-  statLabel: {
-    color: "#94A3B8",
-    fontSize: 12,
     marginTop: 4,
   },
 
@@ -520,6 +992,25 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
+  gradientMapButton: {
+    flexDirection: "row",
+    paddingVertical: 13,
+     paddingHorizontal: 24,  
+    borderRadius: 50,          
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 16,
+    alignSelf: "center",
+  },
+
+  gradientMapText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 15,
+    marginLeft: 8,
+    letterSpacing: 0.5,
+  },
+
   statusBadge: {
     backgroundColor: "#0EA5E9",
     paddingHorizontal: 12,
@@ -562,6 +1053,46 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginLeft: 8,
     fontSize: 15,
+  },
+
+  // contact us
+  contactCard: {
+    backgroundColor: "#111827",
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.15)",
+    marginBottom: 20,
+  },
+
+  contactRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  contactText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    marginLeft: 10,
+  },
+
+  mapContainer: {
+    height: 200,
+    borderRadius: 20,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.15)",
+  },
+
+  mapButton: {
+    flexDirection: "row",
+    backgroundColor: "#0EA5E9",
+    paddingVertical: 12,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 16,
   },
 
   /* Modal Styles */

@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { Tabs, useSegments, useRouter } from "expo-router";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Modal,
-  Pressable,
-  ScrollView,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { Tabs, useRouter, useSegments } from "expo-router";
 import { signOut } from "firebase/auth";
-import { auth, db } from "../../firebase";
 import {
   collection,
   onSnapshot,
   query,
-  where,
   Timestamp,
+  where,
 } from "firebase/firestore";
-import { FontAwesome5, MaterialIcons, Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useState } from "react";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { auth, db } from "../../firebase";
 
 /* ================= HEADER ================= */
 function AdminHeader({ title = "Admin" }) {
@@ -226,7 +226,12 @@ function AdminHeader({ title = "Admin" }) {
               label="Home"
               onPress={() => {
                 setMenuVisible(false);
-                router.push("/"); // correct
+                // navigate to the regular user home (tabs group)
+                // pushing "/" was triggering the root layout logic which
+                // immediately redirected admins back to the admin stack.
+                // Use the explicit tabs path so the router stays on the
+                // public home screen.
+                router.replace("/(tabs)");
               }}
             />
 
