@@ -1,9 +1,10 @@
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import { Animated } from "react-native";
+import { collection, onSnapshot, orderBy, query, where, doc, getDoc  } from "firebase/firestore";
 import {
   Modal,
   ScrollView,
@@ -53,21 +54,51 @@ const STATUS_NORMALIZER = {
 };
 
 export default function HomeScreen({ navigation }) {
+
   const router = useRouter();
   const [services, setServices] = useState([]);
   const [allBookings, setAllBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [username, setUsername] = useState("");
+
+  const carAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(carAnim, {
+          toValue: 10,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(carAnim, {
+          toValue: -10,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   // Fetch current user
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
+ useEffect(() => {
+  const unsub = onAuthStateChanged(auth, async (u) => {
+    if (u) {
       setUser(u);
-      setLoading(false);
-    });
-    return unsub;
-  }, []);
+
+      // 🔥 Fetch username from Firestore
+      const userDoc = await getDoc(doc(db, "users", u.uid));
+      if (userDoc.exists()) {
+        setUsername(userDoc.data().username);
+      }
+    }
+    setLoading(false);
+  });
+
+  return unsub;
+}, []);
 
   // Fetch services
   useEffect(() => {
@@ -111,17 +142,48 @@ export default function HomeScreen({ navigation }) {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
-      {/* HEADER */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.welcome}>Welcome Back 👋</Text>
-          <Text style={styles.title}>Car Care Service</Text>
-        </View>
+      {/* PREMIUM WELCOME BANNER */}
+      <LinearGradient
+        colors={["#0EA5E9", "#2563EB"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.bannerContainer}
+      >
+      <Text style={styles.bannerWelcome}>
+  Welcome Back
+  {username ? (
+    <Text style={styles.highlightName}>, {username}</Text>
+  ) : null}
+  {" 👋"}
+</Text>
+        {/* Animated Car */}
+        <Animated.View
+          style={[
+            styles.carTopWrapper,
+            { transform: [{ translateX: carAnim }] },
+          ]}
+        >
+          <FontAwesome5 name="car-side" size={60} color="#fff" />
+        </Animated.View>
 
-        <TouchableOpacity style={styles.iconCircle}>
-          <Ionicons name="notifications-outline" size={22} color="#0EA5E9" />
+        
+
+        <Text style={styles.bannerTitle}>
+          Premium Car Care Service
+        </Text>
+
+        <Text style={styles.bannerSubtitle}>
+          Book trusted mechanics at your doorstep
+        </Text>
+
+        <TouchableOpacity
+          style={styles.bannerButton}
+          onPress={() => router.push("/(tabs)/booking")}
+        >
+          <Ionicons name="car-outline" size={18} color="#0EA5E9" />
+          <Text style={styles.bannerButtonText}>Book Now</Text>
         </TouchableOpacity>
-      </View>
+      </LinearGradient>
 
       {/* ACTIVE BOOKING */}
       {allBookings.length > 0 && (
@@ -162,27 +224,7 @@ export default function HomeScreen({ navigation }) {
         </>
       )}
 
-
       <View style={styles.contentWrapper}>
-
-        {/* SERVICES */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Services</Text>
-          <TouchableOpacity onPress={() => router.push("/(tabs)/services")}>
-            <Text style={styles.linkText}>View All →</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.servicesGrid}>
-          {services.map((service) => (
-            <ServiceCard
-              key={service.id}
-              icon={<FontAwesome5 name="car" size={24} color="#0EA5E9" />}
-              title={service.name}
-            />
-          ))}
-        </View>
-
         {/* BOOK BUTTON */}
         <TouchableOpacity
           style={styles.bookButton}
@@ -193,17 +235,6 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
     </ScrollView>
-  );
-}
-
-/* ================= SERVICE CARD COMPONENT ================= */
-
-function ServiceCard({ icon, title }) {
-  return (
-    <TouchableOpacity style={styles.serviceCard}>
-      <View style={styles.serviceIcon}>{icon}</View>
-      <Text style={styles.serviceText}>{title}</Text>
-    </TouchableOpacity>
   );
 }
 
@@ -321,6 +352,62 @@ function BookingDetailModal({ booking, onClose }) {
 /* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
+
+  bannerContainer: {
+    borderRadius: 24,
+    padding: 18,
+    marginBottom: 30,
+    alignItems: "center",
+  },
+
+  carTopWrapper: {
+    marginBottom: 1,
+  },
+
+  bannerWelcome: {
+    color: "#E0F2FE",
+    fontSize: 13,
+    fontWeight: "500",
+    textAlign: "center",
+    paddingBottom: 10,
+  },
+
+  bannerTitle: {
+    color: "#FFFFFF",
+    fontSize: 22,
+    fontWeight: "800",
+    marginTop: 6,
+    textAlign: "center",
+  },
+
+  highlightName: {
+  color: "#FFFFFF",
+  fontWeight: "800",
+  fontSize: 17,
+},
+
+  bannerSubtitle: {
+    color: "#DBEAFE",
+    fontSize: 13,
+    marginTop: 6,
+    textAlign: "center",
+  },
+
+  bannerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 50,
+    marginTop: 18,
+  },
+
+  bannerButtonText: {
+    color: "#0EA5E9",
+    fontWeight: "700",
+    marginLeft: 6,
+  },
 
   contentWrapper: {
     paddingHorizontal: 16,
