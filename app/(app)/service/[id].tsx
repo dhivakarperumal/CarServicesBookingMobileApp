@@ -3,13 +3,13 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { db } from "../../../firebase";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -55,60 +55,68 @@ export default function ServiceDetails() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* BACK BUTTON */}
-      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={18} color="#0EA5E9" />
-        <Text style={styles.backText}>BACK</Text>
-      </TouchableOpacity>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
-      {/* HERO IMAGE */}
-      <View style={styles.imageWrapper}>
-        <Image source={{ uri: service.image }} style={styles.image} />
-      </View>
+        {/* HERO IMAGE */}
+        <View style={styles.imageWrapper}>
+          <Image source={{ uri: service.image }} style={styles.image} />
+        </View>
 
-      {/* CONTENT */}
-      <View style={styles.content}>
-        <Text style={styles.title}>{service.name}</Text>
+        <View style={styles.content}>
+          {/* SERVICE CODE */}
+          <Text style={styles.serviceCode}>{service.SE003 || "SERVICE"}</Text>
 
-        <Text style={styles.description}>{service.description}</Text>
+          {/* IMAGE NAME */}
+          <Text style={styles.title}>
+            {service["image name"] || service.name}
+          </Text>
 
-        {/* FEATURES */}
-        {service.features && (
-          <View style={styles.featuresContainer}>
-            {service.features.map((item: string, index: number) => (
-              <View key={index} style={styles.featureRow}>
-                <View style={styles.dot} />
-                <Text style={styles.featureText}>{item}</Text>
+          {/* PRICE */}
+          <Text style={styles.price}>₹ {service.price?.toLocaleString()}</Text>
+
+          {/* DESCRIPTION */}
+          <Text style={styles.sectionTitle}>DESCRIPTION</Text>
+          <Text style={styles.description}>{service.description}</Text>
+
+         
+
+          {/* SUPPORTED BRANDS */}
+          {service.supportedBrands?.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>SUPPORTED BRANDS</Text>
+              <View style={styles.brandContainer}>
+                {service.supportedBrands.map((brand: string, index: number) => (
+                  <View key={index} style={styles.brandTag}>
+                    <Text style={styles.brandText}>{brand}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-        )}
+            </>
+          )}
 
-        {/* CTA */}
-        <TouchableOpacity style={styles.bookButton}>
-          <Text style={styles.bookText}>BOOK THIS SERVICE</Text>
-        </TouchableOpacity>
-      </View>
+           {/* SPARE PARTS */}
+          {service.sparePartsIncluded?.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>SPARE PARTS INCLUDED</Text>
+              {service.sparePartsIncluded.map((item: string, index: number) => (
+                <View key={index} style={styles.featureRow}>
+                  <View style={styles.dot} />
+                  <Text style={styles.featureText}>{item}</Text>
+                </View>
+              ))}
+            </>
+          )}
 
-      {/* INFO CARDS */}
-      <View style={styles.infoSection}>
-        <InfoCard title="SERVICE TYPE" value={service.type || "Premium"} />
-        <InfoCard title="DURATION" value={service.duration || "2 – 3 Hours"} />
-        <InfoCard title="WARRANTY" value={service.warranty || "6 Months"} />
-      </View>
-    </ScrollView>
+          {/* CTA */}
+          <TouchableOpacity style={styles.bookButton} onPress={() => router.push("/(tabs)/booking")}>
+            <Text style={styles.bookText}>BOOK SERVICE</Text>
+          </TouchableOpacity>
+        </View>
+
+      </ScrollView>
     </SafeAreaView>
   );
 }
-
-/* INFO CARD COMPONENT */
-const InfoCard = ({ title, value }: any) => (
-  <View style={styles.infoCard}>
-    <Text style={styles.infoTitle}>{title}</Text>
-    <Text style={styles.infoValue}>{value}</Text>
-  </View>
-);
 
 /* ================= STYLES ================= */
 
@@ -193,12 +201,58 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
+  serviceCode: {
+    color: "#0EA5E9",
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 2,
+    marginBottom: 6,
+  },
+
+  price: {
+    color: "#22C55E",
+    fontSize: 22,
+    fontWeight: "800",
+    marginBottom: 20,
+  },
+
+  sectionTitle: {
+    color: "#0EA5E9",
+    fontSize: 15,
+    fontWeight: "800",
+    letterSpacing: 2,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+
+  brandContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginBottom: 15,
+  },
+
+  brandTag: {
+    borderWidth: 1,
+    borderColor: "#0EA5E9",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+
+  brandText: {
+    color: "#0EA5E9",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
   bookButton: {
     backgroundColor: "#0EA5E9",
     paddingVertical: 14,
     borderRadius: 6,
     alignItems: "center",
     marginBottom: 30,
+    marginTop:20,
   },
 
   bookText: {
@@ -206,33 +260,5 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     fontSize: 12,
     letterSpacing: 2,
-  },
-
-  infoSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-  },
-
-  infoCard: {
-    backgroundColor: "#0b0f14",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-    padding: 20,
-    marginBottom: 15,
-    alignItems: "center",
-  },
-
-  infoTitle: {
-    color: "#0EA5E9",
-    fontSize: 11,
-    fontWeight: "800",
-    letterSpacing: 2,
-    marginBottom: 6,
-  },
-
-  infoValue: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
   },
 });
