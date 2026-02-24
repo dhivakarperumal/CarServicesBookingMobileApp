@@ -9,6 +9,8 @@ import {
   Image,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import {
@@ -170,6 +172,10 @@ export default function AddService() {
   };
 
   return (
+    <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1 }}
+  >
     <ScrollView
       style={styles.container}
       contentContainerStyle={{ paddingBottom: 120 }}
@@ -297,6 +303,7 @@ export default function AddService() {
         )}
       </TouchableOpacity>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
