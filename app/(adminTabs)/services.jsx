@@ -263,7 +263,6 @@
 //   );
 // }
 
-
 import { useEffect, useMemo, useState } from "react";
 import {
   View,
@@ -425,7 +424,7 @@ export default function Services() {
       const serviceDocId = selectedBooking.id;
 
       const selectedEmployee = availableEmployees.find(
-        (emp) => emp.id === selectedEmployeeId
+        (emp) => emp.id === selectedEmployeeId,
       );
 
       if (!selectedEmployee) {
@@ -489,44 +488,31 @@ export default function Services() {
           }}
         />
 
-        {/* 🧾 FILTER CHIPS */}
-        <View style={{ height: 50, marginBottom: 10 }}>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={["All", ...BOOKING_STATUS]}
-            keyExtractor={(item) => item}
-            contentContainerStyle={{
-              alignItems: "center",
-              paddingRight: 10,
-            }}
-            style={{ flexGrow: 0 }}   // ✅ VERY IMPORTANT
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => setStatusFilter(item)}
-                style={{
-                  paddingHorizontal: 14,
-                  paddingVertical: 8,
-                  borderRadius: 20,
-                  marginRight: 8,
-                  borderWidth: 1,
-                  borderColor:
-                    statusFilter === item ? "#38bdf8" : "#0b3b6f",
-                  backgroundColor:
-                    statusFilter === item ? "#38bdf8" : "#020617",
-                }}
-              >
-                <Text
-                  style={{
-                    color: statusFilter === item ? "#020617" : "#fff",
-                    fontWeight: "600",
-                  }}
-                >
-                  {item}
-                </Text>
-              </TouchableOpacity>
-            )}
-          />
+        {/* 🔘 STATUS DROPDOWN */}
+        <View
+          style={{
+            backgroundColor: "#020617",
+            borderWidth: 1,
+            borderColor: "#38bdf8",
+            borderRadius: 14,
+            marginBottom: 10,
+            paddingHorizontal: 4,
+            overflow: "hidden",
+          }}
+        >
+          <Picker
+            selectedValue={statusFilter}
+            onValueChange={(v) => setStatusFilter(v)}
+            dropdownIconColor="#38bdf8"
+            style={{ color: "#fff" }}
+            itemStyle={{ color: "#fff" }}
+          >
+            <Picker.Item label="All" value="All" />
+
+            {BOOKING_STATUS.map((s) => (
+              <Picker.Item key={s} label={s} value={s} />
+            ))}
+          </Picker>
         </View>
 
         {/* 📋 LIST */}
@@ -577,23 +563,35 @@ export default function Services() {
               {updatingId === item.id ? (
                 <ActivityIndicator style={{ marginTop: 10 }} />
               ) : (
-                <Picker
-                  selectedValue={item.serviceStatus}
-                  onValueChange={(value) =>
-                    handleStatusChange(item, value)
-                  }
-                  style={{ color: "#fff" }}
+                <View
+                  style={{
+                    backgroundColor: "#020617",
+                    borderWidth: 1,
+                    borderColor: "#38bdf8",
+                    borderRadius: 12,
+                    marginTop: 10,
+                    paddingHorizontal: 4,
+                    overflow: "hidden",
+                  }}
                 >
-                  {BOOKING_STATUS.map((status) => (
-                    <Picker.Item key={status} label={status} value={status} />
-                  ))}
-                </Picker>
+                  <Picker
+                    selectedValue={item.serviceStatus}
+                    onValueChange={(value) => handleStatusChange(item, value)}
+                    dropdownIconColor="#38bdf8"
+                    style={{ color: "#fff" }}
+                    itemStyle={{ color: "#fff" }}
+                  >
+                    {BOOKING_STATUS.map((status) => (
+                      <Picker.Item key={status} label={status} value={status} />
+                    ))}
+                  </Picker>
+                </View>
               )}
 
               {/* ASSIGNED NAME */}
               {item.assignedEmployeeName && (
                 <Text style={{ color: "#22c55e", marginTop: 4 }}>
-                   👨‍🔧 {item.assignedEmployeeName}
+                  👨‍🔧 {item.assignedEmployeeName}
                 </Text>
               )}
 
@@ -609,8 +607,7 @@ export default function Services() {
                   <TouchableOpacity
                     onPress={() =>
                       router.push({
-                        pathname:
-                          "/(serviceslist)/ServiceBillingScreen",
+                        pathname: "/(serviceslist)/ServiceBillingScreen",
                         params: { id: item.id },
                       })
                     }
@@ -724,7 +721,7 @@ export default function Services() {
                   selectedValue={selectedBooking?.id || ""}
                   onValueChange={(val) =>
                     setSelectedBooking(
-                      unassignedServices.find((s) => s.id === val)
+                      unassignedServices.find((s) => s.id === val),
                     )
                   }
                   dropdownIconColor="#38bdf8"
