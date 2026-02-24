@@ -629,7 +629,7 @@ export default function Services() {
                   <TouchableOpacity
                     onPress={() =>
                       router.push({
-                        pathname: "/(serviceslist)/addserviceparts",
+                        pathname: "/(serviceslist)/AddServiceParts",
                         params: { serviceId: item.id },
                       })
                     }
