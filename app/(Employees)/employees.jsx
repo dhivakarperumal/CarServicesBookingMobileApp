@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  KeyboardAvoidingView,  
+  Platform,  
 } from "react-native";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -141,6 +143,10 @@ export default function StaffsScreen() {
 );
 
   return (
+    <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1 }}
+  >
     <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -257,6 +263,7 @@ export default function StaffsScreen() {
         </ScrollView>
       </View>
     </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
