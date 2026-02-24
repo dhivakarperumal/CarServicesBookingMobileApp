@@ -151,10 +151,6 @@ function OrderModal({ order, onClose }) {
 
                     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
 
-                        {/* <Text style={styles.modalTitle}>
-                            Order ID: {order.orderId}
-                        </Text> */}
-
                         {/* Items */}
                         {order.items?.map((item, i) => (
                             <View key={i} style={styles.itemRow}>
@@ -200,38 +196,65 @@ function OrderModal({ order, onClose }) {
                         </Text>
 
                         {/* Tracking */}
-                        <Text style={styles.sectionTitle}>
-                            Order Status
-                        </Text>
+                        <Text style={styles.sectionTitle}>Order Status</Text>
 
                         {order.status === "cancelled" ? (
-                            <Text style={{ color: "red", fontWeight: "bold", textAlign: "center", marginVertical: 12 }}>
+                            <Text
+                                style={{
+                                    color: "red",
+                                    fontWeight: "bold",
+                                    textAlign: "center",
+                                    marginVertical: 12,
+                                }}
+                            >
                                 ❌ Order Cancelled
                             </Text>
                         ) : (
-                            <View style={styles.trackerGrid}>
-                                {STATUS_STEPS.map((step, index) => (
-                                    <View key={step} style={styles.trackerItem}>
-                                        <View
-                                            style={[
-                                                styles.trackerCircle,
-                                                index <= currentStepIndex && styles.trackerActiveCircle,
-                                            ]}
-                                        >
-                                            <Text
+                            <View style={styles.trackerMainContainer}>
+
+                                {/* Line + Circles Row */}
+                                <View style={styles.lineContainer}>
+                                    {STATUS_STEPS.map((_, index) => (
+                                        <>
+
+                                            {/* Circle */}
+                                            <View
                                                 style={[
-                                                    styles.trackerStepText,
-                                                    index <= currentStepIndex && styles.trackerActiveText,
+                                                    styles.circle,
+                                                    index <= currentStepIndex && styles.activeCircle,
                                                 ]}
                                             >
-                                                {index + 1}
-                                            </Text>
-                                        </View>
-                                        <Text style={styles.trackerLabel}>
+                                                <Text style={styles.circleText}>{index + 1}</Text>
+                                            </View>
+
+                                            {/* Line */}
+                                            {index !== STATUS_STEPS.length - 1 && (
+                                                <View
+                                                    style={[
+                                                        styles.line,
+                                                        index < currentStepIndex && styles.activeLine,
+                                                    ]}
+                                                />
+                                            )}
+                                        </>
+                                    ))}
+                                </View>
+
+                                {/* Labels Row (Separate from line) */}
+                                <View style={styles.labelRow}>
+                                    {STATUS_STEPS.map((step, index) => (
+                                        <Text
+                                            key={index}
+                                            style={[
+                                                styles.stepLabel,
+                                                index <= currentStepIndex && styles.activeStepLabel,
+                                            ]}
+                                        >
                                             {step}
                                         </Text>
-                                    </View>
-                                ))}
+                                    ))}
+                                </View>
+
                             </View>
                         )}
 
@@ -299,6 +322,11 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
 
+    trackerMainContainer: {
+  marginVertical: 16,
+  paddingVertical: 1,
+},
+
     totalAmount: {
         color: "#0ea5e9",
         fontWeight: "700",
@@ -353,7 +381,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     sectionTitle: {
-        color: "#94a3b8",
+        color: "#38bdf8",
         fontWeight: "700",
         marginTop: 12,
         marginBottom: 6,
@@ -362,35 +390,23 @@ const styles = StyleSheet.create({
         color: "#fff",
         marginBottom: 4,
     },
-    stepRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 8,
-    },
-    circle: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: "#2d2d2d",
-        marginRight: 8,
-    },
+
     activeCircle: {
         backgroundColor: "#0ea5e9",
     },
-    stepText: {
-        color: "#9ca3af",
+
+    activeStepLabel: {
+        color: "#0ea5e9",
+        fontWeight: "600",
     },
-    activeStepText: {
-        color: "#fff",
-        fontWeight: "700",
-    },
+
     closeBtn: {
         marginTop: 16,
         backgroundColor: "#0ea5e9",
         paddingVertical: 12,
         borderRadius: 10,
         alignItems: "center",
-        marginBottom: 20,
+        marginBottom: 5,
     },
 
     modalHeader: {
@@ -406,51 +422,47 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
 
-    /* Order Tracker Grid */
-    trackerGrid: {
+    lineContainer: {
         flexDirection: "row",
-        flexWrap: "wrap",
-        justifyContent: "space-between",
-        marginVertical: 16,
-    },
-
-    trackerItem: {
         alignItems: "center",
-        width: "48%",
-        marginBottom: 24,
     },
 
-    trackerCircle: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        borderWidth: 2,
-        borderColor: "#4b5563",
+    circle: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        backgroundColor: "#ccc",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "transparent",
+        zIndex: 2,
     },
 
-    trackerActiveCircle: {
-        backgroundColor: "#0ea5e9",
-        borderColor: "#0ea5e9",
+
+    circleText: {
+        color: "#fff",
+        fontWeight: "bold",
     },
 
-    trackerStepText: {
-        color: "#9ca3af",
-        fontWeight: "700",
-        fontSize: 18,
+    line: {
+        flex: 1,
+        height: 3,
+        backgroundColor: "#ccc",
     },
 
-    trackerActiveText: {
-        color: "#000",
+    activeLine: {
+        backgroundColor:  "#0ea5e9",
     },
 
-    trackerLabel: {
-        marginTop: 8,
-        fontSize: 12,
+    labelRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 10,
+    },
+
+    stepLabel: {
+        flex: 1,
         textAlign: "center",
-        color: "#d1d5db",
-        width: 110,
+        fontSize: 12,
+        color: "#94a3b8", // light gray instead of black
     },
 });
