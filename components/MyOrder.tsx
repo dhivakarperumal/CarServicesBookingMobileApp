@@ -76,6 +76,8 @@ export default function MyOrders() {
         );
     }
 
+    
+
     return (
         <>
             <FlatList
@@ -135,11 +137,23 @@ function OrderModal({ order, onClose }) {
         <Modal visible transparent animationType="slide">
             <View style={styles.modalBg}>
                 <View style={styles.modalCard}>
-                    <ScrollView>
 
-                        <Text style={styles.modalTitle}>
+    {/* Sticky Header */}
+    <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>
+            Order ID: {order.orderId}
+        </Text>
+
+        <TouchableOpacity onPress={onClose}>
+            <Text style={styles.closeIcon}>✕</Text>
+        </TouchableOpacity>
+    </View>
+
+    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+
+                        {/* <Text style={styles.modalTitle}>
                             Order ID: {order.orderId}
-                        </Text>
+                        </Text> */}
 
                         {/* Items */}
                         {order.items?.map((item, i) => (
@@ -169,14 +183,13 @@ function OrderModal({ order, onClose }) {
                         {/* Total */}
                         <Text style={styles.totalBig}>
                             Total: ₹{order.total}
-                        </Text>
+                        </Text>                        
 
-                        {/* Shipping */}
-                        <Text style={styles.sectionTitle}>
-                            Shipping Details
-                        </Text>
+                    <Text style={styles.sectionTitle}>
+  Shipping Details
+</Text>
 
-                        <Text style={styles.shippingText}>
+<Text style={styles.shippingText}>
                             {order.shipping?.name}
                         </Text>
                         <Text style={styles.shippingText}>
@@ -377,7 +390,21 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         borderRadius: 10,
         alignItems: "center",
+         marginBottom: 20, 
     },
+
+    modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+},
+
+closeIcon: {
+    fontSize: 22,
+    color: "#fff",
+    fontWeight: "bold",
+},
 
     /* Order Tracker Grid */
     trackerGrid: {
