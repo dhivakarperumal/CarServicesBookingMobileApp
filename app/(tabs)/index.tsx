@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { Animated } from "react-native";
-import { collection, onSnapshot, orderBy, query, where, doc, getDoc  } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query, where, doc, getDoc } from "firebase/firestore";
 import {
   Modal,
   ScrollView,
@@ -65,6 +65,22 @@ export default function HomeScreen({ navigation }) {
 
   const carAnim = useRef(new Animated.Value(0)).current;
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "BOOKED":
+        return "#3B82F6";
+      case "PROCESSING":
+      case "SERVICE_GOING":
+        return "#F59E0B";
+      case "SERVICE_COMPLETED":
+        return "#10B981";
+      case "CANCELLED":
+        return "#EF4444";
+      default:
+        return "#0EA5E9";
+    }
+  };
+
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -83,22 +99,22 @@ export default function HomeScreen({ navigation }) {
   }, []);
 
   // Fetch current user
- useEffect(() => {
-  const unsub = onAuthStateChanged(auth, async (u) => {
-    if (u) {
-      setUser(u);
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      if (u) {
+        setUser(u);
 
-      // 🔥 Fetch username from Firestore
-      const userDoc = await getDoc(doc(db, "users", u.uid));
-      if (userDoc.exists()) {
-        setUsername(userDoc.data().username);
+        // 🔥 Fetch username from Firestore
+        const userDoc = await getDoc(doc(db, "users", u.uid));
+        if (userDoc.exists()) {
+          setUsername(userDoc.data().username);
+        }
       }
-    }
-    setLoading(false);
-  });
+      setLoading(false);
+    });
 
-  return unsub;
-}, []);
+    return unsub;
+  }, []);
 
   // Fetch services
   useEffect(() => {
@@ -149,13 +165,13 @@ export default function HomeScreen({ navigation }) {
         end={{ x: 1, y: 1 }}
         style={styles.bannerContainer}
       >
-      <Text style={styles.bannerWelcome}>
-  Welcome Back
-  {username ? (
-    <Text style={styles.highlightName}>, {username}</Text>
-  ) : null}
-  {" 👋"}
-</Text>
+        <Text style={styles.bannerWelcome}>
+          Welcome Back
+          {username ? (
+            <Text style={styles.highlightName}>, {username}</Text>
+          ) : null}
+          {" 👋"}
+        </Text>
         {/* Animated Car */}
         <Animated.View
           style={[
@@ -166,7 +182,7 @@ export default function HomeScreen({ navigation }) {
           <FontAwesome5 name="car-side" size={60} color="#fff" />
         </Animated.View>
 
-        
+
 
         <Text style={styles.bannerTitle}>
           Premium Car Care Service
@@ -194,22 +210,52 @@ export default function HomeScreen({ navigation }) {
             {allBookings.map((booking) => (
               <TouchableOpacity
                 key={booking.id}
-                style={styles.bookingCard}
+                style={styles.premiumCard}
                 onPress={() => setSelectedBooking(booking)}
+                activeOpacity={0.85}
               >
-                <View style={styles.bookingTop}>
-                  <View>
-                    <Text style={styles.carName}>{booking.brand} - {booking.model}</Text>
-                    <Text style={styles.serviceName}>{booking.issue}</Text>
+                {/* Top Row */}
+                <View style={styles.cardTopRow}>
+                  <View style={styles.carIconBox}>
+                    <FontAwesome5 name="car" size={18} color="#0EA5E9" />
                   </View>
-                  <View style={styles.statusBadge}>
-                    <Text style={styles.statusText}>{STATUS_LABELS[booking.normalizedStatus]}</Text>
+
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={styles.premiumCarName}>
+                      {booking.brand} {booking.model}
+                    </Text>
+                    <Text style={styles.premiumService}>
+                      {booking.issue}
+                    </Text>
+                  </View>
+
+                  <View
+                    style={[
+                      styles.premiumStatus,
+                      { backgroundColor: getStatusColor(booking.normalizedStatus) },
+                    ]}
+                  >
+                    <Text style={styles.premiumStatusText}>
+                      {STATUS_LABELS[booking.normalizedStatus]}
+                    </Text>
                   </View>
                 </View>
 
-                <View style={styles.bookingFooter}>
-                  <Text style={styles.smallText}>ID: {booking.bookingId}</Text>
-                  <Text style={styles.smallText}>{booking.name}</Text>
+                {/* Divider */}
+                <View style={styles.cardDivider} />
+
+                {/* Bottom Row */}
+                <View style={styles.cardBottomRow}>
+                  <Text style={styles.bookingIdText}>
+                    ID: {booking.bookingId}
+                  </Text>
+
+                  <View style={styles.viewDetailsRow}>
+                    <Text style={styles.viewDetailsText}>
+                      Tap to view details
+                    </Text>
+                    <Ionicons name="chevron-forward" size={16} color="#0EA5E9" />
+                  </View>
                 </View>
               </TouchableOpacity>
             ))}
@@ -381,10 +427,10 @@ const styles = StyleSheet.create({
   },
 
   highlightName: {
-  color: "#FFFFFF",
-  fontWeight: "800",
-  fontSize: 17,
-},
+    color: "#FFFFFF",
+    fontWeight: "800",
+    fontSize: 17,
+  },
 
   bannerSubtitle: {
     color: "#DBEAFE",
@@ -412,6 +458,79 @@ const styles = StyleSheet.create({
   contentWrapper: {
     paddingHorizontal: 16,
     paddingVertical: 24,
+  },
+
+  premiumCard: {
+    backgroundColor: "#111827",
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.15)",
+  },
+
+  cardTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  carIconBox: {
+    backgroundColor: "rgba(14,165,233,0.1)",
+    padding: 10,
+    borderRadius: 12,
+  },
+
+  premiumCarName: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
+  premiumService: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    marginTop: 4,
+  },
+
+  premiumStatus: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+  },
+
+  premiumStatusText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  cardDivider: {
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    marginVertical: 14,
+  },
+
+  cardBottomRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  bookingIdText: {
+    color: "#6B7280",
+    fontSize: 12,
+  },
+
+  viewDetailsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  viewDetailsText: {
+    color: "#0EA5E9",
+    fontSize: 12,
+    fontWeight: "600",
+    marginRight: 4,
   },
 
   statsContainer: {
