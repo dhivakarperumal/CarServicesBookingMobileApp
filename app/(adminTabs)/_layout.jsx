@@ -226,7 +226,12 @@ function AdminHeader({ title = "Admin" }) {
               label="Home"
               onPress={() => {
                 setMenuVisible(false);
-                router.push("/"); // correct
+                // navigate to the regular user home (tabs group)
+                // pushing "/" was triggering the root layout logic which
+                // immediately redirected admins back to the admin stack.
+                // Use the explicit tabs path so the router stays on the
+                // public home screen.
+                router.replace("/(tabs)");
               }}
             />
 
