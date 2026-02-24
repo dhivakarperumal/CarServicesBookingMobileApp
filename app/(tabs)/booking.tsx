@@ -270,11 +270,14 @@ const styles = StyleSheet.create({
     borderColor: "rgba(14,165,233,0.3)",
     marginBottom: 16,
   },
+
   gradientButton: {
-    paddingVertical: 16,
-    borderRadius: 50,          // 👈 fully rounded
+    paddingVertical: 13,
+    borderRadius: 50, 
+    paddingHorizontal: 40,         
     alignItems: "center",
     marginTop: 20,
+    alignSelf: "center",
   },
 
   gradientButtonText: {

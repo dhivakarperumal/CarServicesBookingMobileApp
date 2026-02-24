@@ -994,7 +994,7 @@ const styles = StyleSheet.create({
 
   gradientMapButton: {
     flexDirection: "row",
-    paddingVertical: 14,
+    paddingVertical: 13,
      paddingHorizontal: 24,  
     borderRadius: 50,          
     justifyContent: "center",
