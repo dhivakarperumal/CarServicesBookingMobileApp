@@ -239,121 +239,130 @@ export default function CarsScreen() {
     );
   }
 
-return (
-  <KeyboardAvoidingView
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-    style={{ flex: 1 }}
-  >
-    <SafeAreaView style={styles.container}>
-      {/* 🔎 SEARCH */}
-      <TextInput
-        placeholder="Search service, car, mechanic..."
-        placeholderTextColor="#94a3b8"
-        value={search}
-        onChangeText={setSearch}
-        style={styles.search}
-      />
-
-      {/* 🎛 FILTER TABS */}
-      <View style={styles.filterRow}>
-        {["all", "Assigned", "In Progress", "Parts Added", "Completed"].map(
-          (f) => (
-            <TouchableOpacity
-              key={f}
-              style={[styles.filterBtn, filter === f && styles.activeFilter]}
-              onPress={() => setFilter(f)}
-            >
-              <Text
-                style={[styles.filterText, filter === f && { color: "#fff" }]}
-              >
-                {f}
-              </Text>
-            </TouchableOpacity>
-          ),
-        )}
-      </View>
-
-      {filteredCars.length === 0 ? (
-        <Text style={styles.empty}>No Cars Found</Text>
-      ) : (
-        <FlatList
-          data={filteredCars}
-          keyExtractor={(i) => i.id}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 140 }}
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <SafeAreaView style={styles.container}>
+        {/* 🔎 SEARCH */}
+        <TextInput
+          placeholder="Search service, car, mechanic..."
+          placeholderTextColor="#94a3b8"
+          value={search}
+          onChangeText={setSearch}
+          style={styles.search}
         />
-      )}
 
-      {/* 🔥 PARTS MODAL */}
-      <Modal visible={partsModal} animationType="slide">
-        <SafeAreaView style={styles.modal}>
-          <Text style={styles.modalTitle}>Add Parts</Text>
-
-          <ScrollView>
-            {parts.map((item, index) => (
-              <View key={index} style={styles.partCard}>
-                <TextInput
-                  placeholder="Part name"
-                  value={item.partName}
-                  onChangeText={(v) => handlePartChange(index, "partName", v)}
-                  style={styles.input}
-                />
-
-                <View style={{ flexDirection: "row", gap: 8 }}>
-                  <TextInput
-                    placeholder="Qty"
-                    keyboardType="numeric"
-                    value={String(item.qty)}
-                    onChangeText={(v) => handlePartChange(index, "qty", v)}
-                    style={[styles.input, { flex: 1 }]}
-                  />
-
-                  <TextInput
-                    placeholder="Price"
-                    keyboardType="numeric"
-                    value={String(item.price)}
-                    onChangeText={(v) => handlePartChange(index, "price", v)}
-                    style={[styles.input, { flex: 1 }]}
-                  />
-                </View>
-
-                <Text style={styles.total}>
-                  Total: ₹{Number(item.qty) * Number(item.price)}
+        {/* 🎛 FILTER TABS */}
+        <View style={styles.filterRow}>
+          {["all", "Assigned", "In Progress", "Parts Added", "Completed"].map(
+            (f) => (
+              <TouchableOpacity
+                key={f}
+                style={[styles.filterBtn, filter === f && styles.activeFilter]}
+                onPress={() => setFilter(f)}
+              >
+                <Text
+                  style={[styles.filterText, filter === f && { color: "#fff" }]}
+                >
+                  {f}
                 </Text>
+              </TouchableOpacity>
+            ),
+          )}
+        </View>
 
-                {parts.length > 1 && (
-                  <TouchableOpacity onPress={() => removePartRow(index)}>
-                    <Text style={styles.remove}>Remove</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            ))}
+        {filteredCars.length === 0 ? (
+          <Text style={styles.empty}>No Cars Found</Text>
+        ) : (
+          <FlatList
+            data={filteredCars}
+            keyExtractor={(i) => i.id}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 140 }}
+          />
+        )}
 
-            <TouchableOpacity style={styles.addRow} onPress={addPartRow}>
-              <Text style={styles.updateText}>+ Add Part</Text>
+        {/* 🔥 PARTS MODAL */}
+        <Modal
+          visible={partsModal}
+          animationType="slide"
+          onRequestClose={() => setPartsModal(false)}
+        >
+          <SafeAreaView style={styles.modal}>
+            <Text style={styles.modalTitle}>Add Parts</Text>
+
+            <ScrollView>
+              {parts.map((item, index) => (
+                <View key={index} style={styles.partCard}>
+                  <TextInput
+                    placeholder="Part name"
+                    placeholderTextColor="#64748b"
+                    value={item.partName}
+                    onChangeText={(v) => handlePartChange(index, "partName", v)}
+                    style={styles.input}
+                  />
+
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    <TextInput
+                      placeholder="Qty"
+                      placeholderTextColor="#64748b"
+                      keyboardType="numeric"
+                      value={String(item.qty)}
+                      onChangeText={(v) => handlePartChange(index, "qty", v)}
+                      style={[styles.input, { flex: 1 }]}
+                    />
+
+                    <TextInput
+                      placeholder="Price"
+                      placeholderTextColor="#64748b"
+                      keyboardType="numeric"
+                      value={String(item.price)}
+                      onChangeText={(v) => handlePartChange(index, "price", v)}
+                      style={[styles.input, { flex: 1 }]}
+                    />
+                  </View>
+
+                  <Text style={styles.total}>
+                    Total: ₹{Number(item.qty) * Number(item.price)}
+                  </Text>
+
+                  {parts.length > 1 && (
+                    <TouchableOpacity onPress={() => removePartRow(index)}>
+                      <Text style={styles.remove}>Remove</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ))}
+
+              <TouchableOpacity style={styles.addRow} onPress={addPartRow}>
+                <Text style={styles.updateText}>+ Add Part</Text>
+              </TouchableOpacity>
+            </ScrollView>
+
+            <Text style={styles.grandTotal}>
+              Parts Total: ₹{totalPartsCost}
+            </Text>
+
+            <TouchableOpacity style={styles.saveBtn} onPress={saveParts}>
+              {savingParts ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.updateText}>Save Parts</Text>
+              )}
             </TouchableOpacity>
-          </ScrollView>
 
-          <Text style={styles.grandTotal}>Parts Total: ₹{totalPartsCost}</Text>
-
-          <TouchableOpacity style={styles.saveBtn} onPress={saveParts}>
-            {savingParts ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.updateText}>Save Parts</Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.closeBtn}
-            onPress={() => setPartsModal(false)}
-          >
-            <Text style={styles.updateText}>Cancel</Text>
-          </TouchableOpacity>
-        </SafeAreaView>
-      </Modal>
-    </SafeAreaView>
-    </KeyboardAvoidingView >
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={() => setPartsModal(false)}
+            >
+              <Text style={styles.updateText}>Cancel</Text>
+            </TouchableOpacity>
+          </SafeAreaView>
+        </Modal>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -424,35 +433,39 @@ const styles = StyleSheet.create({
   },
 
   partCard: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
+    backgroundColor: "#0f172a",
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.15)",
   },
 
   total: {
-    marginTop: 6,
-    fontWeight: "bold",
+    marginTop: 8,
+    fontWeight: "800",
+    color: "#10b981",
   },
-
   remove: {
-    marginTop: 6,
-    color: "#dc2626",
-    fontWeight: "600",
+    marginTop: 8,
+    color: "#f87171",
+    fontWeight: "700",
+    textAlign: "center",
   },
 
   addRow: {
-    backgroundColor: "#111",
-    padding: 12,
-    borderRadius: 10,
+    backgroundColor: "#38bdf8",
+    padding: 14,
+    borderRadius: 14,
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 16,
   },
 
   grandTotal: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#38bdf8",
+    marginBottom: 16,
   },
 
   empty: {
@@ -482,30 +495,31 @@ const styles = StyleSheet.create({
   modal: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#020617",
   },
 
   modalTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    marginBottom: 12,
+    fontSize: 20,
+    fontWeight: "900",
+    marginBottom: 16,
+    color: "#e5e7eb",
   },
-
   input: {
-    backgroundColor: "#fff",
-    padding: 12,
+    backgroundColor: "#020617",
+    padding: 10,
     borderRadius: 10,
-    minHeight: 80,
-    textAlignVertical: "top",
-    marginBottom: 12,
+    marginBottom: 10,
+    color: "#fff",
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.2)",
   },
 
   saveBtn: {
-    backgroundColor: "#111",
-    padding: 14,
-    borderRadius: 10,
+    backgroundColor: "#10b981",
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 12,
   },
 
   /* 🔥 CARD */
