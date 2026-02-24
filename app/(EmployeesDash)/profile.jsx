@@ -62,39 +62,49 @@ export default function StaffProfile() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* PROFILE CARD */}
-      <View style={styles.card}>
-        {/* ROLE BADGE */}
-        <View style={styles.roleBadge}>
-          <Text style={styles.roleText}>{employee?.role || "Mechanic"}</Text>
+      {/* AVATAR */}
+      <View style={styles.avatarWrap}>
+        <View style={styles.avatarCircle}>
+          <Text style={styles.avatarText}>
+            {employee?.name?.charAt(0)?.toUpperCase() || "U"}
+          </Text>
         </View>
 
-        <Text style={styles.name}>{employee?.name || "Staff"}</Text>
+        <Text style={styles.userName}>{employee?.name || "User"}</Text>
 
-        <View style={styles.row}>
-          <Text style={styles.label}>Phone</Text>
-          <Text style={styles.value}>{employee?.phone || "-"}</Text>
+        <View style={styles.activeBadge}>
+          <Text style={styles.activeText}>Active User</Text>
+        </View>
+      </View>
+
+      {/* PERSONAL INFO CARD */}
+      <View style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>Personal Information</Text>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Phone</Text>
+          <Text style={styles.infoValue}>{employee?.phone || "-"}</Text>
         </View>
 
-        <View style={styles.row}>
-          <Text style={styles.label}>Department</Text>
-          <Text style={styles.value}>{employee?.department || "-"}</Text>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Department</Text>
+          <Text style={styles.infoValue}>{employee?.department || "-"}</Text>
         </View>
 
-        <View style={styles.row}>
-          <Text style={styles.label}>Shift</Text>
-          <Text style={styles.value}>{employee?.shift || "-"}</Text>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Shift</Text>
+          <Text style={styles.infoValue}>{employee?.shift || "-"}</Text>
         </View>
 
-        <View style={styles.row}>
-          <Text style={styles.label}>Salary</Text>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Salary</Text>
           <Text style={styles.salary}>₹{employee?.salary || "-"}</Text>
         </View>
       </View>
 
       {/* LOGOUT */}
       <TouchableOpacity style={styles.logout} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
+        <Text style={styles.logoutText}>Log Out</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -103,7 +113,8 @@ export default function StaffProfile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 18,
+    paddingTop: 10,
     backgroundColor: "#020617",
   },
 
@@ -111,89 +122,130 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#020617",
   },
 
-  card: {
+  /* HEADER */
+  header: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#e5e7eb",
+    marginBottom: 20,
+  },
+
+  /* AVATAR SECTION */
+  avatarWrap: {
+    alignItems: "center",
+    marginBottom: 28,
+  },
+
+  avatarCircle: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    borderWidth: 2,
+    borderColor: "#38bdf8",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+  },
+
+  avatarText: {
+    fontSize: 50,
+    fontWeight: "900",
+    color: "#ffffff",
+  },
+
+  userName: {
+    marginTop: 14,
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#ffffff",
+  },
+
+  activeBadge: {
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: "#38bdf8",
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 30,
+  },
+
+  activeText: {
+    color: "#38bdf8",
+    fontWeight: "700",
+    fontSize: 12,
+  },
+
+  /* SECTION CARD */
+  sectionCard: {
     backgroundColor: "#0f172a",
-    borderRadius: 20,
+    borderRadius: 22,
     padding: 18,
+    marginBottom: 18,
     borderWidth: 1,
     borderColor: "#0b3b6f",
 
     shadowColor: "#38bdf8",
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.2,
     shadowRadius: 14,
   },
 
-  roleBadge: {
-    position: "absolute",
-    top: 14,
-    right: 14,
-    backgroundColor: "#2563eb",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
-
-    shadowColor: "#38bdf8",
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-  },
-
-  roleText: {
-    color: "#fff",
+  sectionTitle: {
+    fontSize: 16,
     fontWeight: "800",
-    fontSize: 11,
-  },
-
-  name: {
-    fontSize: 22,
-    fontWeight: "900",
-    color: "#fff",
+    color: "#e5e7eb",
     marginBottom: 14,
   },
 
-  row: {
+  /* INFO ROW */
+  infoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
+    alignItems: "center",
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#0b3b6f",
-    paddingBottom: 6,
   },
 
-  label: {
+  infoLabel: {
     color: "#94a3b8",
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
   },
 
-  value: {
-    color: "#fff",
-    fontSize: 13,
+  infoValue: {
+    color: "#ffffff",
+    fontSize: 14,
     fontWeight: "700",
   },
 
   salary: {
     color: "#10b981",
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "800",
   },
 
+  /* LOGOUT BUTTON */
   logout: {
-    marginTop: 24,
-    backgroundColor: "#ef4444",
-    paddingVertical: 14,
-    borderRadius: 14,
+    marginTop: "auto",
+    borderWidth: 1.5,
+    borderColor: "#ef4444",
+    paddingVertical: 16,
+    borderRadius: 18,
     alignItems: "center",
 
     shadowColor: "#ef4444",
     shadowOpacity: 0.4,
-    shadowRadius: 10,
+    shadowRadius: 12,
   },
 
   logoutText: {
-    color: "#fff",
+    color: "#ef4444",
     fontWeight: "800",
-    fontSize: 14,
+    fontSize: 15,
   },
 });

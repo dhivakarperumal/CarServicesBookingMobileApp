@@ -10,6 +10,8 @@ import {
   Alert,
   Image,
   Dimensions,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import {
   collection,
@@ -121,6 +123,10 @@ export default function ServicesListAll() {
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 
   return (
+    <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1 }}
+  >
     <View style={styles.container}>
       {/* 🔹 SEARCH */}
       <TextInput
@@ -221,6 +227,7 @@ export default function ServicesListAll() {
         <Ionicons name="add" size={28} color="#fff" />
       </TouchableOpacity>
     </View>
+    </KeyboardAvoidingView>
   );
 }
 

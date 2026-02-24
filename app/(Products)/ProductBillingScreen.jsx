@@ -8,6 +8,8 @@ import {
   Alert,
   StyleSheet,
   ScrollView,
+  KeyboardAvoidingView, 
+  Platform,              
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
@@ -198,7 +200,11 @@ export default function ProductBillingScreen() {
     }
   };
 
-  return (
+return (
+  <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1 }}
+  >
     <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
       {/* 🔝 HEADER */}
       <View style={styles.header}>
@@ -358,6 +364,7 @@ export default function ProductBillingScreen() {
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
+    </ KeyboardAvoidingView>
   );
 }
 

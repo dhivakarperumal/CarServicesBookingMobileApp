@@ -8,6 +8,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import {
   collection,
@@ -116,8 +118,16 @@ export default function AddPrice() {
     }
   };
 
-  return (
-    <ScrollView style={styles.container}>
+return (
+  <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1 }}
+  >
+    <ScrollView
+      style={styles.container}
+      keyboardShouldPersistTaps="handled"
+       contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}
+    >
       <Text style={styles.header}>
         {editId ? "Update Package" : "Add Package"}
       </Text>
@@ -177,6 +187,7 @@ export default function AddPrice() {
         )}
       </TouchableOpacity>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
