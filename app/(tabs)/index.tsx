@@ -14,6 +14,7 @@ import {
   View
 } from "react-native";
 import { auth, db } from "../../firebase";
+import { Dimensions } from "react-native";
 
 const STATUS_FLOW = [
   "BOOKED",
@@ -53,6 +54,59 @@ const STATUS_NORMALIZER = {
   Cancelled: "CANCELLED",
 };
 
+const whyData = [
+  {
+    title: "Certified Mechanics",
+    subtitle: "Experienced & verified professionals",
+    icon: <FontAwesome5 name="tools" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "Pickup & Drop",
+    subtitle: "Doorstep vehicle collection",
+    icon: <Ionicons name="car-sport-outline" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "Genuine Parts",
+    subtitle: "100% authentic spare parts",
+    icon: <Ionicons name="shield-checkmark-outline" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "Quick Service",
+    subtitle: "Fast turnaround time",
+    icon: <Ionicons name="flash-outline" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "Affordable Pricing",
+    subtitle: "Transparent pricing system",
+    icon: <Ionicons name="cash-outline" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "Service Warranty",
+    subtitle: "Guaranteed workmanship",
+    icon: <Ionicons name="ribbon-outline" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "24/7 Support",
+    subtitle: "Always available for help",
+    icon: <Ionicons name="headset-outline" size={20} color="#0EA5E9" />,
+  },
+  {
+    title: "Live Tracking",
+    subtitle: "Track service progress",
+    icon: <Ionicons name="location-outline" size={20} color="#0EA5E9" />,
+  },
+];
+
+const { width } = Dimensions.get("window");
+
+const HORIZONTAL_PADDING = 20; // same as ScrollView paddingHorizontal
+const CARD_MARGIN = 12;
+
+const CARD_WIDTH =
+  (width - HORIZONTAL_PADDING * 2 - CARD_MARGIN * 2) / 3;
+
+const extendedWhyData = [...whyData, ...whyData];
+
 export default function HomeScreen({ navigation }) {
 
   const router = useRouter();
@@ -64,6 +118,9 @@ export default function HomeScreen({ navigation }) {
   const [username, setUsername] = useState("");
 
   const carAnim = useRef(new Animated.Value(0)).current;
+
+  const whyListRef = useRef(null);
+  const scrollX = useRef(0);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -155,6 +212,37 @@ export default function HomeScreen({ navigation }) {
 
     return () => unsub();
   }, [user]);
+
+  // why swiper auto-scroll
+  useEffect(() => {
+    let index = 0;
+
+    const interval = setInterval(() => {
+      if (!whyListRef.current) return;
+
+      index++;
+
+      whyListRef.current.scrollToOffset({
+        offset: index * (CARD_WIDTH + CARD_MARGIN),
+        animated: true,
+      });
+
+      // reset silently after half (no visible jump)
+      if (index >= whyData.length) {
+        index = 0;
+
+        setTimeout(() => {
+          whyListRef.current?.scrollToOffset({
+            offset: 0,
+            animated: false,
+          });
+        }, 400);
+      }
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
@@ -204,7 +292,12 @@ export default function HomeScreen({ navigation }) {
       {/* ACTIVE BOOKING */}
       {allBookings.length > 0 && (
         <>
-          <Text style={styles.sectionTitle}>My Bookings</Text>
+          <View style={styles.premiumSectionHeader}>
+            <View style={styles.premiumAccent} />
+            <Text style={styles.premiumSectionTitle}>
+              My Bookings
+            </Text>
+          </View>
 
           <View style={styles.bookingsContainer}>
             {allBookings.map((booking) => (
@@ -269,6 +362,34 @@ export default function HomeScreen({ navigation }) {
           )}
         </>
       )}
+
+      {/* WHY CHOOSE US */}
+      <View style={styles.premiumSectionHeader}>
+        <View style={styles.premiumAccent} />
+        <Text style={styles.premiumSectionTitle}>
+          Why Choose Us
+        </Text>
+      </View>
+
+      <Animated.FlatList
+        ref={whyListRef}
+        data={extendedWhyData}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.whySwiperCard}>
+            <View style={styles.whyIconBoxLarge}>
+              {item.icon}
+            </View>
+            <Text style={styles.whySwiperTitle}>{item.title}</Text>
+            <Text style={styles.whySwiperSubtitle}>{item.subtitle}</Text>
+          </View>
+        )}
+        contentContainerStyle={{ paddingHorizontal: 10 }}
+        snapToInterval={CARD_WIDTH + 12}
+        decelerationRate="fast"
+      />
 
     </ScrollView>
   );
@@ -529,50 +650,70 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
 
-  gradientCard: {
-    flex: 1,
-    padding: 20,
-    borderRadius: 16,
+  // heading 
+  premiumSectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 30,
+    marginBottom: 18,
+  },
+
+  premiumAccent: {
+    width: 2,
+    height: 22,
+    backgroundColor: "#ffffff",
+    borderRadius: 4,
     marginRight: 10,
   },
 
-  statRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  premiumSectionTitle: {
+    color: "#0EA5E9",
+    fontSize: 16,
+    fontWeight: "800",
+    letterSpacing: 0.5,
   },
 
-  statLabelWhite: {
+  // why choose us 
+
+  whyScrollContainer: {
+    paddingRight: 20,
+  },
+
+  whySwiperCard: {
+    width: CARD_WIDTH,
+    backgroundColor: "#111827",
+    borderRadius: 22,
+    padding: 14,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.15)",
+  },
+
+  whyIconBoxLarge: {
+    backgroundColor: "rgba(14,165,233,0.1)",
+    padding: 14,
+    borderRadius: 16,
+    alignSelf: "flex-start",
+    marginBottom: 12,
+  },
+
+  whySwiperTitle: {
     color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "500",
-    marginBottom: 4,
-  },
-
-  statLabelGreen: {
-    color: "#D1FAE5",
-    fontSize: 12,
-    fontWeight: "500",
-    marginBottom: 4,
-  },
-
-  statNumberWhite: {
-    color: "#FFFFFF",
-    fontSize: 28,
+    fontSize: 14,
     fontWeight: "700",
   },
 
-  iconWrapperDark: {
-    backgroundColor: "rgba(0,0,0,0.2)",
-    padding: 12,
-    borderRadius: 50,
+  whySwiperSubtitle: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    marginTop: 6,
   },
+  // why choose us end
 
-  iconWrapperLight: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    padding: 12,
-    borderRadius: 50,
-  },
+
+
+
+ 
   container: {
     flex: 1,
     backgroundColor: "#0B1120",
@@ -580,55 +721,10 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
 
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 30,
-  },
-
-  welcome: {
-    color: "#94A3B8",
-    fontSize: 14,
-  },
-
   title: {
     color: "#FFFFFF",
     fontSize: 22,
     fontWeight: "700",
-    marginTop: 4,
-  },
-
-  iconCircle: {
-    backgroundColor: "#111827",
-    padding: 10,
-    borderRadius: 50,
-  },
-
-  statsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 30,
-  },
-
-  statCard: {
-    width: "48%",
-    backgroundColor: "#111827",
-    borderRadius: 16,
-    padding: 20,
-    alignItems: "center",
-  },
-
-  statNumber: {
-    color: "#FFFFFF",
-    fontSize: 22,
-    fontWeight: "700",
-    marginTop: 8,
-  },
-
-  statLabel: {
-    color: "#94A3B8",
-    fontSize: 12,
     marginTop: 4,
   },
 
