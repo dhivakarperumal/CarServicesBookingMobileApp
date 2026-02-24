@@ -7,6 +7,8 @@ import {
   FlatList,
   StyleSheet,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
@@ -123,7 +125,11 @@ export default function BillingsScreen() {
   };
 
   /* UI */
-  return (
+return (
+  <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1 }}
+  >
     <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
       {/* 🔝 HEADER */}
       <View style={styles.header}>
@@ -242,6 +248,7 @@ export default function BillingsScreen() {
         </View>
       </View>
     </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
