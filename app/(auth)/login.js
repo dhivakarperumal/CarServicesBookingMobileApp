@@ -57,7 +57,7 @@ export default function LoginScreen() {
       } else if (role === "mechanic") {
         router.replace("/(EmployeesDash)/dashboard");
       } else {
-        router.replace("/(tabs)/home");
+        router.replace("/(tabs)");
       }
     } catch (error) {
       Alert.alert("Login Failed", error.message);
