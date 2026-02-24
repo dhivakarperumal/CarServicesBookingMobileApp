@@ -231,7 +231,11 @@ export default function ReviewsSettings() {
       </TouchableOpacity>
 
       {/* MODAL */}
-      <Modal visible={showModal} animationType="slide">
+      <Modal
+        visible={showModal}
+        animationType="slide"
+        onRequestClose={() => setShowModal(false)}
+      >
         <View style={styles.modalContainer}>
           {/* 🔷 HEADER */}
           <View style={styles.modalHeader}>

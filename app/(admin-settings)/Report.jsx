@@ -206,7 +206,11 @@ export default function ReportsScreen() {
       </ScrollView>
 
       {/* MODAL */}
-      <Modal visible={!!selectedReport} animationType="slide">
+      <Modal
+        visible={!!selectedReport}
+        animationType="slide"
+        onRequestClose={() => setSelectedReport(null)}
+      >
         <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
           <View style={styles.modalHeader}>
             <Text style={styles.bold}>{selectedReport?.name}</Text>
