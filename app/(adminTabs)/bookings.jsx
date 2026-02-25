@@ -204,14 +204,14 @@ export default function ShowAllBookings() {
   };
 
   /* 🔄 STATUS CHANGE HANDLER */
-  const handleStatusChange = (booking, newStatus) => {
+  const handleStatusChange = async (booking, newStatus) => {
     if (newStatus === "Approved") {
       if (booking.status === "Approved") return;
 
-      const autoTrack = generateTrackNumber();
+      const trackNumber = await generateTrackNumber(); 
 
       updateStatus(booking, "Approved", {
-        trackNumber: autoTrack,
+        trackNumber: trackNumber,
         approvedAt: new Date(),
       });
 
