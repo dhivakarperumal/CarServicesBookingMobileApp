@@ -4,9 +4,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Pressable,
-  Platform,
   FlatList,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -32,7 +32,7 @@ export default function StaffHeader() {
 
   const firstLetter = userName?.charAt(0)?.toUpperCase() || "U";
 
-  /* ================= LOAD EMPLOYEE NAME ================= */
+  /* LOAD EMPLOYEE NAME */
   const loadEmployee = async () => {
     if (!user) return;
 
@@ -48,7 +48,7 @@ export default function StaffHeader() {
     }
   };
 
-  /* ================= LOAD NOTIFICATIONS ================= */
+  /* LOAD NOTIFICATIONS */
   const loadNotifications = async () => {
     if (!user) return;
 
@@ -69,7 +69,7 @@ export default function StaffHeader() {
     const todayStr = new Date().toISOString().split("T")[0];
 
     const todayJobs = list.filter((item) => {
-      if (!item.assignedAt) return false;
+      if (!item.assignedAt?.toDate) return false;
       const date = item.assignedAt.toDate().toISOString().split("T")[0];
       return date === todayStr;
     });
@@ -90,7 +90,6 @@ export default function StaffHeader() {
     router.replace("/login");
   };
 
-  /* 🔥 Dynamic title */
   const getTitle = () => {
     const current = segments[segments.length - 1];
 
@@ -109,53 +108,84 @@ export default function StaffHeader() {
   };
 
   return (
-    <View style={{ zIndex: 999 }}>
+    <View style={styles.container}>
       {/* HEADER */}
       <View style={[styles.header, { paddingTop: insets.top + 6 }]}>
-        <Text style={styles.title}>{getTitle()}</Text>
+        <View style={styles.headerRow}>
+          {/* LEFT */}
+          <View style={styles.left}>
+            <View style={styles.logoWrapper}>
+              <Image
+                source={require("../assets/images/logo_no_bg.png")}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
 
-        <View style={styles.right}>
-          {/* 🔔 NOTIFICATIONS */}
-          <TouchableOpacity
-            onPress={() => {
-              setNotifOpen(!notifOpen);
-              loadNotifications();
-            }}
-            style={{ marginRight: 14 }}
-          >
-            <Ionicons name="notifications-outline" size={22} color="#e5e7eb" />
+            <Text style={styles.title} numberOfLines={1}>
+              {getTitle()}
+            </Text>
+          </View>
 
-            {todayCount > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{todayCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          {/* RIGHT */}
+          <View style={styles.right}>
+            {/* 🔔 NOTIFICATIONS */}
+            <TouchableOpacity
+              style={styles.iconWrapper}
+              onPress={() => {
+                setNotifOpen(!notifOpen);
+                setOpen(false);
+                loadNotifications();
+              }}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={22}
+                color="#e5e7eb"
+              />
 
-          {/* PROFILE */}
-          <TouchableOpacity
-            style={styles.profile}
-            onPress={() => setOpen(!open)}
-          >
-            <Text style={styles.profileText}>{firstLetter}</Text>
-          </TouchableOpacity>
+              {todayCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{todayCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* 👤 PROFILE */}
+            <TouchableOpacity
+              style={styles.profile}
+              onPress={() => {
+                setOpen(!open);
+                setNotifOpen(false);
+              }}
+            >
+              <Text style={styles.profileText}>{firstLetter}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
       {/* 🔔 NOTIFICATION DROPDOWN */}
       {notifOpen && (
-        <Pressable style={styles.overlay} onPress={() => setNotifOpen(false)}>
+        <View style={styles.overlay}>
+          <Pressable
+            style={styles.backdrop}
+            onPress={() => setNotifOpen(false)}
+          />
+
           <View style={styles.notifDropdown}>
             <Text style={styles.notifTitle}>Assigned Jobs</Text>
 
             {loadingNotif ? (
-              <ActivityIndicator />
+              <ActivityIndicator style={{ marginVertical: 20 }} />
             ) : notifications.length === 0 ? (
               <Text style={styles.empty}>No jobs</Text>
             ) : (
               <FlatList
                 data={notifications}
                 keyExtractor={(i) => i.id}
+                showsVerticalScrollIndicator={false}
+                style={{ maxHeight: 300 }}
                 renderItem={({ item }) => (
                   <View style={styles.notifCard}>
                     <Text style={styles.notifCar}>
@@ -170,14 +200,18 @@ export default function StaffHeader() {
               />
             )}
           </View>
-        </Pressable>
+        </View>
       )}
 
-      {/* PROFILE DROPDOWN */}
+      {/* 👤 PROFILE DROPDOWN */}
       {open && (
-        <Pressable style={styles.overlay} onPress={() => setOpen(false)}>
+        <View style={styles.overlay}>
+          <Pressable
+            style={styles.backdrop}
+            onPress={() => setOpen(false)}
+          />
+
           <View style={styles.dropdown}>
-            {/* PROFILE */}
             <TouchableOpacity
               style={styles.item}
               onPress={() => {
@@ -188,7 +222,7 @@ export default function StaffHeader() {
               <Ionicons name="person-outline" size={18} color="#38bdf8" />
               <Text style={styles.itemText}>Profile</Text>
             </TouchableOpacity>
-            {/* HOME */}
+
             <TouchableOpacity
               style={styles.item}
               onPress={() => {
@@ -200,182 +234,213 @@ export default function StaffHeader() {
               <Text style={styles.itemText}>Home</Text>
             </TouchableOpacity>
 
-            {/* LOGOUT */}
             <TouchableOpacity style={styles.item} onPress={handleLogout}>
               <Ionicons name="log-out-outline" size={18} color="#ef4444" />
               <Text style={styles.itemText}>Logout</Text>
             </TouchableOpacity>
           </View>
-        </Pressable>
+        </View>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
- header: {
-  backgroundColor: "#050b1f", // slightly lighter than page
-  height: Platform.OS === "ios" ? 120 : 92, // more breathing space
-  flexDirection: "row",
-  alignItems: "flex-end", // push content toward bottom
-  justifyContent: "space-between",
-  paddingHorizontal: 16,
-  paddingBottom: 15, // space for profile bubble
+  container: {
+    zIndex: 999,
+    elevation: 999,
+  },
 
-  borderBottomWidth: 1,
-  borderBottomColor: "rgba(56,189,248,0.18)",
+  header: {
+    backgroundColor: "#0f172a",
+    paddingHorizontal: 18,
+    paddingBottom: 16,
+    zIndex: 10,
+    elevation: 10,
+  },
 
-  shadowColor: "#38bdf8",
-  shadowOpacity: 0.25,
-  shadowRadius: 14,
-  elevation: 14,
-},
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  left: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 1,
+  },
+
+  right: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  logoWrapper: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: "#020617",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.5)",
+    elevation: 12,
+  },
+
+  logo: {
+    width: 26,
+    height: 26,
+  },
 
   title: {
-  fontSize: 18,
-  fontWeight: "900",
-  color: "#e5e7eb",
-  letterSpacing: 0.3,
-},
+    color: "#f8fafc",
+    fontSize: 17,
+    fontWeight: "700",
+    marginLeft: 4,
+    maxWidth: 160,
+  },
 
-  right: { flexDirection: "row", alignItems: "center" },
+  iconWrapper: {
+    position: "relative",
+    marginRight: 14,
+  },
 
-profile: {
-  width: 38,
-  height: 38,
-  borderRadius: 20,
-  backgroundColor: "#0f172a",
-  alignItems: "center",
-  justifyContent: "center",
-  borderWidth: 1,
-  borderColor: "rgba(56,189,248,0.3)",
-
-  shadowColor: "#38bdf8",
-  shadowOpacity: 0.3,
-  shadowRadius: 8,
-},
-  profileText: {
-  color: "#38bdf8",
-  fontWeight: "900",
-  fontSize: 16,
-},
-
-badge: {
-  position: "absolute",
-  top: -5,
-  right: -6,
-  backgroundColor: "#38bdf8",
-  borderRadius: 20,
-  minWidth: 18,
-  height: 18,
-  justifyContent: "center",
-  alignItems: "center",
-  paddingHorizontal: 5,
-
-  shadowColor: "#38bdf8",
-  shadowOpacity: 0.6,
-  shadowRadius: 6,
-},
+  badge: {
+    position: "absolute",
+    top: -4,
+    right: -6,
+    backgroundColor: "#ef4444",
+    borderRadius: 10,
+    paddingHorizontal: 5,
+    minWidth: 16,
+    alignItems: "center",
+  },
 
   badgeText: {
-  color: "#020617",
-  fontSize: 11,
-  fontWeight: "900",
-},
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "700",
+  },
+
+  profile: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: "#1e293b",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#38bdf8",
+  },
+
+  profileText: {
+    color: "#e2e8f0",
+    fontWeight: "700",
+    fontSize: 14,
+  },
 
   overlay: {
     position: "absolute",
-    top: Platform.OS === "ios" ? 100 : 70,
+    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
+    zIndex: 1000,
+    elevation: 1000,
   },
 
-notifDropdown: {
-  position: "absolute",
-  top: 6,
-  right: 16,
-  backgroundColor: "#0f172a",
-  borderRadius: 16,
-  padding: 14,
-  width: 270,
-  maxHeight: 320,
+  backdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.65)",
+  },
 
-  borderWidth: 1,
-  borderColor: "rgba(56,189,248,0.25)",
+  notifDropdown: {
+    position: "absolute",
+    top: 70,
+    right: 16,
+    width: 300,
+    backgroundColor: "#020617",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.3)",
+    overflow: "hidden",
+    zIndex: 1001,
+    elevation: 1001,
+  },
 
-  shadowColor: "#38bdf8",
-  shadowOpacity: 0.35,
-  shadowRadius: 14,
-  elevation: 20,
-},
+  dropdown: {
+    position: "absolute",
+    top: 70,
+    right: 16,
+    width: 260,
+    backgroundColor: "#020617",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.3)",
+    overflow: "hidden",
+    zIndex: 1001,
+    elevation: 1001,
+  },
+
+  item: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+
+  itemText: {
+    fontSize: 14,
+    color: "#e5e7eb",
+    marginLeft: 12,
+    fontWeight: "700",
+  },
 
   notifTitle: {
-  fontWeight: "900",
-  marginBottom: 10,
-  color: "#e5e7eb",
-},
+    fontWeight: "700",
+    fontSize: 16,
+    color: "#e5e7eb",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: "#1e293b",
+  },
 
-notifCard: {
-  backgroundColor: "#020617",
-  padding: 12,
-  borderRadius: 12,
-  marginBottom: 10,
-  borderWidth: 1,
-  borderColor: "rgba(56,189,248,0.12)",
-},
+  notifCard: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderColor: "#1e293b",
+  },
 
   notifCar: {
-  fontWeight: "800",
-  color: "#38bdf8",
-},
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#f8fafc",
+  },
 
   notifSub: {
-  fontSize: 12,
-  color: "#94a3b8",
-},
+    fontSize: 12,
+    color: "#94a3b8",
+  },
 
-notifStatus: {
-  fontSize: 11,
-  marginTop: 4,
-  color: "#10b981",
-  fontWeight: "700",
-},
+  notifStatus: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#38bdf8",
+    marginTop: 2,
+  },
 
   empty: {
     textAlign: "center",
-    color: "#6b7280",
-    marginTop: 10,
+    color: "#94a3b8",
+    paddingVertical: 20,
+    fontSize: 13,
   },
-
-dropdown: {
-  position: "absolute",
-  top: 6,
-  right: 16,
-  backgroundColor: "#0f172a",
-  borderRadius: 16,
-  paddingVertical: 6,
-  width: 180,
-
-  borderWidth: 1,
-  borderColor: "rgba(56,189,248,0.25)",
-
-  shadowColor: "#38bdf8",
-  shadowOpacity: 0.35,
-  shadowRadius: 14,
-  elevation: 20,
-},
-
-item: {
-  flexDirection: "row",
-  alignItems: "center",
-  padding: 14,
-  gap: 10,
-},
-
-  itemText: {
-  fontSize: 14,
-  fontWeight: "700",
-  color: "#e5e7eb",
-},
 });
