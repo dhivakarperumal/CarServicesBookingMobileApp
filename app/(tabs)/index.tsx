@@ -352,43 +352,6 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </LinearGradient>
 
-      {/* MY VEHICLES SECTION */}
-      {myVehicles.length > 0 && (
-        <>
-          <View style={styles.premiumSectionHeader}>
-            <View style={styles.premiumAccent} />
-            <Ionicons
-              name="car-sport-outline"
-              size={18}
-              color="#0EA5E9"
-              style={{ marginRight: 6 }}
-            />
-            <Text style={styles.premiumSectionTitle}>
-              My Vehicles
-            </Text>
-          </View>
-
-          <View style={{ marginBottom: 20 }}>
-            {myVehicles.map((vehicle, index) => (
-              <View key={index} style={styles.vehicleCard}>
-                <View style={styles.vehicleIconBox}>
-                  <Ionicons name="car" size={22} color="#0EA5E9" />
-                </View>
-
-                <View style={{ marginLeft: 12, flex: 1 }}>
-                  <Text style={styles.vehicleNumber}>
-                    {vehicle.vehicleNumber}
-                  </Text>
-                  <Text style={styles.vehicleDetails}>
-                    {vehicle.brand} {vehicle.model} • {vehicle.vehicleType}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </>
-      )}
-
       {/* ACTIVE BOOKING */}
       {allBookings
         .filter(
@@ -1458,33 +1421,5 @@ reviewCard: {
     color: "#38bdf8",
     fontWeight: "700",
   },
-
-  vehicleCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#111827",
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: "rgba(14,165,233,0.15)",
-  },
-
-  vehicleIconBox: {
-    backgroundColor: "rgba(14,165,233,0.1)",
-    padding: 12,
-    borderRadius: 14,
-  },
-
-  vehicleNumber: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-
-  vehicleDetails: {
-    color: "#9CA3AF",
-    fontSize: 13,
-    marginTop: 4,
-  },
+  
 });
