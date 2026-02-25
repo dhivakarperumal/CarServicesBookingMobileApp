@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { db } from "../../firebase";
 import { ImageBackground } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -73,18 +74,20 @@ export default function Products() {
           <Text style={styles.rating}>⭐ {item.rating}</Text>
         </View>
 
-        {/* <Text style={styles.discount}>{item.offer}% OFF</Text> */}
-
-        {/* STOCK */}
-        {/* <Text style={[styles.stock, inStock ? styles.inStock : styles.outStock]}>
-          {inStock ? "In Stock" : "Out of Stock"}
-        </Text> */}
-
         <TouchableOpacity
-          style={styles.button}
           onPress={() => router.push(`/(app)/products/${item.slug}`)}
+          activeOpacity={0.8}
         >
-          <Text style={styles.buttonText}>View</Text>
+          <LinearGradient
+            colors={["#0EA5E9", "#2563EB"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientProductButton}
+          >
+            <Text style={styles.gradientProductButtonText}>
+              View More
+            </Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     );
@@ -255,19 +258,21 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginBottom: 8,
   },
-
-  button: {
-    borderWidth: 1,
-    borderColor: "#0EA5E9",
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginTop: 6,
+  gradientProductButton: {
+    alignSelf: "center",
+    width: "70%",       // same width as your service button
+    paddingVertical: 7,
+    borderRadius: 25,
+    justifyContent: "center",
     alignItems: "center",
+    marginTop: 6,
   },
 
-  buttonText: {
-    color: "#0EA5E9",
-    fontSize: 12,
-    fontWeight: "600",
+  gradientProductButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 13,
+    letterSpacing: 0.5,
   },
+
 });
