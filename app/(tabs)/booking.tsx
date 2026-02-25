@@ -168,9 +168,9 @@ export default function BookingScreen() {
 
       <Text style={styles.title}>Book Service</Text>
 
-      <Input label="Full Name" value={formData.name} onChange={(v) => handleChange("name", v)} />
-      <Input label="Phone" value={formData.phone} onChange={(v) => handleChange("phone", v)} />
-      <Input label="Email" value={formData.email} onChange={(v) => handleChange("email", v)} />
+      <Input label="Full Name" placeholder="Enter your full name"  value={formData.name} onChange={(v) => handleChange("name", v)} />
+      <Input label="Mobile" placeholder="Enter mobile number" value={formData.phone} onChange={(v) => handleChange("phone", v)} />
+      <Input label="Email" placeholder="Enter email address" value={formData.email} onChange={(v) => handleChange("email", v)} />
 
       {/* BRAND */}
       <Text style={styles.label}>Car Brand</Text>
@@ -189,7 +189,7 @@ export default function BookingScreen() {
         </Picker>
       </View>
 
-      <Input label="Car Model" value={formData.model} onChange={(v) => handleChange("model", v)} />
+      <Input label="Car Model"  placeholder="Ex: Swift / City / X5" value={formData.model} onChange={(v) => handleChange("model", v)} />
 
       {/* ISSUE */}
       <Text style={styles.label}>Issue</Text>
@@ -211,13 +211,14 @@ export default function BookingScreen() {
       {formData.issue === "Others" && (
         <Input
           label="Describe Issue"
+          placeholder="Describe your problem"
           value={formData.otherIssue}
           onChange={(v) => handleChange("otherIssue", v)}
         />
       )}
 
-      <Input label="Location" value={formData.location} onChange={(v) => handleChange("location", v)} />
-      <Input label="Service Address" value={formData.address} onChange={(v) => handleChange("address", v)} multiline />
+      <Input label="Location" placeholder="Area / Landmark" value={formData.location} onChange={(v) => handleChange("location", v)} />
+      <Input label="Service Address" placeholder="House No, Street, Area" value={formData.address} onChange={(v) => handleChange("address", v)} multiline />
 
       <TouchableOpacity onPress={handleBooking} disabled={loading} activeOpacity={0.8}>
         <LinearGradient
@@ -245,18 +246,22 @@ function Input({
   value,
   onChange,
   multiline = false,
+  placeholder,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   multiline?: boolean;
+  placeholder?: string;
 }) {
   return (
     <View style={{ marginBottom: 16 }}>
       <Text style={styles.label}>{label}</Text>
+
       <TextInput
         value={value}
         onChangeText={onChange}
+        placeholder={placeholder || label}
         placeholderTextColor="#64748B"
         multiline={multiline}
         style={[styles.input, multiline && { height: 90 }]}
