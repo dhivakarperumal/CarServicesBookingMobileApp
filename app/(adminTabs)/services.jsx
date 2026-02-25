@@ -874,14 +874,14 @@ const assignEmployee = async () => {
         {item.name}
       </Text>
 
-      <Text style={{ color: "#cbd5f5", fontSize: 14 }}>{item.phone}</Text>
+      <Text style={{ color: "#fff", fontSize: 14 }}>{item.phone}</Text>
 
       {/* 🔹 VEHICLE */}
-      <Text style={{ color: "#4ade80", marginTop: 6, fontWeight: "700" }}>
+      <Text style={{ color: "#4ade80", marginTop: 3, fontWeight: "700", fontSize: 16 }}>
         {item.vehicleNumber}
       </Text>
 
-      <Text style={{ color: "#cbd5f5" }}>
+      <Text style={{ color: "#fff" }}>
         {item.brand} {item.model}
       </Text>
 
@@ -889,9 +889,9 @@ const assignEmployee = async () => {
       {item.issue && (
         <Text
           style={{
-            color: "#facc15",
+            color: "#38bdf8",
             marginTop: 6,
-            fontSize: 14,
+            fontSize: 17,
             fontWeight: "600",
           }}
         >
@@ -901,8 +901,8 @@ const assignEmployee = async () => {
 
       {/* 🔹 ADDRESS */}
       {item.address && (
-        <Text style={{ color: "#94a3b8", marginTop: 4 }}>
-          📍 {item.address}
+        <Text style={{ color: "#fff", marginTop: 4 , fontSize: 16 }}>
+          {item.address}
         </Text>
       )}
 
@@ -916,7 +916,7 @@ const assignEmployee = async () => {
             fontWeight: "700",
           }}
         >
-          👨‍🔧 {item.assignedEmployeeName}
+          {item.assignedEmployeeName}
         </Text>
       )}
 
