@@ -6,8 +6,6 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -60,7 +58,7 @@ export default function LoginScreen() {
         router.replace("/(tabs)");
       }
     } catch (error) {
-      Alert.alert("Login Failed", error.message);
+      Alert.alert("Login Failed", "Invalid Credentials. Please try again.");
     } finally {
       setLoading(false);
     }
