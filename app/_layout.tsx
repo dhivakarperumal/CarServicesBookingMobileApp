@@ -38,7 +38,7 @@ export default function RootLayout() {
             <View
               style={{
                 width: "90%",
-                backgroundColor: "#111827",
+                backgroundColor: "#ffffff",
                 borderLeftWidth: 4,
                 borderLeftColor: "#0EA5E9",
                 padding: 15,
@@ -49,7 +49,7 @@ export default function RootLayout() {
               <Text style={{ color: "#0EA5E9", fontWeight: "bold" }}>
                 {text1}
               </Text>
-              <Text style={{ color: "#E5E7EB", marginTop: 4 }}>
+              <Text style={{ color: "#000000", marginTop: 4 }}>
                 {text2}
               </Text>
             </View>
@@ -58,7 +58,7 @@ export default function RootLayout() {
             <View
               style={{
                 width: "90%",
-                backgroundColor: "#111827",
+                backgroundColor: "#ffffff",
                 borderLeftWidth: 4,
                 borderLeftColor: "#EF4444",
                 padding: 15,
@@ -69,7 +69,7 @@ export default function RootLayout() {
               <Text style={{ color: "#EF4444", fontWeight: "bold" }}>
                 {text1}
               </Text>
-              <Text style={{ color: "#E5E7EB", marginTop: 4 }}>
+              <Text style={{ color: "#000000", marginTop: 4 }}>
                 {text2}
               </Text>
             </View>

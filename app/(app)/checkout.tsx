@@ -12,7 +12,6 @@ import {
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     StyleSheet,
     Text,
     TextInput,
@@ -229,12 +228,20 @@ export default function Checkout() {
     // ================= PLACE ORDER =================
     const placeOrder = async () => {
         if (!items.length) {
-            Alert.alert("Cart is empty");
+            Toast.show({
+                type: "error",
+                text1: "Cart Empty",
+                text2: "Add items before placing order",
+            });
             return;
         }
 
         if (!shipping.name || !shipping.phone || !shipping.address) {
-            Alert.alert("Fill delivery details");
+            Toast.show({
+                type: "error",
+                text1: "Missing Details",
+                text2: "Please fill delivery details",
+            });
             return;
         }
 
@@ -268,7 +275,11 @@ export default function Checkout() {
                 await saveOrder();
             }
         } catch (err: any) {
-            Alert.alert("Payment Failed", err?.description || err?.message);
+            Toast.show({
+                type: "error",
+                text1: "Payment Failed",
+                text2: err?.description || err?.message || "Something went wrong",
+            });
         } finally {
             setPlacing(false);
         }
