@@ -7,7 +7,6 @@ import {
   FlatList,
   StyleSheet,
   ActivityIndicator,
-  ScrollView,
 } from "react-native";
 import {
   collection,
@@ -116,7 +115,7 @@ export default function ManageAddress() {
       const snap = await getDocs(ref);
 
       const duplicate = snap.docs.some((doc) => {
-        if (editId && doc.id === editId) return false; 
+        if (editId && doc.id === editId) return false;
 
         const d = doc.data();
         return (
@@ -233,38 +232,40 @@ export default function ManageAddress() {
 
       {/* ===== SAVED ADDRESSES ===== */}
       {addresses.length > 0 && (
-        <FlatList
-          data={addresses}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
+        <>
+          {addresses.map((item) => (
+            <View key={item.id} style={styles.card}>
               <Text style={styles.name}>{item.fullName}</Text>
               <Text style={styles.text}>
                 {item.street}, {item.city}, {item.state} - {item.pinCode}
               </Text>
               <Text style={styles.text}>{item.phone}</Text>
 
-             <View style={styles.row}>
-  <TouchableOpacity
-    style={styles.editBtn}
-    onPress={() => handleEdit(item)}
-  >
-    <Ionicons name="create-outline" size={20} color="#fff" />
-  </TouchableOpacity>
+              <View style={styles.row}>
+                <TouchableOpacity
+                  style={styles.editBtn}
+                  onPress={() => handleEdit(item)}
+                >
+                  <Ionicons name="create-outline" size={20} color="#fff" />
+                </TouchableOpacity>
 
-  <TouchableOpacity
-    style={styles.deleteBtn}
-    onPress={() => {
-      setDeleteId(item.id);
-      setShowDeleteModal(true);
-    }}
-  >
-    <MaterialIcons name="delete-outline" size={22} color="#fff" />
-  </TouchableOpacity>
-</View>
+                <TouchableOpacity
+                  style={styles.deleteBtn}
+                  onPress={() => {
+                    setDeleteId(item.id);
+                    setShowDeleteModal(true);
+                  }}
+                >
+                  <MaterialIcons
+                    name="delete-outline"
+                    size={22}
+                    color="#fff"
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
-          )}
-        />
+          ))}
+        </>
       )}
 
       {/* ===== FORM ===== */}
@@ -446,17 +447,17 @@ const modalStyles = StyleSheet.create({
     padding: 10,
     marginRight: 10,
   },
- 
-  editBtn: {
-  backgroundColor: "#4CAF50",
-  padding: 10,
-  borderRadius: 8,
-  marginRight: 10,
-},
 
-deleteBtn: {
-  backgroundColor: "#F44336",
-  padding: 10,
-  borderRadius: 8,
-},
+  editBtn: {
+    backgroundColor: "#4CAF50",
+    padding: 10,
+    borderRadius: 8,
+    marginRight: 10,
+  },
+
+  deleteBtn: {
+    backgroundColor: "#F44336",
+    padding: 10,
+    borderRadius: 8,
+  },
 });
