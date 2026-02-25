@@ -44,14 +44,31 @@ export default function ShowAllBookings() {
   const [cancelReason, setCancelReason] = useState("");
 
   /* 🔥 AUTO TRACK NUMBER */
-  const generateTrackNumber = () => {
-    const date = new Date();
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `TRK-${yyyy}${mm}${dd}-${random}`;
-  };
+ const generateTrackNumber = async () => {
+  const now = new Date();
+
+  const yy = String(now.getFullYear()).slice(-2);
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+
+  const todayStart = new Date(now.setHours(0, 0, 0, 0));
+  const todayEnd = new Date(now.setHours(23, 59, 59, 999));
+
+  // 🔥 Query today's services
+  const q = query(
+    collection(db, "allServices"),
+    where("createdAt", ">=", todayStart),
+    where("createdAt", "<=", todayEnd)
+  );
+
+  const snapshot = await getDocs(q);
+
+  const count = snapshot.size + 1;
+
+  const runningNumber = String(count).padStart(3, "0");
+
+  return `TRK-${yy}-${mm}-${dd}-${runningNumber}`;
+};
 
   /* 🔥 FETCH BOOKINGS */
   useEffect(() => {
