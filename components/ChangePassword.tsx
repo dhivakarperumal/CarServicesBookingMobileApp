@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { auth } from "../firebase";
 import Toast from "react-native-toast-message";
-
+import { LinearGradient } from "expo-linear-gradient";
 
 const ChangePassword: React.FC = () => {
   const user: User | null = auth.currentUser;
@@ -161,17 +161,20 @@ const ChangePassword: React.FC = () => {
       </View>
 
       {/* Button */}
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleChangePassword}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#000" />
-        ) : (
-          <Text style={styles.buttonText}>Update Password</Text>
-        )}
-      </TouchableOpacity>
+      <TouchableOpacity onPress={handleChangePassword} disabled={loading} activeOpacity={0.8}>
+  <LinearGradient
+    colors={["#0EA5E9", "#2563EB"]}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 1 }}
+    style={styles.gradientButton}
+  >
+    {loading ? (
+      <ActivityIndicator color="#fff" />
+    ) : (
+      <Text style={styles.gradientText}>Update Password</Text>
+    )}
+  </LinearGradient>
+</TouchableOpacity>
     </View>
   );
 };
@@ -203,15 +206,20 @@ const styles = StyleSheet.create({
     color: "#fff",
     paddingVertical: 12,
   },
-  button: {
-    backgroundColor: "#38bdf8",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: 10,
-  },
-  buttonText: {
-    fontWeight: "bold",
-    color: "#000",
-  },
+
+  gradientButton: {
+  paddingVertical: 13,
+  paddingHorizontal: 40,
+  borderRadius: 50,
+  alignItems: "center",
+  marginTop: 25,
+  alignSelf: "center",   
+},
+
+gradientText: {
+  color: "#FFFFFF",
+  fontWeight: "700",
+  fontSize: 16,
+  letterSpacing: 0.5,
+},
 });
