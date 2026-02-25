@@ -15,6 +15,7 @@ import MyOrder from "../../components/MyOrder";
 import ManageAddress from "../../components/ManageAddress";
 import ChangePassword from "../../components/ChangePassword";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function AccountScreen() {
   const params = useLocalSearchParams();
@@ -52,7 +53,6 @@ export default function AccountScreen() {
     return unsub;
   }, []);
 
-
   const handleLogout = async () => {
     await signOut(auth);
   };
@@ -81,36 +81,34 @@ export default function AccountScreen() {
 
             <View style={styles.infoCard}>
               <Text style={styles.label}>Name</Text>
-              <Text style={styles.value}>
-                {profile?.username || "Not set"}
-              </Text>
+              <Text style={styles.value}>{profile?.username || "Not set"}</Text>
             </View>
 
             <View style={styles.infoCard}>
               <Text style={styles.label}>Email</Text>
-              <Text style={styles.value}>
-                {profile?.email || user?.email}
-              </Text>
+              <Text style={styles.value}>{profile?.email || user?.email}</Text>
             </View>
 
             <View style={styles.infoCard}>
               <Text style={styles.label}>Phone</Text>
-              <Text style={styles.value}>
-                {profile?.mobile || "Not set"}
-              </Text>
+              <Text style={styles.value}>{profile?.mobile || "Not set"}</Text>
             </View>
 
-            <TouchableOpacity
-              style={styles.logoutBtn}
-              onPress={handleLogout}
-            >
-              <Text style={styles.logoutText}>Logout</Text>
+            <TouchableOpacity onPress={handleLogout} activeOpacity={0.8}>
+              <LinearGradient
+                colors={["#0EA5E9", "#2563EB"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientLogout}
+              >
+                <Text style={styles.gradientLogoutText}>Logout</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         );
 
-      case "changepassword":  
-      return <ChangePassword />;
+      case "changepassword":
+        return <ChangePassword />;
 
       case "orders":
         return <MyOrder />;
@@ -156,24 +154,15 @@ export default function AccountScreen() {
           ["changepassword", "Change Password"],
           ["orders", "Orders"],
           ["address", "Address"],
-          
         ].map(([key, label]) => {
           const active = activeTab === key;
           return (
             <TouchableOpacity
               key={key}
               onPress={() => setActiveTab(key)}
-              style={[
-                styles.tabButton,
-                active && styles.activeTab,
-              ]}
+              style={[styles.tabButton, active && styles.activeTab]}
             >
-              <Text
-                style={[
-                  styles.tabText,
-                  active && styles.activeTabText,
-                ]}
-              >
+              <Text style={[styles.tabText, active && styles.activeTabText]}>
                 {label}
               </Text>
             </TouchableOpacity>
@@ -225,7 +214,7 @@ const styles = StyleSheet.create({
   tabText: {
     color: "#fff",
     fontWeight: "600",
-    lineHeight: 16,        // 👈 important
+    lineHeight: 16, // 👈 important
     includeFontPadding: false,
   },
   activeTabText: {
@@ -266,4 +255,19 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
   },
+  gradientLogout: {
+  paddingVertical: 13,
+  paddingHorizontal: 40,
+  borderRadius: 50,
+  alignItems: "center",
+  marginTop: 25,
+  alignSelf: "center",   // ⭐ centered pill (NOT full width)
+},
+
+gradientLogoutText: {
+  color: "#FFFFFF",
+  fontWeight: "700",
+  fontSize: 16,
+  letterSpacing: 0.5,
+},
 });
