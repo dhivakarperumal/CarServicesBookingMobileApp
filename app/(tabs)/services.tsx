@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { db } from "../../firebase";
 import { FontAwesome } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface Service {
   id: string;
@@ -53,19 +54,33 @@ export default function Services() {
       )}
 
       {/* TITLE */}
-      <Text style={styles.title}>{item.name}</Text>
+      <Text
+  style={styles.title}
+  numberOfLines={1}
+  ellipsizeMode="tail"
+>
+  {item.name}
+</Text>
 
       {/* SPARE PARTS */}
-      {item.sparePartsIncluded?.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Includes:</Text>
-          {item.sparePartsIncluded.map((part, index) => (
-            <Text key={index} style={styles.listItem}>
-              <FontAwesome name="check" size={14} color="#0EA5E9" /> {part}
-            </Text>
-          ))}
-        </View>
-      )}
+      <View style={styles.section}>
+  <Text style={styles.sectionTitle}>Includes:</Text>
+
+  {[0, 1, 2].map((i) => {
+    const part = item.sparePartsIncluded?.[i];
+    return (
+      <Text key={i} style={styles.listItem}>
+        {part ? (
+          <>
+            <FontAwesome name="check" size={12} color="#0EA5E9" /> {part}
+          </>
+        ) : (
+          " "
+        )}
+      </Text>
+    );
+  })}
+</View>
 
       {/* SUPPORTED BRANDS */}
       {item.supportedBrands?.length > 0 && (
@@ -79,11 +94,20 @@ export default function Services() {
 
       {/* BUTTON */}
       <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push(`/(app)/service/${item.id}`)}
-      >
-        <Text style={styles.buttonText}>View Details</Text>
-      </TouchableOpacity>
+  onPress={() => router.push(`/(app)/service/${item.id}`)}
+  activeOpacity={0.8}
+>
+  <LinearGradient
+    colors={["#0EA5E9", "#2563EB"]}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 1 }}
+    style={styles.gradientButton}
+  >
+    <Text style={styles.gradientButtonText}>
+      View More
+    </Text>
+  </LinearGradient>
+</TouchableOpacity>
     </View>
   );
 
@@ -92,6 +116,8 @@ export default function Services() {
       <FlatList
         data={services}
         keyExtractor={(item) => item.id}
+         numColumns={2}   // 👈 ADD THIS
+  columnWrapperStyle={{ justifyContent: "space-between" }}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -112,33 +138,36 @@ const styles = StyleSheet.create({
     padding: 16,
   },
 
-  card: {
-    backgroundColor: "#111827",
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "rgba(14,165,233,0.25)",
-  },
+card: {
+  backgroundColor: "#111827",
+  borderRadius: 16,
+  padding: 10,
+  marginBottom: 16,
+  borderWidth: 1,
+  borderColor: "rgba(14,165,233,0.25)",
+  width: "48%",
+  minHeight: 240,   // 👈 Standard height
+  justifyContent: "space-between",
+},
 
-  image: {
-    width: "100%",
-    height: 180,
-    borderRadius: 14,
-    marginBottom: 14,
-  },
+ image: {
+  width: "100%",
+  height: 100,
+  borderRadius: 12,
+  marginBottom: 8,
+},
 
-  imagePlaceholder: {
-    width: "100%",
-    height: 180,
-    backgroundColor: "#1F2937",
-    borderRadius: 14,
-    marginBottom: 14,
-  },
+imagePlaceholder: {
+  width: "100%",
+  height: 100,
+  backgroundColor: "#1F2937",
+  borderRadius: 12,
+  marginBottom: 8,
+},
 
   title: {
     color: "#FFFFFF",
-    fontSize: 20,
+    fontSize: 15,
     fontVariant: ["small-caps"],
     fontWeight: "700",
     marginBottom: 8,
@@ -170,24 +199,27 @@ const styles = StyleSheet.create({
 
   listItem: {
     color: "#E5E7EB",
-    fontSize: 14,
-    marginBottom: 2,
-    lineHeight: 20,
+    fontSize: 12,
+    marginBottom: 0,
+    lineHeight: 18,
   },
 
-  button: {
-    marginTop: 10,
-    backgroundColor: "#0EA5E9",
-    paddingVertical: 10,
-    borderRadius: 20,
-    alignItems: "center",
-  },
+gradientButton: {
+  alignSelf: "center",   // 👈 center it
+  width: "70%",          // 👈 decrease width (you can try 60% / 65%)
+  paddingVertical: 7,    // slightly smaller
+  borderRadius: 25,
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: 2,
+},
 
-  buttonText: {
-    color: "#000",
-    fontWeight: "700",
-    fontSize: 13,
-  },
+gradientButtonText: {
+  color: "#FFFFFF",
+  fontWeight: "700",
+  fontSize: 13,
+  letterSpacing: 0.5,
+},
 
   empty: {
     color: "#64748B",
