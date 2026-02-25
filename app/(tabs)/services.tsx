@@ -226,9 +226,9 @@ const styles = StyleSheet.create({
   },
 
   gradientButton: {
-    alignSelf: "center",   // 👈 center it
-    width: "70%",          // 👈 decrease width (you can try 60% / 65%)
-    paddingVertical: 7,    // slightly smaller
+    alignSelf: "center",   
+    width: "70%",          
+    paddingVertical: 7,    
     borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",

@@ -1,4 +1,6 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
+import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
     collection,
@@ -21,9 +23,9 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { auth, db } from "../../../firebase";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { auth, db } from "../../../firebase";
 
 export default function ProductDetails() {
     const { slug } = useLocalSearchParams();
@@ -72,26 +74,26 @@ export default function ProductDetails() {
     const currentStock = variant?.stock || 0;
 
     const increaseQty = () => {
-    if (currentStock === 0) {
-        Toast.show({
-            type: "error",
-            text1: "Out of Stock",
-            text2: "This product is currently unavailable",
-        });
-        return;
-    }
+        if (currentStock === 0) {
+            Toast.show({
+                type: "error",
+                text1: "Out of Stock",
+                text2: "This product is currently unavailable",
+            });
+            return;
+        }
 
-    if (qty >= currentStock) {
-        Toast.show({
-            type: "warning",
-            text1: "Stock Limit Reached",
-            text2: `Only ${currentStock} items available`,
-        });
-        return;
-    }
+        if (qty >= currentStock) {
+            Toast.show({
+                type: "warning",
+                text1: "Stock Limit Reached",
+                text2: `Only ${currentStock} items available`,
+            });
+            return;
+        }
 
-    setQty(qty + 1);
-};
+        setQty(qty + 1);
+    };
 
     const decreaseQty = () => {
         if (qty > 1) setQty(qty - 1);
@@ -256,53 +258,74 @@ export default function ProductDetails() {
                 </Text>
 
                 {/* BUTTONS */}
-                <TouchableOpacity
-                    style={styles.addBtn}
-                    onPress={handleAddToCart}
-                >
-                    <Text style={styles.btnText}>Add To Cart</Text>
-                </TouchableOpacity>
+                <View style={styles.buttonRow}>
+                    {/* Add To Cart */}
+                    <TouchableOpacity
+                        style={{ flex: 1, marginRight: 8 }}
+                        onPress={handleAddToCart}
+                        activeOpacity={0.8}
+                    >
+                        <LinearGradient
+                            colors={["#0EA5E9", "#2563EB"]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.gradientCartButton}
+                        >
+                            <Ionicons name="cart-outline" size={18} color="#fff" />
+                            <Text style={styles.gradientCartText}>Add To Cart</Text>
+                        </LinearGradient>
+                    </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={styles.buyBtn}
-                    onPress={() => {
-                        const user = auth.currentUser;
+                    {/* Buy Now */}
+                    <TouchableOpacity
+                        style={{ flex: 1, marginLeft: 8 }}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                            const user = auth.currentUser;
 
-                        if (!user) {
-                            Toast.show({
-                                type: "warning",
-                                text1: "Login Required",
-                                text2: "Please login to continue",
+                            if (!user) {
+                                Toast.show({
+                                    type: "warning",
+                                    text1: "Login Required",
+                                    text2: "Please login to continue",
+                                });
+                                return;
+                            }
+
+                            if (currentStock === 0) {
+                                Toast.show({
+                                    type: "error",
+                                    text1: "Out of Stock",
+                                    text2: "This product is currently unavailable",
+                                });
+                                return;
+                            }
+
+                            router.push({
+                                pathname: "/(app)/checkout",
+                                params: {
+                                    isBuyNow: "true",
+                                    docId: product.docId,
+                                    name: product.name,
+                                    price: product.offerPrice,
+                                    image: product.images?.[0],
+                                    sku: variant.sku,
+                                    quantity: qty,
+                                },
                             });
-                            return;
-                        }
-
-                        if (currentStock === 0) {
-                            Toast.show({
-                                type: "error",
-                                text1: "Out of Stock",
-                                text2: "This product is currently unavailable",
-                            });
-                            return;
-                        }
-
-                        router.push({
-                            pathname: "/(app)/checkout",
-                            params: {
-                                isBuyNow: "true",
-                                docId: product.docId,
-                                name: product.name,
-                                price: product.offerPrice,
-                                image: product.images?.[0],
-                                sku: variant.sku,
-                                quantity: qty,
-                            },
-                        });
-                    }}
-                >
-                    <Text style={styles.buyText}>Buy Now</Text>
-                </TouchableOpacity>
-
+                        }}
+                    >
+                        <LinearGradient
+                            colors={["#2563EB", "#1D4ED8"]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.gradientBuyButton}
+                        >
+                            <Ionicons name="flash-outline" size={18} color="#fff" />
+                            <Text style={styles.gradientBuyText}>Buy Now</Text>
+                        </LinearGradient>
+                    </TouchableOpacity>
+                </View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -346,16 +369,12 @@ const styles = StyleSheet.create({
         marginBottom: 18,
     },
 
-    detailsContainer: {
-        marginTop: 25,
-    },
-
     pickerWrapper: {
-        width: 170,
         backgroundColor: "#071420",
         borderRadius: 12,
         borderWidth: 1,
         borderColor: "#0EA5E9",
+        marginTop: 10,
     },
     offerPrice: {
         color: "#0EA5E9",
@@ -380,11 +399,6 @@ const styles = StyleSheet.create({
 
     blueValue: {
         color: "#0EA5E9",
-        fontSize: 18,
-        fontWeight: "600",
-    },
-
-    stockValue: {
         fontSize: 18,
         fontWeight: "600",
     },
@@ -434,34 +448,14 @@ const styles = StyleSheet.create({
         color: "#6B7280",
         textDecorationLine: "line-through",
     },
-    pickerWrapper: {
-        backgroundColor: "#111827",
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "rgba(14,165,233,0.3)",
-        marginTop: 10,
-    },
 
-    picker: {
-        color: "#FFFFFF",   // selected value color
-    },
+
     detailsContainer: {
         marginTop: 20,
         gap: 18,
     },
 
-    label: {
-        color: "#9CA3AF",
-        fontSize: 16,
-    },
-
     stockValue: {
-        fontSize: 18,
-        fontWeight: "600",
-    },
-
-    blueValue: {
-        color: "#0EA5E9",
         fontSize: 18,
         fontWeight: "600",
     },
@@ -472,32 +466,7 @@ const styles = StyleSheet.create({
         gap: 20,
     },
 
-    circleBtn: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: "#0EA5E9",
-        justifyContent: "center",
-        alignItems: "center",
-    },
 
-    circleText: {
-        color: "#0EA5E9",
-        fontSize: 18,
-        fontWeight: "bold",
-    },
-
-    pickerWrapper: {
-        backgroundColor: "#071420",
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#0EA5E9",
-    },
-
-    picker: {
-        color: "#0EA5E9",
-    },
     sectionTitle: {
         color: "white",
         fontSize: 18,
@@ -506,11 +475,6 @@ const styles = StyleSheet.create({
     description: {
         color: "#CBD5E1",
         marginTop: 8,
-    },
-    qtyRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 20,
     },
     qtyBtn: {
         backgroundColor: "#111827",
@@ -551,5 +515,40 @@ const styles = StyleSheet.create({
         textAlign: "center",
         color: "#0EA5E9",
         fontWeight: "bold",
+    },
+    gradientCartButton: {
+        flexDirection: "row",
+        paddingVertical: 14,
+        borderRadius: 30,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    gradientBuyButton: {
+        flexDirection: "row",
+        paddingVertical: 14,
+        borderRadius: 30,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    gradientCartText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
+        fontSize: 15,
+        marginLeft: 8,
+        letterSpacing: 0.5,
+    },
+
+    gradientBuyText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
+        fontSize: 15,
+        marginLeft: 8,
+        letterSpacing: 0.5,
+    },
+    buttonRow: {
+        flexDirection: "row",
+        marginTop: 20,
     },
 });

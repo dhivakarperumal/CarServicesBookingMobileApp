@@ -122,12 +122,12 @@ export default function Settings() {
           path="/(Employees)/employees"
         />
 
-          <SettingCard
+          {/* <SettingCard
           icon={<Ionicons name="cube-outline" size={22} color="#059669" />}
           title="Assigned Services"
           desc="View and manage assigned services."
           path="/(admin-settings)/assign"
-        />
+        /> */}
 
       </ScrollView>
     </SafeAreaView>

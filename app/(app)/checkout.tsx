@@ -25,6 +25,8 @@ import { auth, db } from "../../firebase";
 import { reduceStockAfterPurchase } from "../utils/reduceStockAfterPurchase";
 import { saveUserAddress } from "../utils/saveUserAddress";
 import Toast from "react-native-toast-message";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 
 // ================= ORDER COUNTER =================
 const generateOrderNumber = async () => {
@@ -450,15 +452,28 @@ export default function Checkout() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    style={styles.placeBtn}
                     onPress={placeOrder}
                     disabled={placing}
+                    activeOpacity={0.8}
                 >
-                    {placing ? (
-                        <ActivityIndicator color="#000" />
-                    ) : (
-                        <Text style={styles.btnText}>PLACE ORDER</Text>
-                    )}
+                    <LinearGradient
+                        colors={["#0EA5E9", "#2563EB"]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={[
+                            styles.gradientPlaceButton,
+                            placing && { opacity: 0.7 }, // slight fade when loading
+                        ]}
+                    >
+                        {placing ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <>
+                                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                                <Text style={styles.gradientPlaceText}>Place Order</Text>
+                            </>
+                        )}
+                    </LinearGradient>
                 </TouchableOpacity>
             </KeyboardAwareScrollView>
         </SafeAreaView>
@@ -522,16 +537,23 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: "bold",
     },
-    placeBtn: {
-        marginTop: 30,
-        backgroundColor: "#0EA5E9",
-        padding: 16,
+    gradientPlaceButton: {
+        marginTop: 20,
+        paddingVertical: 14,
+        paddingHorizontal: 35,   // controls width
         borderRadius: 30,
+        flexDirection: "row",
+        justifyContent: "center",
         alignItems: "center",
+        alignSelf: "center",
     },
-    btnText: {
-        color: "#000",
-        fontWeight: "bold",
+
+    gradientPlaceText: {
+        color: "#FFFFFF",
+        fontSize: 15,
+        fontWeight: "700",
+        marginLeft: 8,
+        letterSpacing: 0.5,
     },
     paymentRow: {
         marginBottom: 7,

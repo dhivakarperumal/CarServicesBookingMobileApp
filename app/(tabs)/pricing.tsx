@@ -12,6 +12,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function Pricing() {
     const [packages, setPackages] = useState<any[]>([]);
@@ -73,10 +74,6 @@ export default function Pricing() {
                                     </View>
                                 ))}
                                 <Pressable
-                                    style={({ pressed }) => [
-                                        styles.bookButton,
-                                        pressed && { opacity: 0.7 },
-                                    ]}
                                     onPress={() =>
                                         router.push({
                                             pathname: "/(tabs)/booking",
@@ -87,8 +84,18 @@ export default function Pricing() {
                                             },
                                         })
                                     }
+                                    style={({ pressed }) => [
+                                        { opacity: pressed ? 0.8 : 1 },
+                                    ]}
                                 >
-                                    <Text style={styles.bookButtonText}>Book Now</Text>
+                                    <LinearGradient
+                                        colors={["#0EA5E9", "#2563EB"]}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 1 }}
+                                        style={styles.gradientBookButton}
+                                    >
+                                        <Text style={styles.gradientBookText}>Book Now</Text>
+                                    </LinearGradient>
                                 </Pressable>
                             </View>
 
@@ -142,18 +149,21 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         marginVertical: 8,
     },
-    bookButton: {
-        marginTop: 15,
-        backgroundColor: "#0EA5E9",
+    gradientBookButton: {
+        marginTop: 18,
         paddingVertical: 12,
-        borderRadius: 8,
+        paddingHorizontal: 50,
+        borderRadius: 30,
+        justifyContent: "center",
         alignItems: "center",
+        alignSelf: "center",
     },
 
-    bookButtonText: {
-        color: "white",
+    gradientBookText: {
+        color: "#FFFFFF",
         fontSize: 16,
-        fontWeight: "600",
+        fontWeight: "700",
+        letterSpacing: 0.5,
     },
     perText: {
         fontSize: 14,        // smaller than price

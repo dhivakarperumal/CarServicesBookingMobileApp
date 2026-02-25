@@ -16,8 +16,9 @@ import {
 import { auth, db } from "../../firebase";
 import Toast from "react-native-toast-message";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { KeyboardAvoidingView, Platform,Image } from "react-native";
+import { KeyboardAvoidingView, Platform, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -260,33 +261,43 @@ export default function RegisterScreen() {
 
       {/* FIXED BOTTOM SECTION */}
       <KeyboardAvoidingView
-  behavior={Platform.OS === "ios" ? "padding" : "height"}
->
-  <View style={styles.bottomContainer}>
-        <TouchableOpacity
-          style={styles.registerButton}
-          onPress={handleRegister}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.registerText}>Register</Text>
-          )}
-        </TouchableOpacity>
-
-        <Text style={styles.loginRedirect}>
-          Already have an account?{" "}
-          <Text
-            style={{ color: "#06B6D4" }}
-            onPress={() => router.push("/(auth)/login")}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity
+            onPress={handleRegister}
+            disabled={loading}
+            activeOpacity={0.8}
           >
-            Login
+            <LinearGradient
+              colors={["#0EA5E9", "#2563EB"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientRegisterButton}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Ionicons name="person-add-outline" size={20} color="#fff" />
+                  <Text style={styles.gradientRegisterText}>Register</Text>
+                </>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <Text style={styles.loginRedirect}>
+            Already have an account?{" "}
+            <Text
+              style={{ color: "#06B6D4" }}
+              onPress={() => router.push("/(auth)/login")}
+            >
+              Login
+            </Text>
           </Text>
-        </Text>
-     
+
         </View>
-</KeyboardAvoidingView>
+      </KeyboardAvoidingView>
 
     </SafeAreaView>
   );
@@ -367,12 +378,30 @@ const styles = StyleSheet.create({
 
   scrollContainer: {
     paddingHorizontal: 24,
-    
+
   },
 
   bottomContainer: {
     paddingHorizontal: 24,
     paddingBottom: 10,
     backgroundColor: "#0B1120",
+  },
+  gradientRegisterButton: {
+    flexDirection: "row",
+    paddingVertical: 14,
+    paddingHorizontal: 40,   // controls width
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+    marginTop: 16,
+  },
+
+  gradientRegisterText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 16,
+    marginLeft: 8,
+    letterSpacing: 0.5,
   },
 });
