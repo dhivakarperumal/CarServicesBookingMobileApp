@@ -25,6 +25,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import Toast from "react-native-toast-message";
 import { Modal } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 const INDIAN_STATES = [
   "Tamil Nadu", "Kerala", "Karnataka", "Maharashtra",
@@ -329,18 +330,25 @@ export default function ManageAddress() {
       </Picker>
 
       <TouchableOpacity
-        style={styles.saveBtn}
-        onPress={handleSave}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#000" />
-        ) : (
-          <Text style={{ fontWeight: "700" }}>
-            {editId ? "Update Address" : "Add Address"}
-          </Text>
-        )}
-      </TouchableOpacity>
+  onPress={handleSave}
+  disabled={loading}
+  activeOpacity={0.8}
+>
+  <LinearGradient
+    colors={["#0EA5E9", "#2563EB"]}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 1 }}
+    style={styles.gradientSaveBtn}
+  >
+    {loading ? (
+      <ActivityIndicator color="#fff" />
+    ) : (
+      <Text style={styles.gradientSaveText}>
+        {editId ? "Update Address" : "Add Address"}
+      </Text>
+    )}
+  </LinearGradient>
+</TouchableOpacity>
       <Modal
         transparent
         visible={showDeleteModal}
@@ -406,13 +414,23 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 10,
   },
-  saveBtn: {
-    backgroundColor: "#38bdf8",
-    padding: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 10,
-  },
+
+
+  gradientSaveBtn: {
+  paddingVertical: 13,
+  paddingHorizontal: 40,
+  borderRadius: 50,
+  alignItems: "center",
+  marginTop: 25,
+  alignSelf: "center",   
+},
+
+gradientSaveText: {
+  color: "#FFFFFF",
+  fontWeight: "700",
+  fontSize: 16,
+  letterSpacing: 0.5,
+},
 
 });
 
