@@ -81,7 +81,7 @@ const ChangePassword: React.FC = () => {
 
       Toast.show({
         type: "success",
-        text1: "Success 🎉",
+        text1: "Success",
         text2: "Password updated successfully",
       });
 

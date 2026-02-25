@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { db } from "../../../firebase";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function ServiceDetails() {
   const { id } = useLocalSearchParams();
@@ -78,7 +79,7 @@ export default function ServiceDetails() {
           <Text style={styles.sectionTitle}>DESCRIPTION</Text>
           <Text style={styles.description}>{service.description}</Text>
 
-         
+
 
           {/* SUPPORTED BRANDS */}
           {service.supportedBrands?.length > 0 && (
@@ -94,7 +95,7 @@ export default function ServiceDetails() {
             </>
           )}
 
-           {/* SPARE PARTS */}
+          {/* SPARE PARTS */}
           {service.sparePartsIncluded?.length > 0 && (
             <>
               <Text style={styles.sectionTitle}>SPARE PARTS INCLUDED</Text>
@@ -108,8 +109,18 @@ export default function ServiceDetails() {
           )}
 
           {/* CTA */}
-          <TouchableOpacity style={styles.bookButton} onPress={() => router.push("/(tabs)/booking")}>
-            <Text style={styles.bookText}>BOOK SERVICE</Text>
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/booking")}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={["#0EA5E9", "#2563EB"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientBookButton}
+            >
+              <Text style={styles.gradientBookText}>Book Service</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
@@ -245,20 +256,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
-
-  bookButton: {
-    backgroundColor: "#0EA5E9",
+  gradientBookButton: {
     paddingVertical: 14,
-    borderRadius: 6,
+    paddingHorizontal: 40,
+    borderRadius: 50,
+    justifyContent: "center",
     alignItems: "center",
-    marginBottom: 30,
-    marginTop:20,
+    marginTop: 20,
+    alignSelf: "center",
   },
 
-  bookText: {
-    color: "#000",
-    fontWeight: "800",
-    fontSize: 12,
-    letterSpacing: 2,
+  gradientBookText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 16,
+    letterSpacing: 0.5,
   },
 });

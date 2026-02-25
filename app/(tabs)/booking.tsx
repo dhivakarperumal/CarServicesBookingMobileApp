@@ -20,6 +20,7 @@ import { auth, db } from "../../firebase";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { LinearGradient } from "expo-linear-gradient";
 import Toast from "react-native-toast-message";
+import { useRouter } from "expo-router";
 import { ImageBackground } from "react-native";
 
 const BOOKING_STATUS = {
@@ -40,6 +41,7 @@ export default function BookingScreen() {
   });
 
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const generateBookingId = async () => {
     const counterRef = doc(db, "counters", "bookingCounter");
@@ -113,9 +115,16 @@ export default function BookingScreen() {
 
       Toast.show({
         type: "success",
-        text1: "Booking Successful 🎉",
+        text1: "Booking Successful",
         text2: `Booking ID: ${bookingId}`,
       });
+
+      setTimeout(() => {
+        router.push({
+          pathname: "/(tabs)/profile",
+          params: { tab: "servicestatus" },
+        });
+      }, 1500);
 
       setFormData({
         name: "",
@@ -220,7 +229,7 @@ export default function BookingScreen() {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.gradientButtonText}>Book Service</Text>
+            <Text style={styles.gradientButtonText}>Book Now</Text>
           )}
         </LinearGradient>
       </TouchableOpacity>
