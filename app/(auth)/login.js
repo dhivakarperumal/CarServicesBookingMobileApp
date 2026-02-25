@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -132,15 +133,26 @@ export default function LoginScreen() {
 
       {/* Sign In Button */}
       <TouchableOpacity
-        style={styles.loginButton}
         onPress={handleLogin}
         disabled={loading}
+        activeOpacity={0.8}
+        style={{ marginTop: 10 }}
       >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.loginText}>Sign In</Text>
-        )}
+        <LinearGradient
+          colors={["#0EA5E9", "#2563EB"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientLoginButton}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <>
+              <Ionicons name="log-in-outline" size={20} color="#fff" />
+              <Text style={styles.gradientLoginText}>Sign In</Text>
+            </>
+          )}
+        </LinearGradient>
       </TouchableOpacity>
 
       {/* Register */}
@@ -203,24 +215,29 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 
-  loginButton: {
-    backgroundColor: "#0EA5E9",
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    marginTop: 10,
-  },
-
-  loginText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
   registerText: {
     textAlign: "center",
     color: "#94A3B8",
     marginTop: 24,
     fontSize: 14,
+  },
+
+  gradientLoginButton: {
+    flexDirection: "row",
+    paddingVertical: 14,
+    paddingHorizontal: 40,   // controls width
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",     // centers button
+    marginTop: 10,
+  },
+
+  gradientLoginText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 16,
+    marginLeft: 8,
+    letterSpacing: 0.5,
   },
 });
