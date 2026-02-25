@@ -258,68 +258,74 @@ export default function ProductDetails() {
                 </Text>
 
                 {/* BUTTONS */}
-                <TouchableOpacity
-                    onPress={handleAddToCart}
-                    activeOpacity={0.8}
-                >
-                    <LinearGradient
-                        colors={["#0EA5E9", "#2563EB"]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.gradientCartButton}
+                <View style={styles.buttonRow}>
+                    {/* Add To Cart */}
+                    <TouchableOpacity
+                        style={{ flex: 1, marginRight: 8 }}
+                        onPress={handleAddToCart}
+                        activeOpacity={0.8}
                     >
-                        <Ionicons name="cart-outline" size={18} color="#fff" />
-                        <Text style={styles.gradientCartText}>Add To Cart</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
+                        <LinearGradient
+                            colors={["#0EA5E9", "#2563EB"]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.gradientCartButton}
+                        >
+                            <Ionicons name="cart-outline" size={18} color="#fff" />
+                            <Text style={styles.gradientCartText}>Add To Cart</Text>
+                        </LinearGradient>
+                    </TouchableOpacity>
 
-                <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => {
-                        const user = auth.currentUser;
+                    {/* Buy Now */}
+                    <TouchableOpacity
+                        style={{ flex: 1, marginLeft: 8 }}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                            const user = auth.currentUser;
 
-                        if (!user) {
-                            Toast.show({
-                                type: "warning",
-                                text1: "Login Required",
-                                text2: "Please login to continue",
+                            if (!user) {
+                                Toast.show({
+                                    type: "warning",
+                                    text1: "Login Required",
+                                    text2: "Please login to continue",
+                                });
+                                return;
+                            }
+
+                            if (currentStock === 0) {
+                                Toast.show({
+                                    type: "error",
+                                    text1: "Out of Stock",
+                                    text2: "This product is currently unavailable",
+                                });
+                                return;
+                            }
+
+                            router.push({
+                                pathname: "/(app)/checkout",
+                                params: {
+                                    isBuyNow: "true",
+                                    docId: product.docId,
+                                    name: product.name,
+                                    price: product.offerPrice,
+                                    image: product.images?.[0],
+                                    sku: variant.sku,
+                                    quantity: qty,
+                                },
                             });
-                            return;
-                        }
-
-                        if (currentStock === 0) {
-                            Toast.show({
-                                type: "error",
-                                text1: "Out of Stock",
-                                text2: "This product is currently unavailable",
-                            });
-                            return;
-                        }
-
-                        router.push({
-                            pathname: "/(app)/checkout",
-                            params: {
-                                isBuyNow: "true",
-                                docId: product.docId,
-                                name: product.name,
-                                price: product.offerPrice,
-                                image: product.images?.[0],
-                                sku: variant.sku,
-                                quantity: qty,
-                            },
-                        });
-                    }}
-                >
-                    <LinearGradient
-                        colors={["#2563EB", "#1D4ED8"]}   // slightly darker premium blue
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.gradientBuyButton}
+                        }}
                     >
-                        <Ionicons name="flash-outline" size={18} color="#fff" />
-                        <Text style={styles.gradientBuyText}>Buy Now</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
+                        <LinearGradient
+                            colors={["#2563EB", "#1D4ED8"]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.gradientBuyButton}
+                        >
+                            <Ionicons name="flash-outline" size={18} color="#fff" />
+                            <Text style={styles.gradientBuyText}>Buy Now</Text>
+                        </LinearGradient>
+                    </TouchableOpacity>
+                </View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -395,7 +401,7 @@ const styles = StyleSheet.create({
         color: "#0EA5E9",
         fontSize: 18,
         fontWeight: "600",
-    },  
+    },
 
     /* Quantity */
     qtyWrapper: {
@@ -442,7 +448,7 @@ const styles = StyleSheet.create({
         color: "#6B7280",
         textDecorationLine: "line-through",
     },
-   
+
 
     detailsContainer: {
         marginTop: 20,
@@ -460,7 +466,7 @@ const styles = StyleSheet.create({
         gap: 20,
     },
 
- 
+
     sectionTitle: {
         color: "white",
         fontSize: 18,
@@ -511,13 +517,20 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     gradientCartButton: {
-        flexDirection: "row",
-        paddingVertical: 14,
-        borderRadius: 30,
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 15,
-    },
+  flexDirection: "row",
+  paddingVertical: 14,
+  borderRadius: 30,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+gradientBuyButton: {
+  flexDirection: "row",
+  paddingVertical: 14,
+  borderRadius: 30,
+  justifyContent: "center",
+  alignItems: "center",
+},
 
     gradientCartText: {
         color: "#FFFFFF",
@@ -527,20 +540,15 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5,
     },
 
-    gradientBuyButton: {
-        flexDirection: "row",
-        paddingVertical: 14,
-        borderRadius: 30,
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 12,
-    },
-
     gradientBuyText: {
         color: "#FFFFFF",
         fontWeight: "700",
         fontSize: 15,
         marginLeft: 8,
         letterSpacing: 0.5,
+    },
+    buttonRow: {
+        flexDirection: "row",
+        marginTop: 20,
     },
 });
