@@ -15,7 +15,6 @@ import {
 } from "react-native";
 import { auth, db } from "../../firebase";
 import { Dimensions, Image, Linking } from "react-native";
-import { WebView } from "react-native-webview";
 
 const STATUS_FLOW = [
   "BOOKED",

@@ -20,6 +20,7 @@ import { auth, db } from "../../firebase";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { LinearGradient } from "expo-linear-gradient";
 import Toast from "react-native-toast-message";
+import { useRouter } from "expo-router";
 
 const BOOKING_STATUS = {
   BOOKED: "Booked",
@@ -39,6 +40,7 @@ export default function BookingScreen() {
   });
 
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const generateBookingId = async () => {
     const counterRef = doc(db, "counters", "bookingCounter");
@@ -104,7 +106,7 @@ export default function BookingScreen() {
 
       await addDoc(collection(db, "bookings"), {
         bookingId,
-        uid: user.uid,             
+        uid: user.uid,
         ...formData,
         status: BOOKING_STATUS.BOOKED,
         createdAt: serverTimestamp(),
@@ -115,6 +117,13 @@ export default function BookingScreen() {
         text1: "Booking Successful",
         text2: `Booking ID: ${bookingId}`,
       });
+
+      setTimeout(() => {
+        router.push({
+          pathname: "/(tabs)/profile",
+          params: { tab: "servicestatus" },
+        });
+      }, 1500);
 
       setFormData({
         name: "",
