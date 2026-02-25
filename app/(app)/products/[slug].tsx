@@ -14,7 +14,6 @@ import {
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     Image,
     ScrollView,
     StyleSheet,
@@ -24,6 +23,7 @@ import {
 } from "react-native";
 import { auth, db } from "../../../firebase";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 export default function ProductDetails() {
     const { slug } = useLocalSearchParams();
@@ -72,41 +72,127 @@ export default function ProductDetails() {
     const currentStock = variant?.stock || 0;
 
     const increaseQty = () => {
-        if (qty < currentStock) setQty(qty + 1);
-    };
+    if (currentStock === 0) {
+        Toast.show({
+            type: "error",
+            text1: "Out of Stock",
+            text2: "This product is currently unavailable",
+        });
+        return;
+    }
+
+    if (qty >= currentStock) {
+        Toast.show({
+            type: "warning",
+            text1: "Stock Limit Reached",
+            text2: `Only ${currentStock} items available`,
+        });
+        return;
+    }
+
+    setQty(qty + 1);
+};
 
     const decreaseQty = () => {
         if (qty > 1) setQty(qty - 1);
     };
 
+    // const handleAddToCart = async () => {
+    //     const user = auth.currentUser;
+
+    //     if (!user) {
+    //         Alert.alert("Login Required", "Please login first");
+    //         return;
+    //     }
+
+    //     const cartRef = doc(db, "users", user.uid, "cart", product.docId);
+    //     const existing = await getDoc(cartRef);
+
+    //     if (existing.exists()) {
+    //         await updateDoc(cartRef, {
+    //             quantity: existing.data().quantity + qty,
+    //         });
+    //     } else {
+    //         await setDoc(cartRef, {
+    //             docId: product.docId,
+    //             sku: variant.sku,
+    //             name: product.name,
+    //             price: product.offerPrice,
+    //             image: product.images?.[0],
+    //             quantity: qty,
+    //             createdAt: serverTimestamp(),
+    //         });
+    //     }
+
+    //     router.push("/(app)/cart");
+    // };
+
     const handleAddToCart = async () => {
         const user = auth.currentUser;
 
         if (!user) {
-            Alert.alert("Login Required", "Please login first");
+            Toast.show({
+                type: "warning",
+                text1: "Login Required",
+                text2: "Please login to continue",
+            });
             return;
         }
 
-        const cartRef = doc(db, "users", user.uid, "cart", product.docId);
-        const existing = await getDoc(cartRef);
-
-        if (existing.exists()) {
-            await updateDoc(cartRef, {
-                quantity: existing.data().quantity + qty,
+        if (currentStock === 0) {
+            Toast.show({
+                type: "error",
+                text1: "Out of Stock",
+                text2: "This product is currently unavailable",
             });
-        } else {
-            await setDoc(cartRef, {
-                docId: product.docId,
-                sku: variant.sku,
-                name: product.name,
-                price: product.offerPrice,
-                image: product.images?.[0],
-                quantity: qty,
-                createdAt: serverTimestamp(),
-            });
+            return;
         }
 
-        router.push("/(app)/cart");
+        try {
+            const cartRef = doc(db, "users", user.uid, "cart", product.docId);
+            const existing = await getDoc(cartRef);
+
+            if (existing.exists()) {
+                const newQty = existing.data().quantity + qty;
+
+                if (newQty > currentStock) {
+                    Toast.show({
+                        type: "warning",
+                        text1: "Stock Limit Reached",
+                        text2: `Only ${currentStock} items available`,
+                    });
+                    return;
+                }
+
+                await updateDoc(cartRef, {
+                    quantity: newQty,
+                });
+            } else {
+                await setDoc(cartRef, {
+                    docId: product.docId,
+                    sku: variant.sku,
+                    name: product.name,
+                    price: product.offerPrice,
+                    image: product.images?.[0],
+                    quantity: qty,
+                    createdAt: serverTimestamp(),
+                });
+            }
+
+            Toast.show({
+                type: "success",
+                text1: "Added to Cart",
+                text2: `${product.name} added successfully`,
+            });
+
+            router.push("/(app)/cart");
+        } catch (error) {
+            Toast.show({
+                type: "error",
+                text1: "Something went wrong",
+                text2: "Please try again",
+            });
+        }
     };
 
     return (
@@ -209,7 +295,27 @@ export default function ProductDetails() {
 
                 <TouchableOpacity
                     style={styles.buyBtn}
-                    onPress={() =>
+                    onPress={() => {
+                        const user = auth.currentUser;
+
+                        if (!user) {
+                            Toast.show({
+                                type: "warning",
+                                text1: "Login Required",
+                                text2: "Please login to continue",
+                            });
+                            return;
+                        }
+
+                        if (currentStock === 0) {
+                            Toast.show({
+                                type: "error",
+                                text1: "Out of Stock",
+                                text2: "This product is currently unavailable",
+                            });
+                            return;
+                        }
+
                         router.push({
                             pathname: "/(app)/checkout",
                             params: {
@@ -221,8 +327,8 @@ export default function ProductDetails() {
                                 sku: variant.sku,
                                 quantity: qty,
                             },
-                        })
-                    }
+                        });
+                    }}
                 >
                     <Text style={styles.buyText}>Buy Now</Text>
                 </TouchableOpacity>

@@ -74,6 +74,27 @@ export default function RootLayout() {
               </Text>
             </View>
           ),
+          // 🔥 NEW WARNING TYPE
+          warning: ({ text1, text2 }) => (
+            <View
+              style={{
+                width: "90%",
+                backgroundColor: "#ffffff",
+                borderLeftWidth: 4,
+                borderLeftColor: "#F59E0B", // amber
+                padding: 15,
+                borderRadius: 12,
+                alignSelf: "center",
+              }}
+            >
+              <Text style={{ color: "#F59E0B", fontWeight: "bold" }}>
+                {text1}
+              </Text>
+              <Text style={{ color: "#000000", marginTop: 4 }}>
+                {text2}
+              </Text>
+            </View>
+          ),
         }}
       />
     </>
