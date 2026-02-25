@@ -25,6 +25,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { auth, db } from "../../firebase";
 import { reduceStockAfterPurchase } from "../utils/reduceStockAfterPurchase";
 import { saveUserAddress } from "../utils/saveUserAddress";
+import Toast from "react-native-toast-message";
 
 // ================= ORDER COUNTER =================
 const generateOrderNumber = async () => {
@@ -214,7 +215,11 @@ export default function Checkout() {
             await clearCart();
         }
 
-        Alert.alert("Success", `Order ${orderNumber} placed`);
+        Toast.show({
+            type: "success",
+            text1: "Order Placed",
+            text2: `Order ${orderNumber} placed successfully`,
+        });
         router.push({
             pathname: "/(tabs)/profile",
             params: { tab: "orders" },
@@ -518,8 +523,8 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     paymentRow: {
-        marginBottom: 10,
-        paddingVertical: 12,
+        marginBottom: 7,
+        paddingVertical: 5,
     },
     backBtn: {
         flexDirection: "row",
