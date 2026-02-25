@@ -24,6 +24,7 @@ import {
 import { db } from "../../firebase";
 import { Picker } from "@react-native-picker/picker";
 import { KeyboardAvoidingView, Platform } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function AdminAssignServices() {
   const [bookings, setBookings] = useState([]);
@@ -326,6 +327,7 @@ export default function AdminAssignServices() {
 
         {/* ➕ GLOBAL ASSIGN BUTTON */}
         <TouchableOpacity
+          activeOpacity={0.85}
           style={styles.fab}
           onPress={async () => {
             setSelectedBooking(null);
@@ -334,9 +336,7 @@ export default function AdminAssignServices() {
             setGlobalModalVisible(true);
           }}
         >
-          <Text style={{ color: "#fff", fontSize: 28, fontWeight: "900" }}>
-            +
-          </Text>
+          <MaterialCommunityIcons name="plus" size={26} color="#fff" />
         </TouchableOpacity>
 
         {/* 🔥 GLOBAL MODAL */}
@@ -686,17 +686,19 @@ const styles = StyleSheet.create({
   /* ➕ FAB */
   fab: {
     position: "absolute",
-    bottom: 60,
-    right: 20,
+    bottom: 24,
+    right: 24,
     backgroundColor: "#2563eb",
     width: 60,
     height: 60,
     borderRadius: 30,
-    justifyContent: "center",
     alignItems: "center",
-    elevation: 8,
+    justifyContent: "center",
+    zIndex: 100,
+
     shadowColor: "#38bdf8",
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
+    shadowOpacity: 0.6,
+    shadowRadius: 14,
+    elevation: 10,
   },
 });
