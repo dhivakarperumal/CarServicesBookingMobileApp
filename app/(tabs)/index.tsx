@@ -1,12 +1,11 @@
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
-import { Animated } from "react-native";
-import { collection, onSnapshot, orderBy, query, where, doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, onSnapshot, orderBy, query, where } from "firebase/firestore";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  Modal,
+  Animated, Dimensions, Image, Linking, Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,7 +13,6 @@ import {
   View
 } from "react-native";
 import { auth, db } from "../../firebase";
-import { Dimensions, Image, Linking } from "react-native";
 
 const STATUS_FLOW = [
   "BOOKED",
@@ -97,6 +95,8 @@ const whyData = [
   },
 ];
 
+
+
 const { width } = Dimensions.get("window");
 const REVIEW_CARD_WIDTH = width - 40;
 
@@ -119,6 +119,7 @@ export default function HomeScreen({ navigation }) {
   const [username, setUsername] = useState("");
 
   const [myVehicles, setMyVehicles] = useState([]);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
 
   const [reviews, setReviews] = useState([]);
   const extendedReviews = [...reviews, ...reviews];
@@ -231,6 +232,29 @@ export default function HomeScreen({ navigation }) {
       });
 
       setMyVehicles(Object.values(vehiclesMap));
+    });
+
+    return () => unsub();
+  }, [user]);
+
+  // Fetch My Vehicles from addServices
+  useEffect(() => {
+    if (!user) return;
+
+    const q = query(
+      collection(db, "allServices"),
+      where("uid", "==", user.uid),
+      where("addVehicle", "==", true),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setMyVehicles(data);
     });
 
     return () => unsub();
@@ -352,7 +376,7 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </LinearGradient>
 
-      {/* MY VEHICLES SECTION */}
+      {/* MY VEHICLES */}
       {myVehicles.length > 0 && (
         <>
           <View style={styles.premiumSectionHeader}>
@@ -369,23 +393,63 @@ export default function HomeScreen({ navigation }) {
           </View>
 
           <View style={{ marginBottom: 20 }}>
-            {myVehicles.map((vehicle, index) => (
-              <View key={index} style={styles.vehicleCard}>
-                <View style={styles.vehicleIconBox}>
-                  <Ionicons name="car" size={22} color="#0EA5E9" />
+            {myVehicles.map((vehicle) => (
+              <TouchableOpacity
+                key={vehicle.id}
+                style={styles.premiumCard}
+                activeOpacity={0.85}
+                onPress={() => setSelectedVehicle(vehicle)}
+              >
+
+                {/* Top Row */}
+                <View style={styles.cardTopRow}>
+                  <View style={styles.carIconBox}>
+                    <FontAwesome5 name="motorcycle" size={18} color="#0EA5E9" />
+                  </View>
+
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={styles.premiumCarName}>
+                      {vehicle.brand} {vehicle.model}
+                    </Text>
+                    <Text style={styles.premiumService}>
+                      {vehicle.vehicleType} • {vehicle.vehicleNumber}
+                    </Text>
+                  </View>
+
+                  <View
+                    style={[
+                      styles.premiumStatus,
+                      { backgroundColor: "#F59E0B" },
+                    ]}
+                  >
+                    <Text style={styles.premiumStatusText}>
+                      {vehicle.addVehicleStatus}
+                    </Text>
+                  </View>
                 </View>
 
-                <View style={{ marginLeft: 12, flex: 1 }}>
-                  <Text style={styles.vehicleNumber}>
-                    {vehicle.vehicleNumber}
+                {/* Divider */}
+                <View style={styles.cardDivider} />
+
+                {/* Bottom Row */}
+                <View style={styles.cardBottomRow}>
+                  <Text style={styles.bookingIdText}>
+                    ID: {vehicle.addVehicleId}
                   </Text>
-                  <Text style={styles.vehicleDetails}>
-                    {vehicle.brand} {vehicle.model} • {vehicle.vehicleType}
+
+                  <Text style={styles.viewDetailsText}>
+                    {vehicle.serviceStatus}
                   </Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
+          {selectedVehicle && (
+            <VehicleDetailModal
+              vehicle={selectedVehicle}
+              onClose={() => setSelectedVehicle(null)}
+            />
+          )}
         </>
       )}
 
@@ -498,7 +562,7 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.whySwiperSubtitle}>{item.subtitle}</Text>
           </View>
         )}
-        contentContainerStyle={{ }}
+        contentContainerStyle={{}}
         snapToInterval={CARD_WIDTH + CARD_MARGIN}
         decelerationRate="fast"
       />
@@ -555,7 +619,7 @@ export default function HomeScreen({ navigation }) {
             </Text>
           </View>
         )}
-        contentContainerStyle={{ }}
+        contentContainerStyle={{}}
         decelerationRate="fast"
       />
 
@@ -789,6 +853,224 @@ function BookingDetailModal({ booking, onClose }) {
   );
 }
 
+function VehicleDetailModal({ vehicle, onClose }) {
+  const normalizedStatus =
+    STATUS_NORMALIZER[vehicle.serviceStatus] || vehicle.serviceStatus;
+  return (
+    <Modal visible transparent animationType="slide">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalCard}>
+          <ScrollView showsVerticalScrollIndicator={false}>
+
+            {/* Close */}
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+            >
+              <Text style={{ color: "#fff", fontSize: 18 }}>✕</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.modalTitle}>
+              Vehicle Details
+            </Text>
+
+            {/* Add Vehicle ID */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Vehicle ID</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.addVehicleId}
+              </Text>
+            </View>
+
+            {/* Name */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Customer Name</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.name}
+              </Text>
+            </View>
+
+            {/* Phone */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Phone</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.phone}
+              </Text>
+            </View>
+
+            {/* Email */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Email</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.email}
+              </Text>
+            </View>
+
+            {/* Brand */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Brand</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.brand}
+              </Text>
+            </View>
+
+            {/* Model */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Model</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.model}
+              </Text>
+            </View>
+
+            {/* Vehicle Type */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Vehicle Type</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.vehicleType}
+              </Text>
+            </View>
+
+            {/* Vehicle Number */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Vehicle Number</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.vehicleNumber}
+              </Text>
+            </View>
+
+            {/* Issue */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Issue</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.issue}
+              </Text>
+            </View>
+
+            {/* Address */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Address</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.address}
+              </Text>
+            </View>
+
+            {/* Created Date */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Created Date</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.createdDate} • {vehicle.createdTime}
+              </Text>
+            </View>
+
+            {/* Status */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Vehicle Status</Text>
+              <Text style={[styles.detailValue, { color: "#F59E0B" }]}>
+                {vehicle.addVehicleStatus}
+              </Text>
+            </View>
+
+            {/* Service Status */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Service Status</Text>
+              <Text style={[styles.detailValue, { color: "#38bdf8" }]}>
+                {vehicle.serviceStatus}
+              </Text>
+            </View>
+
+            {/* SERVICE TRACKER */}
+            <View style={styles.trackerMainContainer}>
+
+              {/* Line + Circles */}
+              <View style={styles.lineContainer}>
+                {STATUS_FLOW.map((status, index) => {
+                  const currentIndex = STATUS_FLOW.indexOf(normalizedStatus);
+                  const isCompleted = index <= currentIndex;
+
+                  return (
+                    <View
+                      key={status}
+                      style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+                    >
+                      <View
+                        style={[
+                          styles.trackerCircle,
+                          isCompleted && styles.trackerActiveCircle,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.trackerCircleText,
+                            isCompleted && styles.trackerActiveText,
+                          ]}
+                        >
+                          {index + 1}
+                        </Text>
+                      </View>
+
+                      {index !== STATUS_FLOW.length - 1 && (
+                        <View
+                          style={[
+                            styles.trackerLine,
+                            index < currentIndex && styles.trackerActiveLine,
+                          ]}
+                        />
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
+
+              {/* CURRENT STATUS */}
+              <View style={styles.currentStatusContainer}>
+                <Text style={styles.currentStatusLabel}>
+                  Current Status
+                </Text>
+
+                <Text style={styles.currentStatusValue}>
+                  {STATUS_LABELS[normalizedStatus]}
+                </Text>
+              </View>
+
+              {/* LEGEND */}
+              <View style={styles.statusLegendContainer}>
+                {STATUS_FLOW.map((status, index) => {
+                  const currentIndex = STATUS_FLOW.indexOf(normalizedStatus);
+                  const isCurrent = index === currentIndex;
+
+                  return (
+                    <View key={status} style={styles.legendRow}>
+                      <Text
+                        style={[
+                          styles.statusLegendText,
+                          isCurrent && styles.statusLegendActiveText,
+                        ]}
+                      >
+                        {index + 1} - {STATUS_LABELS[status]}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+
+            </View>
+
+            <TouchableOpacity
+              style={styles.closeModalButton}
+              onPress={onClose}
+            >
+              <Text style={styles.closeModalButtonText}>
+                Close
+              </Text>
+            </TouchableOpacity>
+
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 /* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
@@ -994,14 +1276,14 @@ const styles = StyleSheet.create({
   // why choose us end
 
   // reviews
-reviewCard: {
-  width: REVIEW_CARD_WIDTH,
-  backgroundColor: "#111827",
-  borderRadius: 22,
-  padding: 16,
-  borderWidth: 1,
-  borderColor: "rgba(14,165,233,0.15)",
-},
+  reviewCard: {
+    width: REVIEW_CARD_WIDTH,
+    backgroundColor: "#111827",
+    borderRadius: 22,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.15)",
+  },
 
   reviewHeader: {
     flexDirection: "row",
@@ -1459,32 +1741,4 @@ reviewCard: {
     fontWeight: "700",
   },
 
-  vehicleCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#111827",
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: "rgba(14,165,233,0.15)",
-  },
-
-  vehicleIconBox: {
-    backgroundColor: "rgba(14,165,233,0.1)",
-    padding: 12,
-    borderRadius: 14,
-  },
-
-  vehicleNumber: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-
-  vehicleDetails: {
-    color: "#9CA3AF",
-    fontSize: 13,
-    marginTop: 4,
-  },
 });
