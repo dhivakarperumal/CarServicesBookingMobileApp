@@ -18,6 +18,7 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import { KeyboardAvoidingView, Platform } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 
 export default function AssignedBookings() {
   const [services, setServices] = useState([]);
@@ -40,7 +41,7 @@ export default function AssignedBookings() {
       const q = query(
         collectionGroup(db, "assignedServices"),
         where("employeeAuthUid", "==", currentUid),
-        orderBy("assignedAt", "desc")
+        orderBy("assignedAt", "desc"),
       );
 
       unsub = onSnapshot(
@@ -57,7 +58,7 @@ export default function AssignedBookings() {
         (error) => {
           console.log("AssignedServices listener error:", error);
           setLoading(false);
-        }
+        },
       );
     } catch (err) {
       console.log("Query error:", err);
@@ -66,7 +67,7 @@ export default function AssignedBookings() {
 
     return () => unsub();
   }, []);
-  
+
   /* 🔍 SEARCH + FILTER LOGIC */
   const filteredServices = useMemo(() => {
     return services
@@ -107,9 +108,7 @@ export default function AssignedBookings() {
 
     return (
       <View style={styles.card}>
-        <Text style={styles.idText}>
-          Booking ID: {item.bookingId || "N/A"}
-        </Text>
+        <Text style={styles.idText}>Booking ID: {item.bookingId || "N/A"}</Text>
 
         <Text style={styles.idText}>Service ID: {item.serviceId || "N/A"}</Text>
 
@@ -171,23 +170,30 @@ export default function AssignedBookings() {
           style={styles.search}
         />
 
-        {/* 🎛 FILTER TABS */}
-        <View style={styles.filterRow}>
-          {["all", "Assigned", "In Progress", "Parts Added", "Completed"].map(
-            (f) => (
-              <TouchableOpacity
-                key={f}
-                style={[styles.filterBtn, filter === f && styles.activeFilter]}
-                onPress={() => setFilter(f)}
-              >
-                <Text
-                  style={[styles.filterText, filter === f && { color: "#fff" }]}
-                >
-                  {f}
-                </Text>
-              </TouchableOpacity>
-            ),
-          )}
+        {/* 🎛 FILTER DROPDOWN */}
+        <View style={{ width: "50%", marginBottom: 16 }}>
+          <View
+            style={{
+              backgroundColor: "#0f172a",
+              borderRadius: 16,
+              paddingHorizontal: 6,
+              borderWidth: 1,
+              borderColor: "#0b3b6f",
+            }}
+          >
+            <Picker
+              selectedValue={filter}
+              dropdownIconColor="#38bdf8"
+              style={{ color: "#fff" }}
+              onValueChange={(v) => setFilter(v)}
+            >
+              <Picker.Item label="All" value="all" />
+              <Picker.Item label="Assigned" value="Assigned" />
+              <Picker.Item label="In Progress" value="In Progress" />
+              <Picker.Item label="Parts Added" value="Parts Added" />
+              <Picker.Item label="Completed" value="Completed" />
+            </Picker>
+          </View>
         </View>
 
         {/* 📋 LIST */}

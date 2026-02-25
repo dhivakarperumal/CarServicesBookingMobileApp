@@ -603,7 +603,6 @@
 //   },
 // });
 
-
 import { useEffect, useState, useMemo } from "react";
 import {
   View,
@@ -664,7 +663,7 @@ export default function CarsScreen() {
 
     const q = query(
       collection(db, "assignedServices"),
-      where("employeeAuthUid", "==", currentUid)
+      where("employeeAuthUid", "==", currentUid),
     );
 
     const unsub = onSnapshot(q, (snap) => {
@@ -680,8 +679,7 @@ export default function CarsScreen() {
   const bookedCars = cars.filter((c) => !c.addVehicle);
   const addVehicleCars = cars.filter((c) => c.addVehicle === true);
 
-  const currentMainList =
-    mainTab === "booked" ? bookedCars : addVehicleCars;
+  const currentMainList = mainTab === "booked" ? bookedCars : addVehicleCars;
 
   /* 🔎 SEARCH + FILTER */
   const filteredCars = useMemo(() => {
@@ -706,78 +704,76 @@ export default function CarsScreen() {
     () =>
       parts.reduce(
         (sum, p) => sum + Number(p.qty || 0) * Number(p.price || 0),
-        0
+        0,
       ),
-    [parts]
+    [parts],
   );
 
   /* 🔁 NEXT STATUS ONLY */
   const getNextStatuses = (currentStatus) => {
-    const currentIndex = STATUS_FLOW.indexOf(
-      currentStatus || "Processing"
-    );
+    const currentIndex = STATUS_FLOW.indexOf(currentStatus || "Processing");
     if (currentIndex === -1) return [STATUS_FLOW[0]];
     return STATUS_FLOW.slice(currentIndex, currentIndex + 2);
   };
 
   /* 🔁 STATUS UPDATE */
   const updateStatus = async (item, newStatus) => {
-  const currentIndex = STATUS_FLOW.indexOf(
-    item.serviceStatus || "Processing"
-  );
-  const newIndex = STATUS_FLOW.indexOf(newStatus);
+    const currentIndex = STATUS_FLOW.indexOf(
+      item.serviceStatus || "Processing",
+    );
+    const newIndex = STATUS_FLOW.indexOf(newStatus);
 
-  if (newIndex < currentIndex) {
-    Alert.alert("Invalid", "Cannot move status backward");
-    return;
-  }
-
-  if (
-    newStatus === "Bill Pending" &&
-    item.serviceStatus === "Service Going on" &&
-    !item.partsAdded
-  ) {
-    Alert.alert("Add Parts First");
-    return;
-  }
-
-  try {
-    const updateData = { serviceStatus: newStatus };
-
-    if (newStatus === "Service Going on") {
-      updateData.startedAt = new Date();
+    if (newIndex < currentIndex) {
+      Alert.alert("Invalid", "Cannot move status backward");
+      return;
     }
 
-    if (newStatus === "Bill Completed") {
-      updateData.billCompletedAt = new Date();
+    if (
+      newStatus === "Bill Pending" &&
+      item.serviceStatus === "Service Going on" &&
+      !item.partsAdded
+    ) {
+      Alert.alert("Add Parts First");
+      return;
     }
 
-    if (newStatus === "Service Completed") {
-      updateData.completedAt = new Date();
-    }
+    try {
+      const updateData = { serviceStatus: newStatus };
 
-    /* 🔥 1️⃣ UPDATE assignedServices */
-    await updateDoc(doc(db, "assignedServices", item.id), updateData);
+      if (newStatus === "Service Going on") {
+        updateData.startedAt = new Date();
+      }
 
-    /* 🔥 2️⃣ UPDATE allServices (IMPORTANT) */
-    if (item.bookingDocId) {
-      await updateDoc(doc(db, "allServices", item.bookingDocId), updateData);
-    }
+      if (newStatus === "Bill Completed") {
+        updateData.billCompletedAt = new Date();
+      }
 
-    /* 🔥 3️⃣ FREE EMPLOYEE WHEN SERVICE COMPLETED */
-    if (newStatus === "Service Completed" && item.employeeDocId) {
-      await updateDoc(doc(db, "employees", item.employeeDocId), {
-        assigned: false,
-        workStatus: "idle",
-        currentServiceId: null,
-        currentServiceCode: null,
-      });
+      if (newStatus === "Service Completed") {
+        updateData.completedAt = new Date();
+      }
+
+      /* 🔥 1️⃣ UPDATE assignedServices */
+      await updateDoc(doc(db, "assignedServices", item.id), updateData);
+
+      /* 🔥 2️⃣ UPDATE allServices (IMPORTANT) */
+      if (item.bookingDocId) {
+        await updateDoc(doc(db, "allServices", item.bookingDocId), updateData);
+      }
+
+      /* 🔥 3️⃣ FREE EMPLOYEE WHEN SERVICE COMPLETED */
+      if (newStatus === "Service Completed" && item.employeeDocId) {
+        await updateDoc(doc(db, "employees", item.employeeDocId), {
+          assigned: false,
+          workStatus: "idle",
+          currentServiceId: null,
+          currentServiceCode: null,
+        });
+      }
+    } catch (error) {
+      console.log("Status update error:", error);
+      Alert.alert("Failed to update status");
     }
-  } catch (error) {
-    console.log("Status update error:", error);
-    Alert.alert("Failed to update status");
-  }
-};
+  };
 
   /* 🔧 PARTS MODAL */
   const openPartsModal = (item) => {
@@ -815,7 +811,7 @@ export default function CarsScreen() {
         db,
         "assignedServices",
         selectedCar.id,
-        "parts"
+        "parts",
       );
 
       for (let p of validParts) {
@@ -870,21 +866,14 @@ export default function CarsScreen() {
 
     return (
       <View style={styles.card}>
-
-        <Text style={styles.idText}>
-          Booking ID: {item.bookingId || "N/A"}
-        </Text>
-        <Text style={styles.number}>
-          Service ID: {item.serviceId || "N/A"}
-        </Text>
+        <Text style={styles.idText}>Booking ID: {item.bookingId || "N/A"}</Text>
+        <Text style={styles.number}>Service ID: {item.serviceId || "N/A"}</Text>
 
         <Text style={styles.model}>
           {item.carBrand} - {item.carModel}
         </Text>
 
-        <Text style={styles.subText}>
-          Mechanic: {item.employeeName || "-"}
-        </Text>
+        <Text style={styles.subText}>Mechanic: {item.employeeName || "-"}</Text>
 
         {item.partsTotalCost ? (
           <Text style={styles.parts}>Parts Cost: ₹{item.partsTotalCost}</Text>
@@ -943,8 +932,7 @@ export default function CarsScreen() {
             style={{
               flex: 1,
               padding: 10,
-              backgroundColor:
-                mainTab === "booked" ? "#38bdf8" : "#020617",
+              backgroundColor: mainTab === "booked" ? "#38bdf8" : "#020617",
               borderRadius: 10,
               alignItems: "center",
             }}
@@ -964,8 +952,7 @@ export default function CarsScreen() {
             style={{
               flex: 1,
               padding: 10,
-              backgroundColor:
-                mainTab === "addVehicle" ? "#38bdf8" : "#020617",
+              backgroundColor: mainTab === "addVehicle" ? "#38bdf8" : "#020617",
               borderRadius: 10,
               alignItems: "center",
               marginLeft: 6,
@@ -973,8 +960,7 @@ export default function CarsScreen() {
           >
             <Text
               style={{
-                color:
-                  mainTab === "addVehicle" ? "#020617" : "#38bdf8",
+                color: mainTab === "addVehicle" ? "#020617" : "#38bdf8",
                 fontWeight: "700",
               }}
             >
@@ -993,20 +979,28 @@ export default function CarsScreen() {
         />
 
         {/* 🎛 FILTER TABS */}
-        <View style={styles.filterRow}>
-          {["all", ...STATUS_FLOW].map((f) => (
-            <TouchableOpacity
-              key={f}
-              style={[styles.filterBtn, filter === f && styles.activeFilter]}
-              onPress={() => setFilter(f)}
+        {/* 🎛 FILTER DROPDOWN */}
+        <View style={{ width: "50%", marginBottom: 16 }}>
+          <View
+            style={{
+              backgroundColor: "#0f172a",
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: "#0b3b6f",
+            }}
+          >
+            <Picker
+              selectedValue={filter}
+              dropdownIconColor="#38bdf8"
+              style={{ color: "#fff" }}
+              onValueChange={(v) => setFilter(v)}
             >
-              <Text
-                style={[styles.filterText, filter === f && { color: "#fff" }]}
-              >
-                {f}
-              </Text>
-            </TouchableOpacity>
-          ))}
+              <Picker.Item label="All" value="all" />
+              {STATUS_FLOW.map((s) => (
+                <Picker.Item key={s} label={s} value={s} />
+              ))}
+            </Picker>
+          </View>
         </View>
 
         {filteredCars.length === 0 ? (
@@ -1039,9 +1033,7 @@ export default function CarsScreen() {
                     placeholder="Part name"
                     placeholderTextColor="#64748b"
                     value={item.partName}
-                    onChangeText={(v) =>
-                      handlePartChange(index, "partName", v)
-                    }
+                    onChangeText={(v) => handlePartChange(index, "partName", v)}
                     style={styles.input}
                   />
 
@@ -1333,7 +1325,7 @@ const styles = StyleSheet.create({
     top: 20,
     zIndex: 50,
   },
-    idText: {
+  idText: {
     fontSize: 13,
     fontWeight: "700",
     color: "#94a3b8",
