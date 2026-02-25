@@ -1,12 +1,11 @@
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
-import { Animated } from "react-native";
-import { collection, onSnapshot, orderBy, query, where, doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, onSnapshot, orderBy, query, where } from "firebase/firestore";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  Modal,
+  Animated, Dimensions, Image, Linking, Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,7 +13,6 @@ import {
   View
 } from "react-native";
 import { auth, db } from "../../firebase";
-import { Dimensions, Image, Linking } from "react-native";
 
 const STATUS_FLOW = [
   "BOOKED",
@@ -236,6 +234,29 @@ export default function HomeScreen({ navigation }) {
     return () => unsub();
   }, [user]);
 
+  // Fetch My Vehicles from addServices
+  useEffect(() => {
+    if (!user) return;
+
+    const q = query(
+      collection(db, "allServices"),
+      where("uid", "==", user.uid),
+      where("addVehicle", "==", true),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setMyVehicles(data);
+    });
+
+    return () => unsub();
+  }, [user]);
+
   // Fetch reviews
   useEffect(() => {
     const q = query(
@@ -352,6 +373,72 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </LinearGradient>
 
+      {/* MY VEHICLES */}
+{myVehicles.length > 0 && (
+  <>
+    <View style={styles.premiumSectionHeader}>
+      <View style={styles.premiumAccent} />
+      <Ionicons
+        name="car-sport-outline"
+        size={18}
+        color="#0EA5E9"
+        style={{ marginRight: 6 }}
+      />
+      <Text style={styles.premiumSectionTitle}>
+        My Vehicles
+      </Text>
+    </View>
+
+    <View style={{ marginBottom: 20 }}>
+      {myVehicles.map((vehicle) => (
+        <View key={vehicle.id} style={styles.premiumCard}>
+          
+          {/* Top Row */}
+          <View style={styles.cardTopRow}>
+            <View style={styles.carIconBox}>
+              <FontAwesome5 name="motorcycle" size={18} color="#0EA5E9" />
+            </View>
+
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={styles.premiumCarName}>
+                {vehicle.brand} {vehicle.model}
+              </Text>
+              <Text style={styles.premiumService}>
+                {vehicle.vehicleType} • {vehicle.vehicleNumber}
+              </Text>
+            </View>
+
+            <View
+              style={[
+                styles.premiumStatus,
+                { backgroundColor: "#F59E0B" },
+              ]}
+            >
+              <Text style={styles.premiumStatusText}>
+                {vehicle.addVehicleStatus}
+              </Text>
+            </View>
+          </View>
+
+          {/* Divider */}
+          <View style={styles.cardDivider} />
+
+          {/* Bottom Row */}
+          <View style={styles.cardBottomRow}>
+            <Text style={styles.bookingIdText}>
+              ID: {vehicle.addVehicleId}
+            </Text>
+
+            <Text style={styles.viewDetailsText}>
+              {vehicle.serviceStatus}
+            </Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  </>
+)}
+
       {/* ACTIVE BOOKING */}
       {allBookings
         .filter(
@@ -461,7 +548,7 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.whySwiperSubtitle}>{item.subtitle}</Text>
           </View>
         )}
-        contentContainerStyle={{ }}
+        contentContainerStyle={{}}
         snapToInterval={CARD_WIDTH + CARD_MARGIN}
         decelerationRate="fast"
       />
@@ -518,7 +605,7 @@ export default function HomeScreen({ navigation }) {
             </Text>
           </View>
         )}
-        contentContainerStyle={{ }}
+        contentContainerStyle={{}}
         decelerationRate="fast"
       />
 
@@ -957,14 +1044,14 @@ const styles = StyleSheet.create({
   // why choose us end
 
   // reviews
-reviewCard: {
-  width: REVIEW_CARD_WIDTH,
-  backgroundColor: "#111827",
-  borderRadius: 22,
-  padding: 16,
-  borderWidth: 1,
-  borderColor: "rgba(14,165,233,0.15)",
-},
+  reviewCard: {
+    width: REVIEW_CARD_WIDTH,
+    backgroundColor: "#111827",
+    borderRadius: 22,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.15)",
+  },
 
   reviewHeader: {
     flexDirection: "row",
@@ -1421,5 +1508,5 @@ reviewCard: {
     color: "#38bdf8",
     fontWeight: "700",
   },
-  
+
 });
