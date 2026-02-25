@@ -9,7 +9,6 @@ import {
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   Text,

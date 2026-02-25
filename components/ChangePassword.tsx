@@ -1,21 +1,22 @@
 import { Ionicons } from "@expo/vector-icons";
 import {
-    EmailAuthProvider,
-    reauthenticateWithCredential,
-    updatePassword,
-    User,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+  User,
 } from "firebase/auth";
 import React, { useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { auth } from "../firebase";
+import Toast from "react-native-toast-message";
+
 
 const ChangePassword: React.FC = () => {
   const user: User | null = auth.currentUser;
@@ -32,46 +33,67 @@ const ChangePassword: React.FC = () => {
 
   const handleChangePassword = async (): Promise<void> => {
     if (!user || !user.email) {
-      Alert.alert("Error", "User not logged in properly.");
+      Toast.show({
+        type: "error",
+        text1: "Authentication Error",
+        text2: "User not logged in properly.",
+      });
       return;
     }
 
     if (!currentPassword) {
-      Alert.alert("Error", "Enter current password");
+      Toast.show({
+        type: "warning",
+        text1: "Validation Error",
+        text2: "Enter current password",
+      });
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert("Error", "New password must be at least 6 characters");
+      Toast.show({
+        type: "warning",
+        text1: "Weak Password",
+        text2: "New password must be at least 6 characters",
+      });
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      Toast.show({
+        type: "warning",
+        text1: "Mismatch",
+        text2: "Passwords do not match",
+      });
       return;
     }
 
     setLoading(true);
 
     try {
-      // 🔐 Reauthenticate
       const credential = EmailAuthProvider.credential(
         user.email,
         currentPassword
       );
 
       await reauthenticateWithCredential(user, credential);
-
-      // 🔄 Update password
       await updatePassword(user, newPassword);
 
-      Alert.alert("Success", "Password updated successfully");
+      Toast.show({
+        type: "success",
+        text1: "Success 🎉",
+        text2: "Password updated successfully",
+      });
 
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error: any) {
-      Alert.alert("Error", "Current password is incorrect");
+      Toast.show({
+        type: "error",
+        text1: "Update Failed",
+        text2: "Current password is incorrect",
+      });
     } finally {
       setLoading(false);
     }
