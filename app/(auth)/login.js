@@ -4,10 +4,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -16,6 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { auth, db } from "../../firebase";
+import Toast from "react-native-toast-message";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 export default function LoginScreen() {
@@ -28,7 +26,11 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Please enter both email and password");
+      Toast.show({
+        type: "warning",
+        text1: "Missing Details",
+        text2: "Please enter both email and password",
+      });
       return;
     }
 
@@ -46,7 +48,11 @@ export default function LoginScreen() {
       const userSnap = await getDoc(userRef);
 
       if (!userSnap.exists()) {
-        Alert.alert("Error", "User profile not found");
+        Toast.show({
+          type: "error",
+          text1: "Profile Not Found",
+          text2: "User profile not found",
+        });
         return;
       }
 
@@ -60,7 +66,11 @@ export default function LoginScreen() {
         router.replace("/(tabs)");
       }
     } catch (error) {
-      Alert.alert("Login Failed", error.message);
+      Toast.show({
+        type: "error",
+        text1: "Login Failed",
+        text2: "Invalid credentials. Please try again.",
+      });
     } finally {
       setLoading(false);
     }

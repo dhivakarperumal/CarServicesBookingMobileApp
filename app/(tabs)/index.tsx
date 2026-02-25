@@ -99,6 +99,7 @@ const whyData = [
 ];
 
 const { width } = Dimensions.get("window");
+const REVIEW_CARD_WIDTH = width - 40;
 
 const HORIZONTAL_PADDING = 20; // same as ScrollView paddingHorizontal
 const CARD_MARGIN = 12;
@@ -121,10 +122,12 @@ export default function HomeScreen({ navigation }) {
   const [myVehicles, setMyVehicles] = useState([]);
 
   const [reviews, setReviews] = useState([]);
+  const extendedReviews = [...reviews, ...reviews];
 
   const carAnim = useRef(new Animated.Value(0)).current;
 
   const whyListRef = useRef(null);
+  const reviewListRef = useRef(null);
   const scrollX = useRef(0);
 
   const getStatusColor = (status) => {
@@ -254,6 +257,37 @@ export default function HomeScreen({ navigation }) {
     return () => unsub();
   }, []);
 
+  // auto scroll reviews
+  useEffect(() => {
+    if (!reviews.length) return;
+
+    let index = 0;
+
+    const interval = setInterval(() => {
+      if (!reviewListRef.current) return;
+
+      index++;
+
+      reviewListRef.current.scrollToOffset({
+        offset: index * REVIEW_CARD_WIDTH,
+        animated: true,
+      });
+
+      if (index >= reviews.length) {
+        index = 0;
+
+        setTimeout(() => {
+          reviewListRef.current?.scrollToOffset({
+            offset: 0,
+            animated: false,
+          });
+        }, 400);
+      }
+    }, 4000); // 🔥 4 seconds (different from why section)
+
+    return () => clearInterval(interval);
+  }, [reviews]);
+
   // why swiper auto-scroll
   useEffect(() => {
     let index = 0;
@@ -301,15 +335,6 @@ export default function HomeScreen({ navigation }) {
           ) : null}
           {" 👋"}
         </Text>
-        {/* Animated Car */}
-        {/* <Animated.View
-          style={[
-            styles.carTopWrapper,
-            { transform: [{ translateX: carAnim }] },
-          ]}
-        >
-          <FontAwesome5 name="car-side" size={60} color="#fff" />
-        </Animated.View> */}
 
         <Text style={styles.bannerTitle}>
           Premium Car Care Service
@@ -474,7 +499,7 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.whySwiperSubtitle}>{item.subtitle}</Text>
           </View>
         )}
-        contentContainerStyle={{ paddingHorizontal: 10 }}
+        contentContainerStyle={{ }}
         snapToInterval={CARD_WIDTH + CARD_MARGIN}
         decelerationRate="fast"
       />
@@ -488,14 +513,15 @@ export default function HomeScreen({ navigation }) {
         </Text>
       </View>
 
-      <ScrollView
+      <Animated.FlatList
+        ref={reviewListRef}
+        data={extendedReviews}
         horizontal
+        pagingEnabled
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingRight: 20 }}
-      >
-        {reviews.map((item) => (
-          <View key={item.id} style={styles.reviewCard}>
-
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.reviewCard}>
             {/* Profile Row */}
             <View style={styles.reviewHeader}>
               <View style={styles.reviewAvatar}>
@@ -512,7 +538,6 @@ export default function HomeScreen({ navigation }) {
               <View style={{ marginLeft: 10 }}>
                 <Text style={styles.reviewName}>{item.name}</Text>
 
-                {/* Rating */}
                 <View style={styles.ratingRow}>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Ionicons
@@ -526,14 +551,15 @@ export default function HomeScreen({ navigation }) {
               </View>
             </View>
 
-            {/* Message */}
             <Text style={styles.reviewMessage}>
               "{item.message}"
             </Text>
-
           </View>
-        ))}
-      </ScrollView>
+        )}
+        contentContainerStyle={{ }}
+        decelerationRate="fast"
+      />
+
 
       {/* CONTACT US */}
       <View style={styles.premiumSectionHeader}>
@@ -969,15 +995,14 @@ const styles = StyleSheet.create({
   // why choose us end
 
   // reviews
-  reviewCard: {
-    width: width - 40,
-    backgroundColor: "#111827",
-    borderRadius: 22,
-    padding: 16,
-    marginRight: 16,
-    borderWidth: 1,
-    borderColor: "rgba(14,165,233,0.15)",
-  },
+reviewCard: {
+  width: REVIEW_CARD_WIDTH,
+  backgroundColor: "#111827",
+  borderRadius: 22,
+  padding: 16,
+  borderWidth: 1,
+  borderColor: "rgba(14,165,233,0.15)",
+},
 
   reviewHeader: {
     flexDirection: "row",

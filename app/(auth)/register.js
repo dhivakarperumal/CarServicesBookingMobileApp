@@ -7,10 +7,6 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -18,6 +14,9 @@ import {
   View,
 } from "react-native";
 import { auth, db } from "../../firebase";
+import Toast from "react-native-toast-message";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { Image } from "react-native";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -37,23 +36,59 @@ export default function RegisterScreen() {
     if (loading) return;
 
     // 🔎 Validations (Same as Web)
-    if (!username.trim())
-      return Alert.alert("Error", "Username is required");
+    if (!username.trim()) {
+      Toast.show({
+        type: "warning",
+        text1: "Username Required",
+        text2: "Please enter your username",
+      });
+      return;
+    }
 
-    if (!email.trim())
-      return Alert.alert("Error", "Email is required");
+    if (!email.trim()) {
+      Toast.show({
+        type: "warning",
+        text1: "Email Required",
+        text2: "Please enter your email",
+      });
+      return;
+    }
 
-    if (!mobile.trim())
-      return Alert.alert("Error", "Mobile number is required");
+    if (!mobile.trim()) {
+      Toast.show({
+        type: "warning",
+        text1: "Mobile Required",
+        text2: "Please enter your mobile number",
+      });
+      return;
+    }
 
-    if (mobile.length !== 10)
-      return Alert.alert("Error", "Enter valid 10 digit mobile number");
+    if (mobile.length !== 10) {
+      Toast.show({
+        type: "warning",
+        text1: "Invalid Mobile",
+        text2: "Enter a valid 10 digit mobile number",
+      });
+      return;
+    }
 
-    if (password.length < 6)
-      return Alert.alert("Error", "Password must be at least 6 characters");
+    if (password.length < 6) {
+      Toast.show({
+        type: "warning",
+        text1: "Weak Password",
+        text2: "Password must be at least 6 characters",
+      });
+      return;
+    }
 
-    if (password !== confirmPassword)
-      return Alert.alert("Error", "Passwords do not match");
+    if (password !== confirmPassword) {
+      Toast.show({
+        type: "error",
+        text1: "Password Mismatch",
+        text2: "Passwords do not match",
+      });
+      return;
+    }
 
     setLoading(true);
 
@@ -77,173 +112,181 @@ export default function RegisterScreen() {
         createdAt: serverTimestamp(),
       });
 
-      Alert.alert("Success", "Account created successfully");
+      Toast.show({
+        type: "success",
+        text1: "Account Created",
+        text2: "Your account was created successfully",
+      });
 
-      router.replace("/(tabs)/home");
+      router.replace("/(tabs)");
     } catch (err) {
-      Alert.alert("Register Failed", err.message);
+      Toast.show({
+        type: "error",
+        text1: "Register Failed",
+        text2: err?.message || "Something went wrong",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    <KeyboardAwareScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={styles.container}
+      enableOnAndroid={true}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
     >
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Ionicons name="car-sport-outline" size={60} color="#0EA5E9" />
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>
-            Register to access car service features
-          </Text>
-        </View>
+      <View style={styles.logoContainer}>
+        <Image
+          source={require("../../assets/images/logo_no_bg.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>
+          Register to access car service features
+        </Text>
+      </View>
 
-        {/* USERNAME */}
-        <View style={styles.inputWrapper}>
-          <Ionicons name="person-outline" size={20} color="#94A3B8" />
-          <TextInput
-            placeholder="Username"
-            placeholderTextColor="#64748B"
-            value={username}
-            onChangeText={setUsername}
-            style={styles.input}
-          />
-        </View>
+      {/* USERNAME */}
+      <View style={styles.inputWrapper}>
+        <Ionicons name="person-outline" size={20} color="#94A3B8" />
+        <TextInput
+          placeholder="Username"
+          placeholderTextColor="#64748B"
+          value={username}
+          onChangeText={setUsername}
+          style={styles.input}
+        />
+      </View>
 
-        {/* MOBILE */}
-        <View style={styles.inputWrapper}>
-          <Ionicons name="call-outline" size={20} color="#94A3B8" />
-          <TextInput
-            placeholder="Mobile Number"
-            placeholderTextColor="#64748B"
-            value={mobile}
-            onChangeText={(text) =>
-              setMobile(text.replace(/[^0-9]/g, ""))
-            }
-            keyboardType="numeric"
-            maxLength={10}
-            style={styles.input}
-          />
-        </View>
+      {/* MOBILE */}
+      <View style={styles.inputWrapper}>
+        <Ionicons name="call-outline" size={20} color="#94A3B8" />
+        <TextInput
+          placeholder="Mobile Number"
+          placeholderTextColor="#64748B"
+          value={mobile}
+          onChangeText={(text) =>
+            setMobile(text.replace(/[^0-9]/g, ""))
+          }
+          keyboardType="numeric"
+          maxLength={10}
+          style={styles.input}
+        />
+      </View>
 
-        {/* EMAIL */}
-        <View style={styles.inputWrapper}>
-          <Ionicons name="mail-outline" size={20} color="#94A3B8" />
-          <TextInput
-            placeholder="Email"
-            placeholderTextColor="#64748B"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={styles.input}
-          />
-        </View>
+      {/* EMAIL */}
+      <View style={styles.inputWrapper}>
+        <Ionicons name="mail-outline" size={20} color="#94A3B8" />
+        <TextInput
+          placeholder="Email"
+          placeholderTextColor="#64748B"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          style={styles.input}
+        />
+      </View>
 
-        {/* ADMIN CODE */}
-        <View style={styles.inputWrapper}>
+      {/* ADMIN CODE */}
+      <View style={styles.inputWrapper}>
+        <Ionicons
+          name="shield-checkmark-outline"
+          size={20}
+          color="#94A3B8"
+        />
+        <TextInput
+          placeholder="Admin Code (optional)"
+          placeholderTextColor="#64748B"
+          value={adminCode}
+          onChangeText={setAdminCode}
+          style={styles.input}
+        />
+      </View>
+
+      {/* PASSWORD */}
+      <View style={styles.inputWrapper}>
+        <Ionicons name="lock-closed-outline" size={20} color="#94A3B8" />
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#64748B"
+          secureTextEntry={secure}
+          value={password}
+          onChangeText={setPassword}
+          style={styles.input}
+        />
+        <TouchableOpacity onPress={() => setSecure(!secure)}>
           <Ionicons
-            name="shield-checkmark-outline"
+            name={secure ? "eye-off-outline" : "eye-outline"}
             size={20}
             color="#94A3B8"
           />
-          <TextInput
-            placeholder="Admin Code (optional)"
-            placeholderTextColor="#64748B"
-            value={adminCode}
-            onChangeText={setAdminCode}
-            style={styles.input}
-          />
-        </View>
-
-        {/* PASSWORD */}
-        <View style={styles.inputWrapper}>
-          <Ionicons name="lock-closed-outline" size={20} color="#94A3B8" />
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor="#64748B"
-            secureTextEntry={secure}
-            value={password}
-            onChangeText={setPassword}
-            style={styles.input}
-          />
-          <TouchableOpacity onPress={() => setSecure(!secure)}>
-            <Ionicons
-              name={secure ? "eye-off-outline" : "eye-outline"}
-              size={20}
-              color="#94A3B8"
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* CONFIRM PASSWORD */}
-        <View style={styles.inputWrapper}>
-          <Ionicons name="lock-closed-outline" size={20} color="#94A3B8" />
-          <TextInput
-            placeholder="Confirm Password"
-            placeholderTextColor="#64748B"
-            secureTextEntry={secureConfirm}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            style={styles.input}
-          />
-          <TouchableOpacity
-            onPress={() => setSecureConfirm(!secureConfirm)}
-          >
-            <Ionicons
-              name={
-                secureConfirm ? "eye-off-outline" : "eye-outline"
-              }
-              size={20}
-              color="#94A3B8"
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* REGISTER BUTTON */}
-        <TouchableOpacity
-          style={styles.registerButton}
-          onPress={handleRegister}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.registerText}>Register</Text>
-          )}
         </TouchableOpacity>
+      </View>
 
-        {/* LOGIN LINK */}
-        <Text style={styles.loginRedirect}>
-          Already have an account?{" "}
-          <Text
-            style={{ color: "#06B6D4" }}
-            onPress={() => router.push("/(auth)/login")}
-          >
-            Login
-          </Text>
+      {/* CONFIRM PASSWORD */}
+      <View style={styles.inputWrapper}>
+        <Ionicons name="lock-closed-outline" size={20} color="#94A3B8" />
+        <TextInput
+          placeholder="Confirm Password"
+          placeholderTextColor="#64748B"
+          secureTextEntry={secureConfirm}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          style={styles.input}
+        />
+        <TouchableOpacity
+          onPress={() => setSecureConfirm(!secureConfirm)}
+        >
+          <Ionicons
+            name={
+              secureConfirm ? "eye-off-outline" : "eye-outline"
+            }
+            size={20}
+            color="#94A3B8"
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* REGISTER BUTTON */}
+      <TouchableOpacity
+        style={styles.registerButton}
+        onPress={handleRegister}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.registerText}>Register</Text>
+        )}
+      </TouchableOpacity>
+
+      {/* LOGIN LINK */}
+      <Text style={styles.loginRedirect}>
+        Already have an account?{" "}
+        <Text
+          style={{ color: "#06B6D4" }}
+          onPress={() => router.push("/(auth)/login")}
+        >
+          Login
         </Text>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </Text>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#0B1120",
-    paddingHorizontal: 24,
-  },
-
-  header: {
-    alignItems: "center",
-    marginTop: 60,
-    marginBottom: 30,
-  },
+  flexGrow: 1,
+  paddingHorizontal: 24,
+  paddingTop: 60,
+  paddingBottom: 110,   // 👈 IMPORTANT
+  backgroundColor: "#0B1120",
+},
 
   title: {
     fontSize: 24,
@@ -296,5 +339,16 @@ const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 40,
     fontSize: 14,
+  },
+
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 40,
+  },
+
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 12,
   },
 });
