@@ -1,3 +1,537 @@
+// import { useEffect, useMemo, useState } from "react";
+// import {
+//   View,
+//   Text,
+//   FlatList,
+//   TouchableOpacity,
+//   ActivityIndicator,
+//   TextInput,
+//   Modal,
+//   Pressable,
+//   Alert,
+// } from "react-native";
+// import {
+//   collection,
+//   onSnapshot,
+//   updateDoc,
+//   doc,
+//   serverTimestamp,
+//   addDoc,
+// } from "firebase/firestore";
+// import { db } from "../../firebase";
+// import { Picker } from "@react-native-picker/picker";
+// import { useRouter } from "expo-router";
+// import { SafeAreaView } from "react-native-safe-area-context";
+// import { Ionicons } from "@expo/vector-icons";
+
+// const BOOKING_STATUS = [
+//   "Approved",
+//   "Processing",
+//   "Waiting for Spare",
+//   "Service Going on",
+//   "Bill Pending",
+//   "Bill Completed",
+//   "Service Completed",
+// ];
+
+// export default function Services() {
+//   const router = useRouter();
+
+//   const [services, setServices] = useState([]);
+//   const [employees, setEmployees] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [search, setSearch] = useState("");
+//   const [statusFilter, setStatusFilter] = useState("All");
+//   const [updatingId, setUpdatingId] = useState(null);
+
+//   const [modalVisible, setModalVisible] = useState(false);
+//   const [selectedBooking, setSelectedBooking] = useState(null);
+//   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+//   const [assigning, setAssigning] = useState(false);
+
+//   /* 🔥 SERVICES */
+//   useEffect(() => {
+//     const unsub = onSnapshot(collection(db, "allServices"), (snap) => {
+//       const data = snap.docs.map((d) => ({
+//         id: d.id,
+//         ...d.data(),
+//       }));
+//       setServices(data);
+//       setLoading(false);
+//     });
+//     return () => unsub();
+//   }, []);
+
+//   /* 🔥 EMPLOYEES */
+//   useEffect(() => {
+//     const unsub = onSnapshot(collection(db, "employees"), (snap) => {
+//       const data = snap.docs.map((d) => ({
+//         id: d.id,
+//         ...d.data(),
+//       }));
+//       setEmployees(data);
+//     });
+//     return () => unsub();
+//   }, []);
+
+//   /* 🔍 FILTER */
+//   const filteredServices = useMemo(() => {
+//     return services
+//       .filter((s) =>
+//         statusFilter === "All"
+//           ? true
+//           : (s.serviceStatus || "Approved") === statusFilter,
+//       )
+//       .filter((s) => {
+//         const text = `
+//           ${s.bookingId || ""}
+//           ${s.name || ""}
+//           ${s.phone || ""}
+//           ${s.brand || ""}
+//           ${s.model || ""}
+//         `.toLowerCase();
+
+//         return text.includes(search.toLowerCase());
+//       });
+//   }, [services, search, statusFilter]);
+
+//   /* 👨‍🔧 AVAILABLE EMPLOYEES */
+//   const availableEmployees = useMemo(() => {
+//     return employees.filter((e) => e.workStatus !== "busy");
+//   }, [employees]);
+
+//   /* 🧾 UNASSIGNED SERVICES (for FAB picker) */
+//   const unassignedServices = useMemo(() => {
+//     return services.filter((s) => !s.assignedEmployeeId);
+//   }, [services]);
+
+//   /* 🎨 STATUS COLOR */
+//   const getStatusColor = (status) => {
+//     switch (status) {
+//       case "Approved":
+//         return "#6366f1";
+//       case "Processing":
+//         return "#9333ea";
+//       case "Waiting for Spare":
+//         return "#f59e0b";
+//       case "Service Going on":
+//         return "#f97316";
+//       case "Bill Pending":
+//         return "#ec4899";
+//       case "Bill Completed":
+//         return "#06b6d4";
+//       case "Service Completed":
+//         return "#16a34a";
+//       default:
+//         return "#6b7280";
+//     }
+//   };
+
+//   /* 🔄 STATUS UPDATE */
+//   const handleStatusChange = async (service, newStatus) => {
+//     if (!service.assignedEmployeeId) {
+//       Alert.alert("Assign mechanic first");
+//       return;
+//     }
+
+//     try {
+//       setUpdatingId(service.id);
+
+//       await updateDoc(doc(db, "allServices", service.id), {
+//         serviceStatus: newStatus,
+//         updatedAt: serverTimestamp(),
+//       });
+
+//       if (newStatus === "Service Completed" && service.assignedEmployeeId) {
+//         await updateDoc(doc(db, "employees", service.assignedEmployeeId), {
+//           workStatus: "available",
+//           currentServiceId: null,
+//         });
+//       }
+//     } catch (err) {
+//       console.log(err);
+//     } finally {
+//       setUpdatingId(null);
+//     }
+//   };
+
+//   /* 🧑‍🔧 ASSIGN EMPLOYEE */
+//   const assignEmployee = async () => {
+//     if (!selectedBooking || !selectedEmployeeId || assigning) return;
+
+//     try {
+//       setAssigning(true);
+
+//       const serviceDocId = selectedBooking.id;
+
+//       const selectedEmployee = availableEmployees.find(
+//         (emp) => emp.id === selectedEmployeeId,
+//       );
+
+//       if (!selectedEmployee) {
+//         Alert.alert("Error", "Employee not available");
+//         return;
+//       }
+
+//       await updateDoc(doc(db, "allServices", serviceDocId), {
+//         assignedEmployeeId: selectedEmployeeId,
+//         assignedEmployeeName: selectedEmployee.name || "",
+//         serviceStatus: "Processing",
+//         assignedAt: new Date(),
+//       });
+
+//       await updateDoc(doc(db, "employees", selectedEmployeeId), {
+//         currentServiceId: serviceDocId,
+//         workStatus: "busy",
+//       });
+
+//       await addDoc(collection(db, "assignedServices"), {
+//         serviceDocId,
+//         employeeDocId: selectedEmployeeId,
+//         employeeName: selectedEmployee.name || "",
+//         customerName: selectedBooking.name || "",
+//         serviceStatus: "Assigned",
+//         assignedAt: new Date(),
+//       });
+
+//       Alert.alert("Success", "Mechanic assigned");
+
+//       setModalVisible(false);
+//       setSelectedBooking(null);
+//       setSelectedEmployeeId(null);
+//     } catch (error) {
+//       console.log(error);
+//       Alert.alert("Error", "Assignment failed");
+//     } finally {
+//       setAssigning(false);
+//     }
+//   };
+
+//   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
+
+//   return (
+//     <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
+//       <View style={{ flex: 1, padding: 12 }}>
+//         {/* 🔍 SEARCH */}
+//         <TextInput
+//           placeholder="Search booking, name, phone, car"
+//           placeholderTextColor="#64748b"
+//           value={search}
+//           onChangeText={setSearch}
+//           style={{
+//             backgroundColor: "#0f172a",
+//             borderWidth: 1,
+//             borderColor: "#0b3b6f",
+//             padding: 16,
+//             borderRadius: 12,
+//             marginBottom: 10,
+//             color: "#fff",
+//           }}
+//         />
+
+//         {/* 🔘 STATUS DROPDOWN */}
+//         <View
+//           style={{
+//             backgroundColor: "#020617",
+//             borderWidth: 1,
+//             borderColor: "#38bdf8",
+//             borderRadius: 14,
+//             marginBottom: 10,
+//             paddingHorizontal: 4,
+//             overflow: "hidden",
+//           }}
+//         >
+//           <Picker
+//             selectedValue={statusFilter}
+//             onValueChange={(v) => setStatusFilter(v)}
+//             dropdownIconColor="#38bdf8"
+//             style={{ color: "#fff" }}
+//             itemStyle={{ color: "#fff" }}
+//           >
+//             <Picker.Item label="All" value="All" />
+
+//             {BOOKING_STATUS.map((s) => (
+//               <Picker.Item key={s} label={s} value={s} />
+//             ))}
+//           </Picker>
+//         </View>
+
+//         {/* 📋 LIST */}
+//         <FlatList
+//           data={filteredServices}
+//           keyExtractor={(item) => item.id}
+//           contentContainerStyle={{ paddingBottom: 140 }}
+//           renderItem={({ item }) => (
+//             <View
+//               style={{
+//                 backgroundColor: "#020617",
+//                 padding: 18,
+//                 borderRadius: 20,
+//                 marginBottom: 14,
+//                 borderWidth: 1,
+//                 borderColor: "rgba(56,189,248,0.25)",
+//                 shadowColor: "#38bdf8",
+//                 shadowOpacity: 0.15,
+//                 shadowRadius: 10,
+//                 elevation: 6,
+//                 position: "relative",
+//               }}
+//             >
+//               <Text
+//                 style={{ fontWeight: "900", fontSize: 15, color: "#38bdf8" }}
+//               >
+//                 {item.bookingId || "No Booking"}
+//               </Text>
+
+//               {/* STATUS BADGE */}
+//               <View
+//                 style={{
+//                   position: "absolute",
+//                   top: 10,
+//                   right: 10,
+//                   backgroundColor: getStatusColor(item.serviceStatus),
+//                   paddingHorizontal: 12,
+//                   paddingVertical: 6,
+//                   borderRadius: 14,
+//                   shadowColor: "#000",
+//                   shadowOpacity: 0.3,
+//                   shadowRadius: 6,
+//                 }}
+//               >
+//                 <Text
+//                   style={{ color: "#fff", fontSize: 12, fontWeight: "800" }}
+//                 >
+//                   {item.serviceStatus || "Approved"}
+//                 </Text>
+//               </View>
+
+//               {/* CUSTOMER */}
+//               <Text
+//                 style={{
+//                   color: "#f8fafc",
+//                   marginTop: 14,
+//                   fontSize: 16,
+//                   fontWeight: "700",
+//                 }}
+//               >
+//                 {item.name}
+//               </Text>
+
+//               <Text style={{ color: "#cbd5f5", fontSize: 14 }}>
+//                 {item.phone}
+//               </Text>
+
+//               {/* CAR DETAILS */}
+//               <Text style={{ color: "#cbd5f5", fontSize: 14 }}>
+//                 {item.brand} {item.model}
+//               </Text>
+
+//               {/* ISSUE */}
+//               {item.issue && (
+//                 <Text
+//                   style={{
+//                     color: "#facc15",
+//                     marginTop: 6,
+//                     fontSize: 19,
+//                     fontWeight: "600",
+//                   }}
+//                 >
+//                   {item.issue}
+//                 </Text>
+//               )}
+
+//               {/* TRACK NUMBER */}
+//               {item.trackNumber && (
+//                 <Text
+//                   style={{
+//                     color: "#4ade80",
+//                     marginTop: 6,
+//                     fontSize: 16,
+//                     fontWeight: "700",
+//                   }}
+//                 >
+//                   Track: {item.trackNumber}
+//                 </Text>
+//               )}
+
+//               {/* ASSIGNED MECHANIC */}
+//               {item.assignedEmployeeName && (
+//                 <Text
+//                   style={{
+//                     color: "#38bdf8",
+//                     marginTop: 8,
+//                     fontSize: 14,
+//                     fontWeight: "700",
+//                   }}
+//                 >
+//                   {item.assignedEmployeeName}
+//                 </Text>
+//               )}
+
+//               {/* ASSIGN BUTTON */}
+//               {!item.assignedEmployeeId && (
+//                 <TouchableOpacity
+//                   onPress={() => {
+//                     setSelectedBooking(item);
+//                     setModalVisible(true);
+//                   }}
+//                   style={{
+//                     backgroundColor: "#2563eb", 
+//                     paddingVertical: 12,
+//                     borderRadius: 14,
+//                     shadowColor: "#38bdf8",
+//                     shadowOpacity: 0.4,
+//                     shadowRadius: 8,
+//                     marginTop: 12,
+//                     alignItems: "center",
+//                   }}
+//                 >
+//                   <Text
+//                     style={{
+//                       color: "#fff",
+//                       fontWeight: "900",
+//                       fontSize: 15,
+//                     }}
+//                   >
+//                     Assign Mechanic
+//                   </Text>
+//                 </TouchableOpacity>
+//               )}
+//             </View>
+//           )}
+//         />
+
+//         {/* ➕ FAB BUTTON */}
+//         <TouchableOpacity
+//           onPress={() => {
+//             setSelectedBooking(null);
+//             setModalVisible(true);
+//           }}
+//           style={{
+//             position: "absolute",
+//             bottom: 60,
+//             right: 20,
+//             backgroundColor: "#2563eb",   
+//             width: 56,
+//             height: 56,
+//             borderRadius: 28,
+//             alignItems: "center",
+//             justifyContent: "center",
+//             shadowColor: "#38bdf8",
+//             shadowOpacity: 0.4,
+//             shadowRadius: 10,
+//             elevation: 8,
+//           }}
+//         >
+//           <Ionicons name="add" size={26} color="#fff" />
+//         </TouchableOpacity>
+
+//         {/* 🪟 ASSIGN MODAL */}
+//         <Modal visible={modalVisible} transparent animationType="fade">
+//           <View
+//             style={{
+//               flex: 1,
+//               backgroundColor: "rgba(0,0,0,0.75)",
+//               justifyContent: "center",
+//               padding: 20,
+//             }}
+//           >
+//             <View
+//               style={{
+//                 backgroundColor: "#020617",
+//                 borderRadius: 18,
+//                 padding: 18,
+//                 borderWidth: 1,
+//                 borderColor: "#0b3b6f",
+//               }}
+//             >
+//               <Text
+//                 style={{
+//                   color: "#38bdf8",
+//                   fontSize: 18,
+//                   fontWeight: "700",
+//                   marginBottom: 14,
+//                   textAlign: "center",
+//                 }}
+//               >
+//                 Assign Mechanic
+//               </Text>
+
+//               {/* 🔧 SERVICE PICKER (only for FAB flow) */}
+//               {!selectedBooking && (
+//                 <Picker
+//                   selectedValue={selectedBooking?.id || ""}
+//                   onValueChange={(val) =>
+//                     setSelectedBooking(
+//                       unassignedServices.find((s) => s.id === val),
+//                     )
+//                   }
+//                   dropdownIconColor="#38bdf8"
+//                   style={{ color: "#fff" }}
+//                 >
+//                   <Picker.Item label="Select Service" value="" />
+//                   {unassignedServices.map((s) => (
+//                     <Picker.Item
+//                       key={s.id}
+//                       label={`${s.bookingId} - ${s.name}`}
+//                       value={s.id}
+//                     />
+//                   ))}
+//                 </Picker>
+//               )}
+
+//               {/* 👨‍🔧 EMPLOYEE PICKER */}
+//               <Picker
+//                 selectedValue={selectedEmployeeId}
+//                 onValueChange={setSelectedEmployeeId}
+//                 dropdownIconColor="#38bdf8"
+//                 style={{ color: "#fff", marginTop: 10 }}
+//               >
+//                 <Picker.Item label="Select mechanic" value="" />
+//                 {availableEmployees.map((emp) => (
+//                   <Picker.Item key={emp.id} label={emp.name} value={emp.id} />
+//                 ))}
+//               </Picker>
+
+//               <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
+//                 <Pressable
+//                   onPress={() => setModalVisible(false)}
+//                   style={{
+//                     flex: 1,
+//                     paddingVertical: 12,
+//                     borderRadius: 12,
+//                     borderWidth: 1,
+//                     borderColor: "#38bdf8",
+//                     alignItems: "center",
+//                   }}
+//                 >
+//                   <Text style={{ color: "#fff" }}>Cancel</Text>
+//                 </Pressable>
+
+//                 <Pressable
+//                   onPress={assignEmployee}
+//                   style={{
+//                     flex: 1,
+//                     paddingVertical: 12,
+//                     borderRadius: 12,
+//                     backgroundColor: "#38bdf8",
+//                     alignItems: "center",
+//                   }}
+//                 >
+//                   <Text style={{ color: "#020617", fontWeight: "700" }}>
+//                     Assign
+//                   </Text>
+//                 </Pressable>
+//               </View>
+//             </View>
+//           </View>
+//         </Modal>
+//       </View>
+//     </SafeAreaView>
+//   );
+// }
+
+
 import { useEffect, useMemo, useState } from "react";
 import {
   View,
@@ -17,10 +551,10 @@ import {
   doc,
   serverTimestamp,
   addDoc,
+  arrayUnion,
 } from "firebase/firestore";
 import { db } from "../../firebase";
 import { Picker } from "@react-native-picker/picker";
-import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -35,14 +569,15 @@ const BOOKING_STATUS = [
 ];
 
 export default function Services() {
-  const router = useRouter();
+  const [mainTab, setMainTab] = useState("booked"); // booked | addVehicle
+  const [subTab, setSubTab] = useState("unassigned"); // assigned | unassigned
 
   const [services, setServices] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [updatingId, setUpdatingId] = useState(null);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -62,6 +597,7 @@ export default function Services() {
     return () => unsub();
   }, []);
 
+
   /* 🔥 EMPLOYEES */
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "employees"), (snap) => {
@@ -74,36 +610,42 @@ export default function Services() {
     return () => unsub();
   }, []);
 
-  /* 🔍 FILTER */
-  const filteredServices = useMemo(() => {
-    return services
-      .filter((s) =>
-        statusFilter === "All"
-          ? true
-          : (s.serviceStatus || "Approved") === statusFilter,
-      )
-      .filter((s) => {
-        const text = `
-          ${s.bookingId || ""}
-          ${s.name || ""}
-          ${s.phone || ""}
-          ${s.brand || ""}
-          ${s.model || ""}
-        `.toLowerCase();
+  /* 🔍 FILTER BASED ON SEARCH */
+  const searchedServices = useMemo(() => {
+    return services.filter((s) => {
+      const text = `
+        ${s.bookingId || ""}
+        ${s.name || ""}
+        ${s.phone || ""}
+        ${s.brand || ""}
+        ${s.model || ""}
+      `.toLowerCase();
 
-        return text.includes(search.toLowerCase());
-      });
-  }, [services, search, statusFilter]);
+      return text.includes(search.toLowerCase());
+    });
+  }, [services, search]);
+
+  /* 🔹 MAIN TAB FILTER */
+  const bookedServices = searchedServices.filter((s) => !s.addVehicle);
+  const addVehicleServices = searchedServices.filter((s) => s.addVehicle === true);
+
+  const currentMainList =
+    mainTab === "booked" ? bookedServices : addVehicleServices;
+
+  /* 🔹 SUB TAB FILTER */
+  const assignedServices = currentMainList.filter((s) => s.assignedEmployeeId);
+  const unassignedServices = currentMainList.filter((s) => !s.assignedEmployeeId);
+
+  const listData = subTab === "assigned" ? assignedServices : unassignedServices;
 
   /* 👨‍🔧 AVAILABLE EMPLOYEES */
-  const availableEmployees = useMemo(() => {
-    return employees.filter((e) => e.workStatus !== "busy");
-  }, [employees]);
+  const availableEmployees = employees.filter((e) => e.workStatus !== "busy");
 
-  /* 🧾 UNASSIGNED SERVICES (for FAB picker) */
-  const unassignedServices = useMemo(() => {
-    return services.filter((s) => !s.assignedEmployeeId);
-  }, [services]);
+
+  // const bookedCount = bookedServices.length;
+  // const addVehicleCount = addVehicleServices.length;
+  const assignedCount = currentMainList.filter((s) => s.assignedEmployeeId).length;
+  const unassignedCount = currentMainList.filter((s) => !s.assignedEmployeeId).length;
 
   /* 🎨 STATUS COLOR */
   const getStatusColor = (status) => {
@@ -134,84 +676,299 @@ export default function Services() {
       return;
     }
 
-    try {
-      setUpdatingId(service.id);
+    await updateDoc(doc(db, "allServices", service.id), {
+      serviceStatus: newStatus,
+      updatedAt: serverTimestamp(),
+    });
 
-      await updateDoc(doc(db, "allServices", service.id), {
-        serviceStatus: newStatus,
-        updatedAt: serverTimestamp(),
+    if (newStatus === "Service Completed") {
+      await updateDoc(doc(db, "employees", service.assignedEmployeeId), {
+        workStatus: "available",
+        currentServiceId: null,
       });
-
-      if (newStatus === "Service Completed" && service.assignedEmployeeId) {
-        await updateDoc(doc(db, "employees", service.assignedEmployeeId), {
-          workStatus: "available",
-          currentServiceId: null,
-        });
-      }
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setUpdatingId(null);
     }
   };
 
   /* 🧑‍🔧 ASSIGN EMPLOYEE */
-  const assignEmployee = async () => {
-    if (!selectedBooking || !selectedEmployeeId || assigning) return;
+ const assignEmployee = async () => {
+  if (!selectedBooking || !selectedEmployeeId || assigning) return;
 
-    try {
-      setAssigning(true);
+  /* ❌ Already assigned check */
+  if (selectedBooking.assignedEmployeeId) {
+    Alert.alert("Already Assigned", "This service already has a mechanic.");
+    return;
+  }
 
-      const serviceDocId = selectedBooking.id;
+  try {
+    setAssigning(true);
 
-      const selectedEmployee = availableEmployees.find(
-        (emp) => emp.id === selectedEmployeeId,
-      );
+    const bookingDocId = selectedBooking.id;
+    const serviceId = selectedBooking.bookingId || "";
+    const customerUid = selectedBooking.uid || "";
 
-      if (!selectedEmployee) {
-        Alert.alert("Error", "Employee not available");
-        return;
-      }
+    /* 🔍 Get employee full data */
+    const selectedEmployee = employees.find(
+      (emp) => emp.id === selectedEmployeeId
+    );
 
-      await updateDoc(doc(db, "allServices", serviceDocId), {
-        assignedEmployeeId: selectedEmployeeId,
-        assignedEmployeeName: selectedEmployee.name || "",
-        serviceStatus: "Processing",
-        assignedAt: new Date(),
-      });
-
-      await updateDoc(doc(db, "employees", selectedEmployeeId), {
-        currentServiceId: serviceDocId,
-        workStatus: "busy",
-      });
-
-      await addDoc(collection(db, "assignedServices"), {
-        serviceDocId,
-        employeeDocId: selectedEmployeeId,
-        employeeName: selectedEmployee.name || "",
-        customerName: selectedBooking.name || "",
-        serviceStatus: "Assigned",
-        assignedAt: new Date(),
-      });
-
-      Alert.alert("Success", "Mechanic assigned");
-
-      setModalVisible(false);
-      setSelectedBooking(null);
-      setSelectedEmployeeId(null);
-    } catch (error) {
-      console.log(error);
-      Alert.alert("Error", "Assignment failed");
-    } finally {
-      setAssigning(false);
+    if (!selectedEmployee) {
+      Alert.alert("Error", "Employee data not found");
+      return;
     }
-  };
+
+    /* ❌ If employee busy */
+    if (selectedEmployee.workStatus === "busy") {
+      Alert.alert("Busy", "This mechanic is already working on another job.");
+      return;
+    }
+
+    const employeeAuthUid = selectedEmployee.authUid || "";
+
+    /* 1️⃣ UPDATE SERVICE (allServices) */
+    await updateDoc(doc(db, "allServices", bookingDocId), {
+      assignedEmployeeId: selectedEmployeeId,
+      assignedEmployeeAuthUid: employeeAuthUid,
+      assignedEmployeeName: selectedEmployee.name || "",
+      serviceStatus: "Processing",
+      assignedAt: serverTimestamp(),
+    });
+
+    /* 2️⃣ UPDATE EMPLOYEE STATUS */
+    await updateDoc(doc(db, "employees", selectedEmployeeId), {
+      workStatus: "busy",
+      currentServiceId: bookingDocId,
+      assignedBookingIds: arrayUnion(bookingDocId),
+    });
+
+    /* 3️⃣ CREATE assignedServices ENTRY */
+    await addDoc(collection(db, "assignedServices"), {
+      bookingDocId,
+      serviceId,
+      customerUid,
+
+      employeeDocId: selectedEmployeeId,
+      employeeAuthUid,
+      employeeName: selectedEmployee.name || "",
+
+      carBrand: selectedBooking.brand || "",
+      carModel: selectedBooking.model || "",
+      carNumber: selectedBooking.vehicleNumber || "",
+      carIssue: selectedBooking.issue || "",
+
+      customerName: selectedBooking.name || "",
+      customerPhone: selectedBooking.phone || "",
+      customerEmail: selectedBooking.email || "",
+
+      serviceStatus: "Assigned",
+
+      assignedAt: serverTimestamp(),
+      startedAt: null,
+      completedAt: null,
+    });
+
+    Alert.alert("Success", "Mechanic assigned successfully");
+
+    /* 🔄 RESET UI STATE */
+    setModalVisible(false);
+    setSelectedBooking(null);
+    setSelectedEmployeeId(null);
+  } catch (error) {
+    console.log(error);
+    Alert.alert("Error", "Assignment failed");
+  } finally {
+    setAssigning(false);
+  }
+};
 
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
+
+  const renderCard = ({ item }) => (
+    <View
+      style={{
+        backgroundColor: "#020617",
+        padding: 18,
+        borderRadius: 20,
+        marginBottom: 14,
+        borderWidth: 1,
+        borderColor: "rgba(56,189,248,0.25)",
+        shadowColor: "#38bdf8",
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+        elevation: 6,
+        position: "relative",
+      }}
+    >
+      {/* 🔹 STATUS BADGE */}
+      <View
+        style={{
+          position: "absolute",
+          top: 12,
+          right: 12,
+          backgroundColor: getStatusColor(item.serviceStatus),
+          paddingHorizontal: 10,
+          paddingVertical: 4,
+          borderRadius: 12,
+        }}
+      >
+        <Text style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
+          {item.serviceStatus || "Approved"}
+        </Text>
+      </View>
+
+      {/* 🔹 ID */}
+      <Text style={{ color: "#38bdf8", fontWeight: "900", fontSize: 15 }}>
+        {item.bookingId}
+      </Text>
+
+      {/* 🔹 CUSTOMER */}
+      <Text style={{ color: "#fff", marginTop: 10, fontSize: 16, fontWeight: "700" }}>
+        {item.name}
+      </Text>
+
+      <Text style={{ color: "#cbd5f5", fontSize: 14 }}>{item.phone}</Text>
+
+      {/* 🔹 VEHICLE */}
+      <Text style={{ color: "#4ade80", marginTop: 6, fontWeight: "700" }}>
+        {item.vehicleNumber}
+      </Text>
+
+      <Text style={{ color: "#cbd5f5" }}>
+        {item.brand} {item.model}
+      </Text>
+
+      {/* 🔹 ISSUE */}
+      {item.issue && (
+        <Text
+          style={{
+            color: "#facc15",
+            marginTop: 6,
+            fontSize: 14,
+            fontWeight: "600",
+          }}
+        >
+          Issue: {item.issue}
+        </Text>
+      )}
+
+      {/* 🔹 ADDRESS */}
+      {item.address && (
+        <Text style={{ color: "#94a3b8", marginTop: 4 }}>
+          📍 {item.address}
+        </Text>
+      )}
+
+      {/* 🔹 ASSIGNED EMPLOYEE */}
+      {item.assignedEmployeeName && (
+        <Text
+          style={{
+            color: "#38bdf8",
+            marginTop: 8,
+            fontSize: 14,
+            fontWeight: "700",
+          }}
+        >
+          👨‍🔧 {item.assignedEmployeeName}
+        </Text>
+      )}
+
+      {/* 🔹 STATUS PICKER */}
+      {item.assignedEmployeeId && (
+        <View
+          style={{
+            marginTop: 10,
+            borderWidth: 1,
+            borderColor: "#38bdf8",
+            borderRadius: 10,
+            overflow: "hidden",
+          }}
+        >
+          <Picker
+            selectedValue={item.serviceStatus || "Approved"}
+            onValueChange={(v) => handleStatusChange(item, v)}
+            dropdownIconColor="#38bdf8"
+            style={{ color: "#fff" }}
+          >
+            {BOOKING_STATUS.map((s) => (
+              <Picker.Item key={s} label={s} value={s} />
+            ))}
+          </Picker>
+        </View>
+      )}
+
+      {/* 🔹 ASSIGN BUTTON */}
+      {!item.assignedEmployeeId && (
+        <TouchableOpacity
+          onPress={() => {
+            setSelectedBooking(item);
+            setModalVisible(true);
+          }}
+          style={{
+            backgroundColor: "#2563eb",
+            paddingVertical: 12,
+            borderRadius: 14,
+            marginTop: 12,
+            alignItems: "center",
+            shadowColor: "#38bdf8",
+            shadowOpacity: 0.4,
+            shadowRadius: 8,
+            elevation: 4,
+          }}
+        >
+          <Text style={{ color: "#fff", fontWeight: "900", fontSize: 14 }}>
+            Assign Mechanic
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
       <View style={{ flex: 1, padding: 12 }}>
+        {/* 🔝 MAIN TABS */}
+        <View style={{ flexDirection: "row", marginBottom: 10 }}>
+          <TouchableOpacity
+            onPress={() => setMainTab("booked")}
+            style={{
+              flex: 1,
+              padding: 10,
+              backgroundColor: mainTab === "booked" ? "#38bdf8" : "#020617",
+              borderRadius: 10,
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: mainTab === "booked" ? "#020617" : "#38bdf8",
+                fontWeight: "700",
+              }}
+            >
+              Booked 
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setMainTab("addVehicle")}
+            style={{
+              flex: 1,
+              padding: 10,
+              backgroundColor: mainTab === "addVehicle" ? "#38bdf8" : "#020617",
+              borderRadius: 10,
+              alignItems: "center",
+              marginLeft: 6,
+            }}
+          >
+            <Text
+              style={{
+                color: mainTab === "addVehicle" ? "#020617" : "#38bdf8",
+                fontWeight: "700",
+              }}
+            >
+              Add Service Vehicle 
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* 🔍 SEARCH */}
         <TextInput
           placeholder="Search booking, name, phone, car"
@@ -222,209 +979,65 @@ export default function Services() {
             backgroundColor: "#0f172a",
             borderWidth: 1,
             borderColor: "#0b3b6f",
-            padding: 16,
+            padding: 14,
             borderRadius: 12,
             marginBottom: 10,
             color: "#fff",
           }}
         />
 
-        {/* 🔘 STATUS DROPDOWN */}
-        <View
-          style={{
-            backgroundColor: "#020617",
-            borderWidth: 1,
-            borderColor: "#38bdf8",
-            borderRadius: 14,
-            marginBottom: 10,
-            paddingHorizontal: 4,
-            overflow: "hidden",
-          }}
-        >
-          <Picker
-            selectedValue={statusFilter}
-            onValueChange={(v) => setStatusFilter(v)}
-            dropdownIconColor="#38bdf8"
-            style={{ color: "#fff" }}
-            itemStyle={{ color: "#fff" }}
+        {/* 🔹 SUB TABS */}
+        <View style={{ flexDirection: "row", marginBottom: 10 }}>
+          <TouchableOpacity
+            onPress={() => setSubTab("assigned")}
+            style={{
+              flex: 1,
+              padding: 8,
+              backgroundColor: subTab === "assigned" ? "#38bdf8" : "#020617",
+              borderRadius: 8,
+              alignItems: "center",
+            }}
           >
-            <Picker.Item label="All" value="All" />
+            <Text
+              style={{
+                color: subTab === "assigned" ? "#020617" : "#38bdf8",
+                fontWeight: "700",
+              }}
+            >
+              Assigned ({assignedCount})
+            </Text>
+          </TouchableOpacity>
 
-            {BOOKING_STATUS.map((s) => (
-              <Picker.Item key={s} label={s} value={s} />
-            ))}
-          </Picker>
+          <TouchableOpacity
+            onPress={() => setSubTab("unassigned")}
+            style={{
+              flex: 1,
+              padding: 8,
+              backgroundColor: subTab === "unassigned" ? "#38bdf8" : "#020617",
+              borderRadius: 8,
+              alignItems: "center",
+              marginLeft: 6,
+            }}
+          >
+            <Text
+              style={{
+                color: subTab === "unassigned" ? "#020617" : "#38bdf8",
+                fontWeight: "700",
+              }}
+            >
+              Unassigned ({unassignedCount})
+            </Text>
+          </TouchableOpacity>
         </View>
+
 
         {/* 📋 LIST */}
         <FlatList
-          data={filteredServices}
+          data={listData}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 140 }}
-          renderItem={({ item }) => (
-            <View
-              style={{
-                backgroundColor: "#020617",
-                padding: 18,
-                borderRadius: 20,
-                marginBottom: 14,
-                borderWidth: 1,
-                borderColor: "rgba(56,189,248,0.25)",
-                shadowColor: "#38bdf8",
-                shadowOpacity: 0.15,
-                shadowRadius: 10,
-                elevation: 6,
-                position: "relative",
-              }}
-            >
-              <Text
-                style={{ fontWeight: "900", fontSize: 15, color: "#38bdf8" }}
-              >
-                {item.bookingId || "No Booking"}
-              </Text>
-
-              {/* STATUS BADGE */}
-              <View
-                style={{
-                  position: "absolute",
-                  top: 10,
-                  right: 10,
-                  backgroundColor: getStatusColor(item.serviceStatus),
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  borderRadius: 14,
-                  shadowColor: "#000",
-                  shadowOpacity: 0.3,
-                  shadowRadius: 6,
-                }}
-              >
-                <Text
-                  style={{ color: "#fff", fontSize: 12, fontWeight: "800" }}
-                >
-                  {item.serviceStatus || "Approved"}
-                </Text>
-              </View>
-
-              {/* CUSTOMER */}
-              <Text
-                style={{
-                  color: "#f8fafc",
-                  marginTop: 14,
-                  fontSize: 16,
-                  fontWeight: "700",
-                }}
-              >
-                {item.name}
-              </Text>
-
-              <Text style={{ color: "#cbd5f5", fontSize: 14 }}>
-                {item.phone}
-              </Text>
-
-              {/* CAR DETAILS */}
-              <Text style={{ color: "#cbd5f5", fontSize: 14 }}>
-                {item.brand} {item.model}
-              </Text>
-
-              {/* ISSUE */}
-              {item.issue && (
-                <Text
-                  style={{
-                    color: "#facc15",
-                    marginTop: 6,
-                    fontSize: 19,
-                    fontWeight: "600",
-                  }}
-                >
-                  {item.issue}
-                </Text>
-              )}
-
-              {/* TRACK NUMBER */}
-              {item.trackNumber && (
-                <Text
-                  style={{
-                    color: "#4ade80",
-                    marginTop: 6,
-                    fontSize: 16,
-                    fontWeight: "700",
-                  }}
-                >
-                  Track: {item.trackNumber}
-                </Text>
-              )}
-
-              {/* ASSIGNED MECHANIC */}
-              {item.assignedEmployeeName && (
-                <Text
-                  style={{
-                    color: "#38bdf8",
-                    marginTop: 8,
-                    fontSize: 14,
-                    fontWeight: "700",
-                  }}
-                >
-                  {item.assignedEmployeeName}
-                </Text>
-              )}
-
-              {/* ASSIGN BUTTON */}
-              {!item.assignedEmployeeId && (
-                <TouchableOpacity
-                  onPress={() => {
-                    setSelectedBooking(item);
-                    setModalVisible(true);
-                  }}
-                  style={{
-                    backgroundColor: "#2563eb", 
-                    paddingVertical: 12,
-                    borderRadius: 14,
-                    shadowColor: "#38bdf8",
-                    shadowOpacity: 0.4,
-                    shadowRadius: 8,
-                    marginTop: 12,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#fff",
-                      fontWeight: "900",
-                      fontSize: 15,
-                    }}
-                  >
-                    Assign Mechanic
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
+          renderItem={renderCard}
+          contentContainerStyle={{ paddingBottom: 120 }}
         />
-
-        {/* ➕ FAB BUTTON */}
-        <TouchableOpacity
-          onPress={() => {
-            setSelectedBooking(null);
-            setModalVisible(true);
-          }}
-          style={{
-            position: "absolute",
-            bottom: 60,
-            right: 20,
-            backgroundColor: "#2563eb",   
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            alignItems: "center",
-            justifyContent: "center",
-            shadowColor: "#38bdf8",
-            shadowOpacity: 0.4,
-            shadowRadius: 10,
-            elevation: 8,
-          }}
-        >
-          <Ionicons name="add" size={26} color="#fff" />
-        </TouchableOpacity>
 
         {/* 🪟 ASSIGN MODAL */}
         <Modal visible={modalVisible} transparent animationType="fade">
@@ -457,35 +1070,11 @@ export default function Services() {
                 Assign Mechanic
               </Text>
 
-              {/* 🔧 SERVICE PICKER (only for FAB flow) */}
-              {!selectedBooking && (
-                <Picker
-                  selectedValue={selectedBooking?.id || ""}
-                  onValueChange={(val) =>
-                    setSelectedBooking(
-                      unassignedServices.find((s) => s.id === val),
-                    )
-                  }
-                  dropdownIconColor="#38bdf8"
-                  style={{ color: "#fff" }}
-                >
-                  <Picker.Item label="Select Service" value="" />
-                  {unassignedServices.map((s) => (
-                    <Picker.Item
-                      key={s.id}
-                      label={`${s.bookingId} - ${s.name}`}
-                      value={s.id}
-                    />
-                  ))}
-                </Picker>
-              )}
-
-              {/* 👨‍🔧 EMPLOYEE PICKER */}
               <Picker
                 selectedValue={selectedEmployeeId}
                 onValueChange={setSelectedEmployeeId}
                 dropdownIconColor="#38bdf8"
-                style={{ color: "#fff", marginTop: 10 }}
+                style={{ color: "#fff" }}
               >
                 <Picker.Item label="Select mechanic" value="" />
                 {availableEmployees.map((emp) => (
@@ -493,7 +1082,7 @@ export default function Services() {
                 ))}
               </Picker>
 
-              <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
+              <View style={{ flexDirection: "row", marginTop: 16 }}>
                 <Pressable
                   onPress={() => setModalVisible(false)}
                   style={{
@@ -516,6 +1105,7 @@ export default function Services() {
                     borderRadius: 12,
                     backgroundColor: "#38bdf8",
                     alignItems: "center",
+                    marginLeft: 8,
                   }}
                 >
                   <Text style={{ color: "#020617", fontWeight: "700" }}>
