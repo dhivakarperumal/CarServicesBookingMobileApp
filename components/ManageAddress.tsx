@@ -24,6 +24,7 @@ import { auth, db } from "../firebase";
 import { Picker } from "@react-native-picker/picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Toast from "react-native-toast-message";
+import { Modal } from "react-native";
 
 
 const INDIAN_STATES = [
@@ -47,6 +48,8 @@ export default function ManageAddress() {
   const [addresses, setAddresses] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const user = auth.currentUser;
 
@@ -188,24 +191,29 @@ export default function ManageAddress() {
   };
 
   /* ================= DELETE ================= */
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, "users", user.uid, "addresses", id));
-      fetchAddresses();
+  const confirmDelete = async () => {
+  if (!deleteId) return;
 
-      Toast.show({
-        type: "success",
-        text1: "Deleted",
-        text2: "Address removed successfully",
-      });
-    } catch {
-      Toast.show({
-        type: "error",
-        text1: "Delete Failed",
-        text2: "Something went wrong",
-      });
-    }
-  };
+  try {
+    await deleteDoc(doc(db, "users", user.uid, "addresses", deleteId));
+    fetchAddresses();
+
+    Toast.show({
+      type: "success",
+      text1: "Deleted",
+      text2: "Address removed successfully",
+    });
+  } catch {
+    Toast.show({
+      type: "error",
+      text1: "Delete Failed",
+      text2: "Something went wrong",
+    });
+  } finally {
+    setShowDeleteModal(false);
+    setDeleteId(null);
+  }
+};
 
   /* ================= EDIT ================= */
   const handleEdit = (addr: any) => {
@@ -246,7 +254,10 @@ export default function ManageAddress() {
 
                 <TouchableOpacity
                   style={styles.deleteBtn}
-                  onPress={() => handleDelete(item.id)}
+                  onPress={() => {
+  setDeleteId(item.id);
+  setShowDeleteModal(true);
+}}
                 >
                   <Text>Delete</Text>
                 </TouchableOpacity>
@@ -329,6 +340,38 @@ export default function ManageAddress() {
           </Text>
         )}
       </TouchableOpacity>
+        <Modal
+  transparent
+  visible={showDeleteModal}
+  animationType="fade"
+>
+  <View style={modalStyles.overlay}>
+    <View style={modalStyles.container}>
+      <Text style={modalStyles.title}>Delete Address?</Text>
+      <Text style={modalStyles.subtitle}>
+        Are you sure you want to delete this address?
+      </Text>
+
+      <View style={modalStyles.buttonRow}>
+        <TouchableOpacity
+          style={modalStyles.cancelBtn}
+          onPress={() => setShowDeleteModal(false)}
+        >
+          <Text style={{ color: "#fff" }}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={modalStyles.deleteBtn}
+          onPress={confirmDelete}
+        >
+          <Text style={{ color: "#fff", fontWeight: "700" }}>
+            Delete
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+</Modal>
     </KeyboardAwareScrollView>
   );
 }
@@ -367,5 +410,45 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     marginTop: 10,
+  },
+  
+});
+
+const modalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  container: {
+    width: "85%",
+    backgroundColor: "#1e293b",
+    padding: 20,
+    borderRadius: 16,
+  },
+  title: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  subtitle: {
+    color: "#94a3b8",
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  cancelBtn: {
+    padding: 10,
+    marginRight: 10,
+  },
+  deleteBtn: {
+    backgroundColor: "#ef4444",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
   },
 });
