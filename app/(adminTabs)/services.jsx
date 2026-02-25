@@ -552,6 +552,7 @@ import {
   serverTimestamp,
   addDoc,
   arrayUnion,
+  runTransaction
 } from "firebase/firestore";
 import { db } from "../../firebase";
 import { Picker } from "@react-native-picker/picker";
@@ -689,11 +690,31 @@ export default function Services() {
     }
   };
 
+
+  const generateServiceId = async () => {
+  const counterRef = doc(db, "counters", "serviceCounter");
+
+  const newId = await runTransaction(db, async (transaction) => {
+    const counterDoc = await transaction.get(counterRef);
+
+    let newCount = 1;
+
+    if (counterDoc.exists()) {
+      newCount = (counterDoc.data().current || 0) + 1;
+    }
+
+    transaction.set(counterRef, { current: newCount }, { merge: true });
+
+    return `SER${String(newCount).padStart(3, "0")}`;
+  });
+
+  return newId;
+};
+
   /* 🧑‍🔧 ASSIGN EMPLOYEE */
- const assignEmployee = async () => {
+const assignEmployee = async () => {
   if (!selectedBooking || !selectedEmployeeId || assigning) return;
 
-  /* ❌ Already assigned check */
   if (selectedBooking.assignedEmployeeId) {
     Alert.alert("Already Assigned", "This service already has a mechanic.");
     return;
@@ -703,10 +724,20 @@ export default function Services() {
     setAssigning(true);
 
     const bookingDocId = selectedBooking.id;
-    const serviceId = selectedBooking.bookingId || "";
+
+    /* 🔥 GENERATE SERVICE ID */
+    const serviceId = await generateServiceId();
+
+    /* BOOKING FLAG (your rule) */
+    const bookingId = selectedBooking.bookingId || "";
+    const hasBookingId = false;
+
+    /* VEHICLE */
+    const vehicleId = selectedBooking.addVehicleId || "";
+    const hasVehicle = vehicleId ? true : false;
+
     const customerUid = selectedBooking.uid || "";
 
-    /* 🔍 Get employee full data */
     const selectedEmployee = employees.find(
       (emp) => emp.id === selectedEmployeeId
     );
@@ -716,7 +747,6 @@ export default function Services() {
       return;
     }
 
-    /* ❌ If employee busy */
     if (selectedEmployee.workStatus === "busy") {
       Alert.alert("Busy", "This mechanic is already working on another job.");
       return;
@@ -724,26 +754,46 @@ export default function Services() {
 
     const employeeAuthUid = selectedEmployee.authUid || "";
 
-    /* 1️⃣ UPDATE SERVICE (allServices) */
+    /* 1️⃣ UPDATE allServices */
     await updateDoc(doc(db, "allServices", bookingDocId), {
+      assigned: true,
+
+      serviceId, // ✅ SER001
+      bookingId,
+      hasBookingId,
+
+      addVehicleId: vehicleId,
+      addVehicle: hasVehicle,
+
       assignedEmployeeId: selectedEmployeeId,
       assignedEmployeeAuthUid: employeeAuthUid,
       assignedEmployeeName: selectedEmployee.name || "",
+
       serviceStatus: "Processing",
       assignedAt: serverTimestamp(),
     });
 
-    /* 2️⃣ UPDATE EMPLOYEE STATUS */
+    /* 2️⃣ UPDATE employees */
     await updateDoc(doc(db, "employees", selectedEmployeeId), {
+      assigned: true,
       workStatus: "busy",
       currentServiceId: bookingDocId,
+      currentServiceCode: serviceId, // ✅ SER001
       assignedBookingIds: arrayUnion(bookingDocId),
     });
 
-    /* 3️⃣ CREATE assignedServices ENTRY */
+    /* 3️⃣ CREATE assignedServices */
     await addDoc(collection(db, "assignedServices"), {
+      assigned: true,
+
       bookingDocId,
-      serviceId,
+      serviceId, // ✅ SER001
+      bookingId,
+      hasBookingId,
+
+      addVehicleId: vehicleId,
+      addVehicle: hasVehicle,
+
       customerUid,
 
       employeeDocId: selectedEmployeeId,
@@ -766,14 +816,13 @@ export default function Services() {
       completedAt: null,
     });
 
-    Alert.alert("Success", "Mechanic assigned successfully");
+    Alert.alert("Success", `Mechanic assigned → ${serviceId}`);
 
-    /* 🔄 RESET UI STATE */
     setModalVisible(false);
     setSelectedBooking(null);
     setSelectedEmployeeId(null);
   } catch (error) {
-    console.log(error);
+    console.log("Assign Error:", error);
     Alert.alert("Error", "Assignment failed");
   } finally {
     setAssigning(false);

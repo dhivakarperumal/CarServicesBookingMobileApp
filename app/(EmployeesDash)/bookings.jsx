@@ -9,8 +9,14 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { db } from "../../firebase";
+import {
+  collectionGroup,
+  onSnapshot,
+  query,
+  orderBy,
+  where,
+} from "firebase/firestore";
+import { db, auth } from "../../firebase";
 import { KeyboardAvoidingView, Platform } from "react-native";
 
 export default function AssignedBookings() {
@@ -20,26 +26,47 @@ export default function AssignedBookings() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
-  /* 🔥 FETCH */
   useEffect(() => {
-    const q = query(
-      collection(db, "assignedServices"),
-      orderBy("assignedAt", "desc"),
-    );
+    let unsub = () => {};
 
-    const unsub = onSnapshot(q, (snap) => {
-      const list = snap.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      }));
+    const currentUid = auth.currentUser?.uid;
 
-      setServices(list);
+    if (!currentUid) {
       setLoading(false);
-    });
+      return;
+    }
 
-    return unsub;
+    try {
+      const q = query(
+        collectionGroup(db, "assignedServices"),
+        where("employeeAuthUid", "==", currentUid),
+        orderBy("assignedAt", "desc")
+      );
+
+      unsub = onSnapshot(
+        q,
+        (snap) => {
+          const list = snap.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          }));
+
+          setServices(list);
+          setLoading(false);
+        },
+        (error) => {
+          console.log("AssignedServices listener error:", error);
+          setLoading(false);
+        }
+      );
+    } catch (err) {
+      console.log("Query error:", err);
+      setLoading(false);
+    }
+
+    return () => unsub();
   }, []);
-
+  
   /* 🔍 SEARCH + FILTER LOGIC */
   const filteredServices = useMemo(() => {
     return services
@@ -81,7 +108,7 @@ export default function AssignedBookings() {
     return (
       <View style={styles.card}>
         <Text style={styles.idText}>
-          Booking ID: {item.bookingDocId || "N/A"}
+          Booking ID: {item.bookingId || "N/A"}
         </Text>
 
         <Text style={styles.idText}>Service ID: {item.serviceId || "N/A"}</Text>
