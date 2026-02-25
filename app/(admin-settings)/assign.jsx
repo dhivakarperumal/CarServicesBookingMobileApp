@@ -23,6 +23,8 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebase";
 import { Picker } from "@react-native-picker/picker";
+import { KeyboardAvoidingView, Platform } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function AdminAssignServices() {
   const [bookings, setBookings] = useState([]);
@@ -61,7 +63,7 @@ export default function AdminAssignServices() {
       (b) =>
         !b.assignedEmployeeId &&
         !b.assignedEmployeeName &&
-        b.serviceStatus !== "Approved"
+        b.serviceStatus !== "Approved",
     );
   }, [bookings]);
 
@@ -96,9 +98,7 @@ export default function AdminAssignServices() {
 
     const list = snap.docs
       .map((d) => ({ id: d.id, ...d.data() }))
-      .filter(
-        (emp) => emp.status === "active" && emp.role === "mechanic"
-      );
+      .filter((emp) => emp.status === "active" && emp.role === "mechanic");
 
     setEmployees(list);
     setLoadingEmployees(false);
@@ -273,153 +273,166 @@ export default function AdminAssignServices() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* 🔍 SEARCH */}
-      <TextInput
-        placeholder="Search car, customer, phone..."
-        value={searchText}
-        onChangeText={setSearchText}
-        style={styles.searchInput}
-      />
-
-      {/* 🔘 FILTER */}
-      <View style={styles.filterRow}>
-        {[
-          { key: "notAssigned", label: "Not Assigned" },
-          { key: "all", label: "All" },
-        ].map((btn) => (
-          <TouchableOpacity
-            key={btn.key}
-            style={[
-              styles.filterBtn,
-              filter === btn.key && styles.activeFilter,
-            ]}
-            onPress={() => setFilter(btn.key)}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                filter === btn.key && { color: "#fff" },
-              ]}
-            >
-              {btn.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* 📋 LIST */}
-      {filteredBookings.length === 0 ? (
-        <Text style={styles.empty}>No Services Found</Text>
-      ) : (
-        <FlatList
-          data={filteredBookings}
-          keyExtractor={(item) => item.id}
-          renderItem={renderBooking}
-          contentContainerStyle={{ paddingBottom: 120 }}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <SafeAreaView style={styles.container}>
+        {/* 🔍 SEARCH */}
+        <TextInput
+          placeholder="Search car, customer, phone..."
+          placeholderTextColor="#94a3b8"
+          value={searchText}
+          onChangeText={setSearchText}
+          style={styles.searchInput}
         />
-      )}
 
-      {/* ➕ GLOBAL ASSIGN BUTTON */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={async () => {
-          setSelectedBooking(null);
-          setSelectedEmployeeId(null);
-          await fetchAvailableEmployees();
-          setGlobalModalVisible(true);
-        }}
-      >
-        <Text style={{ color: "#fff", fontSize: 28, fontWeight: "900" }}>
-          +
-        </Text>
-      </TouchableOpacity>
-
-      {/* 🔥 GLOBAL MODAL */}
-      <Modal visible={globalModalVisible} animationType="slide">
-        <SafeAreaView style={styles.modal}>
-          <Text style={styles.modalTitle}>Assign Service</Text>
-
-          <Text style={{ fontWeight: "700", marginBottom: 6 }}>
-            Select Service
-          </Text>
-
-          <View style={styles.pickerBox}>
-            <Picker
-              selectedValue={selectedBooking?.id || ""}
-              onValueChange={(val) =>
-                setSelectedBooking(
-                  unassignedBookings.find((b) => b.id === val)
-                )
-              }
+        {/* 🔘 FILTER */}
+        <View style={styles.filterRow}>
+          {[
+            { key: "notAssigned", label: "Not Assigned" },
+            { key: "all", label: "All" },
+          ].map((btn) => (
+            <TouchableOpacity
+              key={btn.key}
+              style={[
+                styles.filterBtn,
+                filter === btn.key && styles.activeFilter,
+              ]}
+              onPress={() => setFilter(btn.key)}
             >
-              <Picker.Item label="Select service" value="" />
-              {unassignedBookings.map((b) => (
-                <Picker.Item
-                  key={b.id}
-                  label={`${b.brand} - ${b.model} (${b.name})`}
-                  value={b.id}
-                />
-              ))}
-            </Picker>
-          </View>
+              <Text
+                style={[
+                  styles.filterText,
+                  filter === btn.key && { color: "#fff" },
+                ]}
+              >
+                {btn.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-          <Text style={{ fontWeight: "700", marginBottom: 6 }}>
-            Select Mechanic
-          </Text>
+        {/* 📋 LIST */}
+        {filteredBookings.length === 0 ? (
+          <Text style={styles.empty}>No Services Found</Text>
+        ) : (
+          <FlatList
+            data={filteredBookings}
+            keyExtractor={(item) => item.id}
+            renderItem={renderBooking}
+            contentContainerStyle={{ paddingBottom: 120 }}
+          />
+        )}
 
-          {loadingEmployees ? (
-            <ActivityIndicator size="large" />
-          ) : (
+        {/* ➕ GLOBAL ASSIGN BUTTON */}
+        <TouchableOpacity
+          activeOpacity={0.85}
+          style={styles.fab}
+          onPress={async () => {
+            setSelectedBooking(null);
+            setSelectedEmployeeId(null);
+            await fetchAvailableEmployees();
+            setGlobalModalVisible(true);
+          }}
+        >
+          <MaterialCommunityIcons name="plus" size={26} color="#fff" />
+        </TouchableOpacity>
+
+        {/* 🔥 GLOBAL MODAL */}
+        <Modal visible={globalModalVisible} animationType="slide">
+          <SafeAreaView style={styles.modal}>
+            <Text style={styles.modalTitle}>Assign Service</Text>
+
+            <Text style={{ fontWeight: "700", marginBottom: 6 }}>
+              Select Service
+            </Text>
+
             <View style={styles.pickerBox}>
               <Picker
-                selectedValue={selectedEmployeeId}
-                onValueChange={setSelectedEmployeeId}
+                selectedValue={selectedBooking?.id || ""}
+                onValueChange={(val) =>
+                  setSelectedBooking(
+                    unassignedBookings.find((b) => b.id === val),
+                  )
+                }
+                style={styles.picker}
+                dropdownIconColor="#38bdf8"
               >
-                <Picker.Item label="Select mechanic" value="" />
-                {employees.map((emp) => (
+                <Picker.Item label="Select service" value="" />
+                {unassignedBookings.map((b) => (
                   <Picker.Item
-                    key={emp.id}
-                    label={`${emp.name} (Jobs: ${
-                      emp.assignedBookingIds?.length || 0
-                    })`}
-                    value={emp.id}
+                    key={b.id}
+                    label={`${b.brand} - ${b.model} (${b.name})`}
+                    value={b.id}
                   />
                 ))}
               </Picker>
             </View>
-          )}
 
-          <TouchableOpacity
-            style={[
-              styles.assignConfirmBtn,
-              (!selectedEmployeeId || !selectedBooking) && {
-                backgroundColor: "#ccc",
-              },
-            ]}
-            disabled={!selectedEmployeeId || !selectedBooking || assigning}
-            onPress={assignEmployee}
-          >
-            <Text style={styles.btnText}>
-              {assigning ? "Assigning..." : "Confirm Assign"}
+            <Text style={{ fontWeight: "700", marginBottom: 6 }}>
+              Select Mechanic
             </Text>
-          </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.closeBtn}
-            onPress={() => setGlobalModalVisible(false)}
-          >
-            <Text style={styles.btnText}>Close</Text>
-          </TouchableOpacity>
-        </SafeAreaView>
-      </Modal>
-    </SafeAreaView>
+            {loadingEmployees ? (
+              <ActivityIndicator size="large" />
+            ) : (
+              <View style={styles.pickerBox}>
+                <Picker
+                  selectedValue={selectedEmployeeId}
+                  onValueChange={setSelectedEmployeeId}
+                  style={styles.picker}
+                  dropdownIconColor="#38bdf8"
+                >
+                  <Picker.Item label="Select mechanic" value="" />
+                  {employees.map((emp) => (
+                    <Picker.Item
+                      key={emp.id}
+                      label={`${emp.name} (Jobs: ${
+                        emp.assignedBookingIds?.length || 0
+                      })`}
+                      value={emp.id}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={[
+                styles.assignConfirmBtn,
+                (!selectedEmployeeId || !selectedBooking) && {
+                  backgroundColor: "#334155",
+                  shadowOpacity: 0,
+                },
+              ]}
+              disabled={!selectedEmployeeId || !selectedBooking || assigning}
+              onPress={assignEmployee}
+            >
+              <Text style={styles.btnText}>
+                {assigning ? "Assigning..." : "Confirm Assign"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={() => setGlobalModalVisible(false)}
+            >
+              <Text style={styles.btnText}>Close</Text>
+            </TouchableOpacity>
+          </SafeAreaView>
+        </Modal>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f4f6f8", padding: 16 },
+  container: {
+    flex: 1,
+    backgroundColor: "#020617",
+    padding: 16,
+  },
 
   loader: { flex: 1, justifyContent: "center", alignItems: "center" },
 
@@ -437,7 +450,7 @@ const styles = StyleSheet.create({
     padding: 6,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#0b3b6f",
+    borderColor: "rgba(56,189,248,0.25)",
   },
 
   filterBtn: {
@@ -447,12 +460,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  activeFilter: { backgroundColor: "#111827" },
-
+  activeFilter: {
+    backgroundColor: "#38bdf8",
+    borderWidth: 1.5,
+    borderColor: "#38bdf8",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 6,
+  },
   filterText: {
     fontSize: 12,
     fontWeight: "800",
     color: "#64748b",
+  },
+
+  searchInput: {
+    backgroundColor: "#0f172a",
+    color: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.25)",
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    marginBottom: 14,
+    fontSize: 15,
   },
 
   card: {
@@ -460,45 +492,104 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 18,
     marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.25)",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
     elevation: 4,
   },
 
-  car: { fontSize: 16, fontWeight: "800" },
-  service: { marginTop: 6, fontSize: 14 },
-  customer: { marginTop: 4, fontSize: 13, color: "#6b7280" },
+  car: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#38bdf8",
+  },
+
+  service: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "#e5e7eb",
+  },
+
+  customer: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "#94a3b8",
+  },
 
   statusBadge: {
     marginTop: 8,
     alignSelf: "flex-start",
-    backgroundColor: "#e5e7eb",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
 
-  statusText: { fontSize: 11, fontWeight: "700" },
+  statusText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#fff",
+  },
 
   assignBtn: {
     marginTop: 12,
     backgroundColor: "#2563eb",
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 13,
+    borderRadius: 14,
     alignItems: "center",
     shadowColor: "#38bdf8",
     shadowOpacity: 0.4,
     shadowRadius: 10,
+    elevation: 6,
   },
 
   btnText: { color: "#fff", fontWeight: "800" },
 
-  modal: { flex: 1, padding: 16, backgroundColor: "#f9fafb" },
+  pickerBox: {
+    backgroundColor: "#020617",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.25)",
+    marginBottom: 16,
+    overflow: "hidden",
+  },
+
+  picker: {
+    color: "#fff",
+  },
+
+  modal: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#020617",
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    padding: 20,
+  },
+
+  modalCard: {
+    backgroundColor: "#0f172a",
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.3)",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 12,
+  },
 
   modalTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: "#fff",
+    fontSize: 20,
+    fontWeight: "900",
+    color: "#38bdf8",
     textAlign: "center",
-    marginBottom: 16,
+    marginBottom: 20,
   },
 
   selectedBox: {
@@ -526,14 +617,16 @@ const styles = StyleSheet.create({
   staffSub: { fontSize: 12, color: "#6b7280" },
 
   assignConfirmBtn: {
-    marginTop: 14,
-    backgroundColor: "#2563eb",
-    paddingVertical: 14,
-    borderRadius: 14,
+    marginTop: 20,
+    backgroundColor: "#38bdf8",
+    paddingVertical: 16,
+    borderRadius: 18,
     alignItems: "center",
+
     shadowColor: "#38bdf8",
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
+    shadowOpacity: 0.6,
+    shadowRadius: 14,
+    elevation: 10,
   },
 
   closeBtn: {
@@ -593,17 +686,19 @@ const styles = StyleSheet.create({
   /* ➕ FAB */
   fab: {
     position: "absolute",
-    bottom: 30,
-    right: 20,
-    backgroundColor: "#111827",
+    bottom: 24,
+    right: 24,
+    backgroundColor: "#2563eb",
     width: 60,
     height: 60,
     borderRadius: 30,
-    justifyContent: "center",
     alignItems: "center",
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
+    justifyContent: "center",
+    zIndex: 100,
+
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.6,
+    shadowRadius: 14,
+    elevation: 10,
   },
 });

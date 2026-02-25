@@ -24,6 +24,7 @@ import {
 } from "firebase/firestore";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { KeyboardAvoidingView, Platform } from "react-native";
 
 export default function AddProduct() {
   const router = useRouter();
@@ -235,219 +236,230 @@ export default function AddProduct() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0f172a" }}>
-      {/* 🔷 HEADER */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#0f172a" }}>
+        {/* 🔷 HEADER */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>
-          {editId ? "Update Product" : "Add Product"}
-        </Text>
+          <Text style={styles.headerTitle}>
+            {editId ? "Update Product" : "Add Product"}
+          </Text>
 
-        <View style={{ width: 24 }} />
-      </View>
+          <View style={{ width: 24 }} />
+        </View>
 
-      <ScrollView style={styles.container}>
-        {/* BASIC */}
-        <Input
-          label="Product Name"
-          placeholder="Enter product name"
-          value={product.name}
-          onChangeText={(t) => setProduct({ ...product, name: t })}
-        />
+        <ScrollView
+          style={styles.container}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 200 }}
+        >
+          {/* BASIC */}
+          <Input
+            label="Product Name"
+            placeholder="Enter product name"
+            value={product.name}
+            onChangeText={(t) => setProduct({ ...product, name: t })}
+          />
 
-        <Input
-          label="Brand"
-          placeholder="Enter brand name"
-          value={product.brand}
-          onChangeText={(t) => setProduct({ ...product, brand: t })}
-        />
+          <Input
+            label="Brand"
+            placeholder="Enter brand name"
+            value={product.brand}
+            onChangeText={(t) => setProduct({ ...product, brand: t })}
+          />
 
-        <Input
-          label="Description"
-          placeholder="Write product description"
-          value={product.description}
-          onChangeText={(t) => setProduct({ ...product, description: t })}
-          multiline
-        />
+          <Input
+            label="Description"
+            placeholder="Write product description"
+            value={product.description}
+            onChangeText={(t) => setProduct({ ...product, description: t })}
+            multiline
+          />
 
-        {/* PRICE */}
-        <Input
-          label="MRP"
-          placeholder="Enter MRP"
-          value={product.mrp}
-          onChangeText={(t) => setProduct({ ...product, mrp: t })}
-          keyboardType="numeric"
-        />
+          {/* PRICE */}
+          <Input
+            label="MRP"
+            placeholder="Enter MRP"
+            value={product.mrp}
+            onChangeText={(t) => setProduct({ ...product, mrp: t })}
+            keyboardType="numeric"
+          />
 
-        <Input
-          label="Offer %"
-          placeholder="Discount percentage"
-          value={product.offer}
-          onChangeText={(t) => setProduct({ ...product, offer: t })}
-          keyboardType="numeric"
-        />
+          <Input
+            label="Offer %"
+            placeholder="Discount percentage"
+            value={product.offer}
+            onChangeText={(t) => setProduct({ ...product, offer: t })}
+            keyboardType="numeric"
+          />
 
-        <Input
-          label="Offer Price"
-          value={product.offerPrice}
-          editable={false}
-        />
+          <Input
+            label="Offer Price"
+            value={product.offerPrice}
+            editable={false}
+          />
 
-        <Input
-          label="Rating"
-          placeholder="Rating (0–5)"
-          value={product.rating}
-          onChangeText={(t) => setProduct({ ...product, rating: t })}
-          keyboardType="numeric"
-        />
+          <Input
+            label="Rating"
+            placeholder="Rating (0–5)"
+            value={product.rating}
+            onChangeText={(t) => setProduct({ ...product, rating: t })}
+            keyboardType="numeric"
+          />
 
-        {/* VARIANTS */}
-        <Text style={styles.section}>Variants</Text>
+          {/* VARIANTS */}
+          <Text style={styles.section}>Variants</Text>
 
-        {variants.map((v, i) => (
-          <View key={i} style={styles.variantCard}>
-            <Input
-              placeholder="SKU"
-              value={v.sku}
-              onChangeText={(t) => handleVariantChange(i, "sku", t)}
-            />
-            <Input
-              placeholder="Position"
-              value={v.position}
-              onChangeText={(t) => handleVariantChange(i, "position", t)}
-            />
-            <Input
-              placeholder="Material"
-              value={v.material}
-              onChangeText={(t) => handleVariantChange(i, "material", t)}
-            />
-            <Input
-              placeholder="Stock"
-              value={v.stock}
-              keyboardType="numeric"
-              onChangeText={(t) => handleVariantChange(i, "stock", t)}
-            />
+          {variants.map((v, i) => (
+            <View key={i} style={styles.variantCard}>
+              <Input
+                placeholder="SKU"
+                value={v.sku}
+                onChangeText={(t) => handleVariantChange(i, "sku", t)}
+              />
+              <Input
+                placeholder="Position"
+                value={v.position}
+                onChangeText={(t) => handleVariantChange(i, "position", t)}
+              />
+              <Input
+                placeholder="Material"
+                value={v.material}
+                onChangeText={(t) => handleVariantChange(i, "material", t)}
+              />
+              <Input
+                placeholder="Stock"
+                value={v.stock}
+                keyboardType="numeric"
+                onChangeText={(t) => handleVariantChange(i, "stock", t)}
+              />
 
-            <TouchableOpacity onPress={() => removeVariant(i)}>
-              <Text style={styles.remove}>Remove</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-
-        <TouchableOpacity style={styles.addBtn} onPress={addVariant}>
-          <Text style={styles.addText}>+ Add Variant</Text>
-        </TouchableOpacity>
-
-        {/* IMAGES */}
-        <Text style={styles.section}>Images</Text>
-
-        <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-          <Text style={{ color: "#9ca3af" }}>Select Image</Text>
-        </TouchableOpacity>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {images.map((img, i) => (
-            <View key={i} style={{ marginRight: 10 }}>
-              <Image source={{ uri: img }} style={styles.preview} />
-              <TouchableOpacity onPress={() => removeImage(i)}>
+              <TouchableOpacity onPress={() => removeVariant(i)}>
                 <Text style={styles.remove}>Remove</Text>
               </TouchableOpacity>
             </View>
           ))}
+
+          <TouchableOpacity style={styles.addBtn} onPress={addVariant}>
+            <Text style={styles.addText}>+ Add Variant</Text>
+          </TouchableOpacity>
+
+          {/* IMAGES */}
+          <Text style={styles.section}>Images</Text>
+
+          <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+            <Text style={{ color: "#9ca3af" }}>Select Image</Text>
+          </TouchableOpacity>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {images.map((img, i) => (
+              <View key={i} style={{ marginRight: 10 }}>
+                <Image source={{ uri: img }} style={styles.preview} />
+                <TouchableOpacity onPress={() => removeImage(i)}>
+                  <Text style={styles.remove}>Remove</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+
+          {/* WARRANTY */}
+          <Text style={styles.section}>Warranty</Text>
+
+          <View style={styles.switchRow}>
+            <Text style={{ color: "#fff" }}>Warranty Available</Text>
+            <Switch
+              value={product.warrantyAvailable}
+              onValueChange={(v) =>
+                setProduct({ ...product, warrantyAvailable: v })
+              }
+              trackColor={{ false: "#1e293b", true: "#2563eb" }}
+              thumbColor={product.warrantyAvailable ? "#38bdf8" : "#64748b"}
+            />
+          </View>
+
+          {product.warrantyAvailable && (
+            <Input
+              label="Warranty Months"
+              value={product.warrantyMonths}
+              keyboardType="numeric"
+              onChangeText={(t) =>
+                setProduct({ ...product, warrantyMonths: t })
+              }
+            />
+          )}
+
+          {/* RETURN */}
+          <Text style={styles.section}>Return Policy</Text>
+
+          <View style={styles.switchRow}>
+            <Text style={{ color: "#fff" }}>Return Available</Text>
+            <Switch
+              value={product.returnAvailable}
+              onValueChange={(v) =>
+                setProduct({ ...product, returnAvailable: v })
+              }
+              trackColor={{ false: "#1e293b", true: "#2563eb" }}
+              thumbColor={product.returnAvailable ? "#38bdf8" : "#64748b"}
+            />
+          </View>
+
+          {product.returnAvailable && (
+            <Input
+              label="Return Days"
+              value={product.returnDays}
+              keyboardType="numeric"
+              onChangeText={(t) => setProduct({ ...product, returnDays: t })}
+            />
+          )}
+
+          {/* TAGS */}
+          <Input
+            label="Tags (comma separated)"
+            placeholder="eg: brake, engine, suspension"
+            value={product.tags}
+            onChangeText={(t) => setProduct({ ...product, tags: t })}
+          />
+
+          {/* SWITCHES */}
+          <View style={styles.switchRow}>
+            <Text style={{ color: "#fff" }}>Featured</Text>
+            <Switch
+              value={product.isFeatured}
+              onValueChange={(v) => setProduct({ ...product, isFeatured: v })}
+              trackColor={{ false: "#1e293b", true: "#2563eb" }}
+              thumbColor={product.isFeatured ? "#38bdf8" : "#64748b"}
+            />
+          </View>
+
+          <View style={styles.switchRow}>
+            <Text style={{ color: "#fff" }}>Active</Text>
+            <Switch
+              value={product.isActive}
+              onValueChange={(v) => setProduct({ ...product, isActive: v })}
+              trackColor={{ false: "#1e293b", true: "#2563eb" }}
+              thumbColor={product.isActive ? "#38bdf8" : "#64748b"}
+            />
+          </View>
+
+          {/* SAVE */}
+          <TouchableOpacity
+            style={styles.saveBtn}
+            onPress={handleSave}
+            disabled={loading}
+          >
+            <Text style={styles.saveText}>
+              {loading ? "Saving..." : "Save Product"}
+            </Text>
+          </TouchableOpacity>
         </ScrollView>
-
-        {/* WARRANTY */}
-        <Text style={styles.section}>Warranty</Text>
-
-        <View style={styles.switchRow}>
-          <Text style={{ color: "#fff" }}>Warranty Available</Text>
-          <Switch
-            value={product.warrantyAvailable}
-            onValueChange={(v) =>
-              setProduct({ ...product, warrantyAvailable: v })
-            }
-            trackColor={{ false: "#1e293b", true: "#2563eb" }}
-            thumbColor={product.warrantyAvailable ? "#38bdf8" : "#64748b"}
-          />
-        </View>
-
-        {product.warrantyAvailable && (
-          <Input
-            label="Warranty Months"
-            value={product.warrantyMonths}
-            keyboardType="numeric"
-            onChangeText={(t) => setProduct({ ...product, warrantyMonths: t })}
-          />
-        )}
-
-        {/* RETURN */}
-        <Text style={styles.section}>Return Policy</Text>
-
-        <View style={styles.switchRow}>
-          <Text style={{ color: "#fff" }}>Return Available</Text>
-          <Switch
-            value={product.returnAvailable}
-            onValueChange={(v) =>
-              setProduct({ ...product, returnAvailable: v })
-            }
-            trackColor={{ false: "#1e293b", true: "#2563eb" }}
-            thumbColor={product.returnAvailable ? "#38bdf8" : "#64748b"}
-          />
-        </View>
-
-        {product.returnAvailable && (
-          <Input
-            label="Return Days"
-            value={product.returnDays}
-            keyboardType="numeric"
-            onChangeText={(t) => setProduct({ ...product, returnDays: t })}
-          />
-        )}
-
-        {/* TAGS */}
-        <Input
-          label="Tags (comma separated)"
-          placeholder="eg: brake, engine, suspension"
-          value={product.tags}
-          onChangeText={(t) => setProduct({ ...product, tags: t })}
-        />
-
-        {/* SWITCHES */}
-        <View style={styles.switchRow}>
-          <Text style={{ color: "#fff" }}>Featured</Text>
-          <Switch
-            value={product.isFeatured}
-            onValueChange={(v) => setProduct({ ...product, isFeatured: v })}
-            trackColor={{ false: "#1e293b", true: "#2563eb" }}
-            thumbColor={product.isFeatured ? "#38bdf8" : "#64748b"}
-          />
-        </View>
-
-        <View style={styles.switchRow}>
-          <Text style={{ color: "#fff" }}>Active</Text>
-          <Switch
-            value={product.isActive}
-            onValueChange={(v) => setProduct({ ...product, isActive: v })}
-            trackColor={{ false: "#1e293b", true: "#2563eb" }}
-            thumbColor={product.isActive ? "#38bdf8" : "#64748b"}
-          />
-        </View>
-
-        {/* SAVE */}
-        <TouchableOpacity
-          style={styles.saveBtn}
-          onPress={handleSave}
-          disabled={loading}
-        >
-          <Text style={styles.saveText}>
-            {loading ? "Saving..." : "Save Product"}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
