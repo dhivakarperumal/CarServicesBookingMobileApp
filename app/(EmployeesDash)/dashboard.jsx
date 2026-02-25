@@ -50,7 +50,7 @@ export default function EmployeeDashboard() {
   const loadEmployee = async () => {
     const q = query(
       collection(db, "employees"),
-      where("authUid", "==", user.uid)
+      where("authUid", "==", user.uid),
     );
 
     const snap = await getDocs(q);
@@ -64,7 +64,7 @@ export default function EmployeeDashboard() {
   const loadAllServices = async () => {
     const q = query(
       collection(db, "assignedServices"),
-      where("employeeAuthUid", "==", user.uid)
+      where("employeeAuthUid", "==", user.uid),
     );
 
     const snap = await getDocs(q);
@@ -96,7 +96,7 @@ export default function EmployeeDashboard() {
     useCallback(() => {
       loadEmployee();
       loadAllServices();
-    }, [])
+    }, []),
   );
 
   const onRefresh = async () => {
@@ -129,7 +129,7 @@ export default function EmployeeDashboard() {
       if (service.bookingDocId) {
         await updateDoc(
           doc(db, "allServices", service.bookingDocId),
-          updateData
+          updateData,
         );
       }
 
@@ -160,18 +160,18 @@ export default function EmployeeDashboard() {
 
   /* ================= SUMMARY COUNTS ================= */
   const assigned = allServices.filter(
-    (s) => s.serviceStatus === "Processing"
+    (s) => s.serviceStatus === "Processing",
   ).length;
 
   const inprogress = allServices.filter(
     (s) =>
       s.serviceStatus === "Service Going on" ||
       s.serviceStatus === "Bill Pending" ||
-      s.serviceStatus === "Bill Completed"
+      s.serviceStatus === "Bill Completed",
   ).length;
 
   const completed = allServices.filter(
-    (s) => s.serviceStatus === "Service Completed"
+    (s) => s.serviceStatus === "Service Completed",
   ).length;
 
   return (
@@ -184,19 +184,38 @@ export default function EmployeeDashboard() {
         }
         showsVerticalScrollIndicator={false}
       >
+        <LinearGradient
+          colors={["#38bdf8", "#38bdf8"]}
+          style={styles.welcomeCard}
+        >
+          <Text style={styles.welcomeText}>Welcome</Text>
+          <Text style={styles.welcomeName}>{employee?.name}</Text>
+          <Text style={styles.welcomeSub}>
+            {employee?.department || "Employee"}
+          </Text>
+        </LinearGradient>
         {/* SUMMARY CARDS */}
         <View style={styles.summaryRow}>
-          <LinearGradient colors={["#2563eb", "#020617"]} style={styles.summaryCard}>
+          <LinearGradient
+            colors={["#2563eb", "#020617"]}
+            style={styles.summaryCard}
+          >
             <Text style={styles.summaryNumber}>{assigned}</Text>
             <Text style={styles.summaryLabel}>Assigned</Text>
           </LinearGradient>
 
-          <LinearGradient colors={["#38bdf8", "#020617"]} style={styles.summaryCard}>
+          <LinearGradient
+            colors={["#38bdf8", "#020617"]}
+            style={styles.summaryCard}
+          >
             <Text style={styles.summaryNumber}>{inprogress}</Text>
             <Text style={styles.summaryLabel}>In Progress</Text>
           </LinearGradient>
 
-          <LinearGradient colors={["#10b981", "#020617"]} style={styles.summaryCard}>
+          <LinearGradient
+            colors={["#10b981", "#020617"]}
+            style={styles.summaryCard}
+          >
             <Text style={styles.summaryNumber}>{completed}</Text>
             <Text style={styles.summaryLabel}>Completed</Text>
           </LinearGradient>
@@ -223,9 +242,7 @@ export default function EmployeeDashboard() {
               {s.serviceStatus === "Processing" && (
                 <TouchableOpacity
                   style={styles.startBtn}
-                  onPress={() =>
-                    updateServiceStatus(s, "Service Going on")
-                  }
+                  onPress={() => updateServiceStatus(s, "Service Going on")}
                 >
                   <Text style={styles.btnText}>Start</Text>
                 </TouchableOpacity>
@@ -234,9 +251,7 @@ export default function EmployeeDashboard() {
               {s.serviceStatus === "Service Going on" && (
                 <TouchableOpacity
                   style={styles.doneBtn}
-                  onPress={() =>
-                    updateServiceStatus(s, "Service Completed")
-                  }
+                  onPress={() => updateServiceStatus(s, "Service Completed")}
                 >
                   <Text style={styles.btnText}>Done</Text>
                 </TouchableOpacity>
@@ -255,6 +270,39 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#020617",
+  },
+
+  welcomeCard: {
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#0b3b6f",
+
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+  },
+
+  welcomeText: {
+    color: "#020617",
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+
+  welcomeName: {
+    marginTop: 4,
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "900",
+  },
+
+  welcomeSub: {
+    marginTop: 2,
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
   },
 
   card: {
@@ -287,35 +335,35 @@ const styles = StyleSheet.create({
   },
 
   statusBadge: {
-  position: "absolute",
-  top: 14,
-  right: 14,
-  paddingHorizontal: 14,
-  paddingVertical: 6,
-  borderRadius: 20,
-  elevation: 6,
-},
+    position: "absolute",
+    top: 14,
+    right: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    elevation: 6,
+  },
 
-statusText: {
-  color: "#fff",
-  fontSize: 11,
-  fontWeight: "800",
-  letterSpacing: 0.5,
-},
+  statusText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
 
-statusActive: {
-  backgroundColor: "#10b981",
-  shadowColor: "#10b981",
-  shadowOpacity: 0.6,
-  shadowRadius: 8,
-},
+  statusActive: {
+    backgroundColor: "#10b981",
+    shadowColor: "#10b981",
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+  },
 
-statusInactive: {
-  backgroundColor: "#ef4444",
-  shadowColor: "#ef4444",
-  shadowOpacity: 0.6,
-  shadowRadius: 8,
-},
+  statusInactive: {
+    backgroundColor: "#ef4444",
+    shadowColor: "#ef4444",
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+  },
 
   badge: {
     paddingHorizontal: 12,

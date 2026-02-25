@@ -873,6 +873,13 @@ export default function CarsScreen() {
           {item.carBrand} - {item.carModel}
         </Text>
 
+        {/* 👤 CUSTOMER DETAILS */}
+        <Text style={styles.subText}>Customer: {item.customerName || "-"}</Text>
+
+        <Text style={styles.subText}>Phone: {item.customerPhone || "-"}</Text>
+
+        <Text style={styles.subText}>Email: {item.customerEmail || "-"}</Text>
+
         <Text style={styles.subText}>Mechanic: {item.employeeName || "-"}</Text>
 
         {item.partsTotalCost ? (
@@ -1125,6 +1132,14 @@ const styles = StyleSheet.create({
     borderColor: "#0b3b6f",
     color: "#fff",
   },
+  pickerWrapper: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.35)",
+    borderRadius: 14,
+    overflow: "hidden",
+    backgroundColor: "#020617",
+  },
 
   filterRow: {
     flexDirection: "row",
@@ -1207,6 +1222,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: "center",
+
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
   },
 
   completeBtn: {
@@ -1251,44 +1270,49 @@ const styles = StyleSheet.create({
   /* 🔥 CARD */
   card: {
     backgroundColor: "#0f172a",
-    padding: 22,
-    borderRadius: 20,
-    marginBottom: 18,
-    minHeight: 180,
+    padding: 16,
+    borderRadius: 18,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: "#0b3b6f",
 
     shadowColor: "#38bdf8",
     shadowOpacity: 0.15,
-    shadowRadius: 12,
+    shadowRadius: 10,
+  },
+
+  idText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#94a3b8",
   },
 
   number: {
-    fontWeight: "800",
-    fontSize: 13, // was 16
-    color: "#38bdf8",
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#94a3b8",
+    marginTop: 4,
   },
 
   model: {
+    fontWeight: "800",
+    fontSize: 18,
+    color: "#38bdf8",
     marginTop: 6,
-    fontSize: 16, // was 14
-    color: "#fff",
-    fontWeight: "700",
   },
 
   subText: {
     marginTop: 6,
-    fontSize: 14, // was 12
-    color: "#94a3b8",
+    fontSize: 14,
+    color: "#cbd5f5",
   },
 
   parts: {
     marginTop: 8,
-    fontSize: 14, // was 12
+    fontSize: 14,
+    fontWeight: "800",
     color: "#10b981",
-    fontWeight: "700",
   },
-
   statusBadge: {
     position: "absolute",
     top: 12,
@@ -1296,12 +1320,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 20,
-    shadowOpacity: 0.4,
   },
 
   statusText: {
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: 12,
+    fontWeight: "900",
   },
   updateBtn: {
     marginTop: 14,
@@ -1315,19 +1338,14 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
   },
   updateText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 13,
+    color: "#020617",
+    fontWeight: "800",
+    fontSize: 14,
   },
   closeIcon: {
     position: "absolute",
     right: 20,
     top: 20,
     zIndex: 50,
-  },
-  idText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#94a3b8",
   },
 });

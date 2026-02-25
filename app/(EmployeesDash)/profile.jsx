@@ -10,8 +10,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../../firebase";
 import { useRouter } from "expo-router";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { ScrollView } from "react-native";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
+import { ScrollView, Switch } from "react-native";
 
 export default function StaffProfile() {
   const router = useRouter();
@@ -35,7 +42,10 @@ export default function StaffProfile() {
         const snap = await getDocs(q);
 
         if (!snap.empty) {
-          setEmployee(snap.docs[0].data());
+          setEmployee({
+            id: snap.docs[0].id,
+            ...snap.docs[0].data(),
+          });
         }
       } catch (error) {
         console.log(error);
@@ -53,6 +63,23 @@ export default function StaffProfile() {
     router.replace("/login");
   };
 
+  const toggleWorkStatus = async (value) => {
+    const newStatus = value ? "busy" : "free";
+
+    try {
+      await updateDoc(doc(db, "employees", employee.id), {
+        workStatus: newStatus,
+      });
+
+      setEmployee((prev) => ({
+        ...prev,
+        workStatus: newStatus,
+      }));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.loader}>
@@ -61,91 +88,115 @@ export default function StaffProfile() {
     );
   }
 
-return (
-  <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
-    <ScrollView
-      contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 10, paddingBottom: 120 }}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* AVATAR */}
-      <View style={styles.avatarWrap}>
-        <View style={styles.avatarCircle}>
-          <Text style={styles.avatarText}>
-            {employee?.name?.charAt(0)?.toUpperCase() || "U"}
-          </Text>
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 18,
+          paddingTop: 10,
+          paddingBottom: 120,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* AVATAR */}
+        <View style={styles.avatarWrap}>
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarText}>
+              {employee?.name?.charAt(0)?.toUpperCase() || "U"}
+            </Text>
+          </View>
+
+          <Text style={styles.userName}>{employee?.name || "User"}</Text>
+
+          <View style={styles.activeBadge}>
+            <Text style={styles.activeText}>Active User</Text>
+          </View>
         </View>
 
-        <Text style={styles.userName}>{employee?.name || "User"}</Text>
+        {/* PERSONAL INFO CARD */}
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Personal Information</Text>
 
-        <View style={styles.activeBadge}>
-          <Text style={styles.activeText}>Active User</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Phone</Text>
+            <Text style={styles.infoValue}>{employee?.phone || "-"}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Department</Text>
+            <Text style={styles.infoValue}>{employee?.department || "-"}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Shift</Text>
+            <Text style={styles.infoValue}>{employee?.shift || "-"}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Salary</Text>
+            <Text style={styles.salary}>₹{employee?.salary || "-"}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Employee ID</Text>
+            <Text style={styles.infoValue}>{employee?.employeeId || "-"}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Email</Text>
+            <Text style={styles.infoValue}>{employee?.email || "-"}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Joining Date</Text>
+            <Text style={styles.infoValue}>{employee?.joiningDate || "-"}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Role</Text>
+            <Text style={styles.infoValue}>{employee?.role || "-"}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Work Status</Text>
+
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+            >
+              <Text
+                style={{
+                  color:
+                    employee?.workStatus === "busy" ? "#ef4444" : "#10b981",
+                  fontWeight: "700",
+                }}
+              >
+                {employee?.workStatus === "busy" ? "Busy" : "Free"}
+              </Text>
+
+              <Switch
+                value={employee?.workStatus === "busy"}
+                onValueChange={toggleWorkStatus}
+                trackColor={{ false: "#10b981", true: "#ef4444" }}
+                thumbColor="#fff"
+              />
+            </View>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Time In</Text>
+            <Text style={styles.infoValue}>{employee?.timeIn || "-"}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Time Out</Text>
+            <Text style={styles.infoValue}>{employee?.timeOut || "-"}</Text>
+          </View>
         </View>
-      </View>
 
-      {/* PERSONAL INFO CARD */}
-      <View style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>Personal Information</Text>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Phone</Text>
-          <Text style={styles.infoValue}>{employee?.phone || "-"}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Department</Text>
-          <Text style={styles.infoValue}>{employee?.department || "-"}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Shift</Text>
-          <Text style={styles.infoValue}>{employee?.shift || "-"}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Salary</Text>
-          <Text style={styles.salary}>₹{employee?.salary || "-"}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Employee ID</Text>
-          <Text style={styles.infoValue}>{employee?.employeeId || "-"}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Email</Text>
-          <Text style={styles.infoValue}>{employee?.email || "-"}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Joining Date</Text>
-          <Text style={styles.infoValue}>{employee?.joiningDate || "-"}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Role</Text>
-          <Text style={styles.infoValue}>{employee?.role || "-"}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Work Status</Text>
-          <Text style={styles.infoValue}>{employee?.workStatus || "-"}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Time In</Text>
-          <Text style={styles.infoValue}>{employee?.timeIn || "-"}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Time Out</Text>
-          <Text style={styles.infoValue}>{employee?.timeOut || "-"}</Text>
-        </View>
-      </View>
-
-      {/* LOGOUT */}
-      <TouchableOpacity style={styles.logout} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Log Out</Text>
-      </TouchableOpacity>
+        {/* LOGOUT */}
+        <TouchableOpacity style={styles.logout} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Log Out</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
