@@ -2,7 +2,8 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import { useEffect, useState } from "react";
-import { View, ActivityIndicator } from "react-native";
+import Toast from "react-native-toast-message";
+import { View, ActivityIndicator, Text } from "react-native";
 
 export default function RootLayout() {
   const [user, setUser] = useState(undefined);
@@ -28,6 +29,54 @@ export default function RootLayout() {
     );
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <>
+      <Stack screenOptions={{ headerShown: false }} />
+      <Toast
+        config={{
+          success: ({ text1, text2 }) => (
+            <View
+              style={{
+                width: "90%",
+                backgroundColor: "#111827",
+                borderLeftWidth: 4,
+                borderLeftColor: "#0EA5E9",
+                padding: 15,
+                borderRadius: 12,
+                alignSelf: "center",
+              }}
+            >
+              <Text style={{ color: "#0EA5E9", fontWeight: "bold" }}>
+                {text1}
+              </Text>
+              <Text style={{ color: "#E5E7EB", marginTop: 4 }}>
+                {text2}
+              </Text>
+            </View>
+          ),
+          error: ({ text1, text2 }) => (
+            <View
+              style={{
+                width: "90%",
+                backgroundColor: "#111827",
+                borderLeftWidth: 4,
+                borderLeftColor: "#EF4444",
+                padding: 15,
+                borderRadius: 12,
+                alignSelf: "center",
+              }}
+            >
+              <Text style={{ color: "#EF4444", fontWeight: "bold" }}>
+                {text1}
+              </Text>
+              <Text style={{ color: "#E5E7EB", marginTop: 4 }}>
+                {text2}
+              </Text>
+            </View>
+          ),
+        }}
+      />
+    </>
+  );
 }
 

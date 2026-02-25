@@ -195,6 +195,7 @@ const handleSave = async () => {
       extraScrollHeight={20}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 60 }} 
     >
 
       {/* ===== SAVED ADDRESSES ===== */}

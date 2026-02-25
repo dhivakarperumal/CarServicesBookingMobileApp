@@ -25,6 +25,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { auth, db } from "../../firebase";
 import { reduceStockAfterPurchase } from "../utils/reduceStockAfterPurchase";
 import { saveUserAddress } from "../utils/saveUserAddress";
+import Toast from "react-native-toast-message";
 
 // ================= ORDER COUNTER =================
 const generateOrderNumber = async () => {
@@ -147,19 +148,6 @@ export default function Checkout() {
 
     const total = subtotal;
 
-    const handleBack = () => {
-        if (typeof router.canGoBack === "function") {
-            if (router.canGoBack()) return router.back();
-            return router.replace("/(tabs)/index");
-        }
-
-        try {
-            router.back();
-        } catch (e) {
-            router.replace("/(tabs)/index");
-        }
-    };
-
     // ================= CLEAR CART =================
     const clearCart = async () => {
         const snap = await getDocs(collection(db, "users", uid!, "cart"));
@@ -227,7 +215,11 @@ export default function Checkout() {
             await clearCart();
         }
 
-        Alert.alert("Success", `Order ${orderNumber} placed`);
+        Toast.show({
+            type: "success",
+            text1: "Order Placed",
+            text2: `Order ${orderNumber} placed successfully`,
+        });
         router.push({
             pathname: "/(tabs)/profile",
             params: { tab: "orders" },
@@ -410,23 +402,40 @@ export default function Checkout() {
                 </View>
 
                 <Text style={styles.section}>Payment Method</Text>
-
                 <TouchableOpacity
                     onPress={() => setPaymentMethod("CASH")}
                     style={styles.paymentRow}
+                    activeOpacity={0.8}
                 >
-                    <Text style={styles.itemText}>
-                        {paymentMethod === "CASH" ? "🔘" : "⚪"} Cash on Delivery
-                    </Text>
+                    <View style={styles.radioContainer}>
+                        <View
+                            style={[
+                                styles.radioOuter,
+                                paymentMethod === "CASH" && styles.radioOuterActive,
+                            ]}
+                        >
+                            {paymentMethod === "CASH" && <View style={styles.radioInner} />}
+                        </View>
+                        <Text style={styles.itemText}>Cash on Delivery</Text>
+                    </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     onPress={() => setPaymentMethod("ONLINE")}
                     style={styles.paymentRow}
+                    activeOpacity={0.8}
                 >
-                    <Text style={styles.itemText}>
-                        {paymentMethod === "ONLINE" ? "🔘" : "⚪"} Online Payment
-                    </Text>
+                    <View style={styles.radioContainer}>
+                        <View
+                            style={[
+                                styles.radioOuter,
+                                paymentMethod === "ONLINE" && styles.radioOuterActive,
+                            ]}
+                        >
+                            {paymentMethod === "ONLINE" && <View style={styles.radioInner} />}
+                        </View>
+                        <Text style={styles.itemText}>Online Payment</Text>
+                    </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -476,7 +485,8 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     itemText: {
-        color: "#FFF",
+        fontSize: 15,
+        color: "#FFFFFF",
     },
     addressCard: {
         backgroundColor: "#111827",
@@ -513,7 +523,8 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     paymentRow: {
-        marginBottom: 10,
+        marginBottom: 7,
+        paddingVertical: 5,
     },
     backBtn: {
         flexDirection: "row",
@@ -528,5 +539,31 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         letterSpacing: 2,
         marginLeft: 6,
+    },
+    radioContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+
+    radioOuter: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        borderWidth: 2,
+        borderColor: "#9CA3AF", // normal gray
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 10,
+    },
+
+    radioOuterActive: {
+        borderColor: "#0EA5E9", // blue border when selected
+    },
+
+    radioInner: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: "#0EA5E9", // blue filled dot
     },
 });  
