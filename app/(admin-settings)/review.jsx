@@ -218,16 +218,14 @@ export default function ReviewsSettings() {
 
       {/* FLOATING ADD BUTTON */}
       <TouchableOpacity
-        activeOpacity={0.8}
-        style={styles.addBtnFloating}
+        style={styles.fab}
         onPress={() => {
           setEditId(null);
           setForm({ name: "", rating: 0, message: "", image: "" });
           setShowModal(true);
         }}
       >
-        <Ionicons name="add" size={22} color="#fff" />
-        <Text style={styles.addText}></Text>
+        <Ionicons name="add" size={26} color="#fff" />
       </TouchableOpacity>
 
       {/* MODAL */}
@@ -373,27 +371,22 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
 
-  addBtnFloating: {
+  fab: {
     position: "absolute",
-    right: 20,
-    bottom: 20,
-    flexDirection: "row",
-    alignItems: "center",
+    bottom: 40,
+    right: 24,
     backgroundColor: "#2563eb",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 40,
-    shadowColor: "#38bdf8",
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 10,
-  },
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 100,
 
-  addText: {
-    color: "#fff",
-    fontWeight: "600",
-    marginLeft: 6,
-    fontSize: 15,
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.6,
+    shadowRadius: 14,
+    elevation: 10,
   },
 
   modal: { flex: 1, backgroundColor: "#fff", padding: 16 },
