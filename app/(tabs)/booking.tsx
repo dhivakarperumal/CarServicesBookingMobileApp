@@ -223,7 +223,7 @@ export default function BookingScreen() {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.gradientButtonText}>Book Service</Text>
+            <Text style={styles.gradientButtonText}>Book Now</Text>
           )}
         </LinearGradient>
       </TouchableOpacity>
