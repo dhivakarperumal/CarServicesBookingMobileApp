@@ -1269,34 +1269,40 @@ const styles = StyleSheet.create({
 
   /* 🔥 CARD */
   card: {
-    backgroundColor: "#020617",
-    padding: 20,
-    borderRadius: 22,
-    marginBottom: 18,
+    backgroundColor: "#0f172a",
+    padding: 16,
+    borderRadius: 18,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: "rgba(56,189,248,0.25)",
+    borderColor: "#0b3b6f",
 
     shadowColor: "#38bdf8",
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+  },
+
+  idText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#94a3b8",
   },
 
   number: {
-    fontWeight: "900",
-    fontSize: 14,
-    color: "#38bdf8",
-    marginTop: 5,
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#94a3b8",
+    marginTop: 4,
   },
 
   model: {
-    marginTop: 6,
-    fontSize: 17,
-    color: "#ffffff",
     fontWeight: "800",
+    fontSize: 18,
+    color: "#38bdf8",
+    marginTop: 6,
   },
 
   subText: {
-    marginTop: 4,
+    marginTop: 6,
     fontSize: 14,
     color: "#cbd5f5",
   },
@@ -1304,21 +1310,20 @@ const styles = StyleSheet.create({
   parts: {
     marginTop: 8,
     fontSize: 14,
-    color: "#10b981",
     fontWeight: "800",
+    color: "#10b981",
   },
   statusBadge: {
     position: "absolute",
     top: 12,
     right: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 30,
-    shadowOpacity: 0.5,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
   },
 
   statusText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "900",
   },
   updateBtn: {
@@ -1342,10 +1347,5 @@ const styles = StyleSheet.create({
     right: 20,
     top: 20,
     zIndex: 50,
-  },
-  idText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#fff",
   },
 });
