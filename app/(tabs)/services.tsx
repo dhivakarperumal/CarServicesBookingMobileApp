@@ -12,6 +12,7 @@ import {
 import { db } from "../../firebase";
 import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { ImageBackground } from "react-native";
 
 interface Service {
   id: string;
@@ -121,7 +122,12 @@ export default function Services() {
     </View>
   );
 
-  return (
+return (
+  <ImageBackground source={{
+        uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQfAJ3Ai3tu58SWAJ2mK_EhozE-OIgQXcLXNg&s",
+      }} style={{ flex: 1 }}>
+    <View style={styles.overlay} />
+
     <View style={styles.container}>
       <FlatList
         data={services}
@@ -136,6 +142,7 @@ export default function Services() {
         }
       />
     </View>
+    </ImageBackground>
   );
 }
 
@@ -144,9 +151,13 @@ export default function Services() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0B1120",
     padding: 16,
   },
+
+  overlay: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.8)",
+},
 
   card: {
     backgroundColor: "#111827",

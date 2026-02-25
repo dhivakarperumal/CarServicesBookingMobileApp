@@ -20,6 +20,7 @@ import { auth, db } from "../../firebase";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { LinearGradient } from "expo-linear-gradient";
 import Toast from "react-native-toast-message";
+import { ImageBackground } from "react-native";
 
 const BOOKING_STATUS = {
   BOOKED: "Booked",
@@ -104,7 +105,7 @@ export default function BookingScreen() {
 
       await addDoc(collection(db, "bookings"), {
         bookingId,
-        uid: user.uid,              // 🔥 ADD THIS
+        uid: user.uid,             
         ...formData,
         status: BOOKING_STATUS.BOOKED,
         createdAt: serverTimestamp(),
@@ -139,18 +140,23 @@ export default function BookingScreen() {
   };
 
   return (
+      <ImageBackground source={{
+                uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQfAJ3Ai3tu58SWAJ2mK_EhozE-OIgQXcLXNg&s",
+            }} style={{ flex: 1 }}>
+    <View style={styles.overlay} />
+
     <KeyboardAwareScrollView
-      style={{ flex: 1, backgroundColor: "#0B1120" }}
+      style={{ flex: 1 }}
       contentContainerStyle={{
         padding: 20,
-        paddingBottom: 50,   // 👈 add this
+        paddingBottom: 50,
       }}
-      enableOnAndroid={true}
+      enableOnAndroid
       extraScrollHeight={20}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
-
     >
+
       <Text style={styles.title}>Book Service</Text>
 
       <Input label="Full Name" value={formData.name} onChange={(v) => handleChange("name", v)} />
@@ -219,6 +225,7 @@ export default function BookingScreen() {
         </LinearGradient>
       </TouchableOpacity>
     </KeyboardAwareScrollView>
+    </ImageBackground>
   );
 }
 
@@ -254,9 +261,14 @@ function Input({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0B1120",
+    // backgroundColor: "#0B1120",
     padding: 20,
   },
+
+  overlay: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.8)",
+},
 
   title: {
     fontSize: 24,

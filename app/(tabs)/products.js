@@ -2,15 +2,16 @@ import { useRouter } from "expo-router";
 import { collection, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { db } from "../../firebase";
+import { ImageBackground } from "react-native";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -90,26 +91,34 @@ export default function Products() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Car Products</Text>
+    <ImageBackground
+      source={{
+        uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQfAJ3Ai3tu58SWAJ2mK_EhozE-OIgQXcLXNg&s",
+      }}
+      style={{ flex: 1 }}
+    >
+      <View style={styles.overlay} />
 
-      <FlatList
-        data={products}
-        keyExtractor={(item) => item.docId}
-        renderItem={renderItem}
-        numColumns={2} // ✅ 2 per row
-        columnWrapperStyle={{ justifyContent: "space-between" }}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      />
-    </View>
+      <View style={styles.container}>
+        <Text style={styles.title}>Car Products</Text>
+
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item.docId}
+          renderItem={renderItem}
+          numColumns={2} // ✅ 2 per row
+          columnWrapperStyle={{ justifyContent: "space-between" }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        />
+      </View>
+    </ImageBackground>
   );
 }
 
 /* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
-
   imageContainer: {
     position: "relative",
     marginBottom: 10,
@@ -141,8 +150,12 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: "#0B1120",
     padding: 20,
+  },
+
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.8)",
   },
 
   title: {

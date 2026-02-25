@@ -11,6 +11,7 @@ import { signOut } from "firebase/auth";
 import { auth, db } from "../../firebase";
 import { useRouter } from "expo-router";
 import { collection, query, where, getDocs } from "firebase/firestore";
+import { ScrollView } from "react-native";
 
 export default function StaffProfile() {
   const router = useRouter();
@@ -60,8 +61,12 @@ export default function StaffProfile() {
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container}>
+return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
+    <ScrollView
+      contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 10, paddingBottom: 120 }}
+      showsVerticalScrollIndicator={false}
+    >
       {/* AVATAR */}
       <View style={styles.avatarWrap}>
         <View style={styles.avatarCircle}>
@@ -100,12 +105,48 @@ export default function StaffProfile() {
           <Text style={styles.infoLabel}>Salary</Text>
           <Text style={styles.salary}>₹{employee?.salary || "-"}</Text>
         </View>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Employee ID</Text>
+          <Text style={styles.infoValue}>{employee?.employeeId || "-"}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Email</Text>
+          <Text style={styles.infoValue}>{employee?.email || "-"}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Joining Date</Text>
+          <Text style={styles.infoValue}>{employee?.joiningDate || "-"}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Role</Text>
+          <Text style={styles.infoValue}>{employee?.role || "-"}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Work Status</Text>
+          <Text style={styles.infoValue}>{employee?.workStatus || "-"}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Time In</Text>
+          <Text style={styles.infoValue}>{employee?.timeIn || "-"}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Time Out</Text>
+          <Text style={styles.infoValue}>{employee?.timeOut || "-"}</Text>
+        </View>
       </View>
 
       {/* LOGOUT */}
       <TouchableOpacity style={styles.logout} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log Out</Text>
       </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -231,7 +272,6 @@ const styles = StyleSheet.create({
 
   /* LOGOUT BUTTON */
   logout: {
-    marginTop: "auto",
     borderWidth: 1.5,
     borderColor: "#ef4444",
     paddingVertical: 16,
