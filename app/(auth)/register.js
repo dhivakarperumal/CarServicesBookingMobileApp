@@ -16,7 +16,8 @@ import {
 import { auth, db } from "../../firebase";
 import Toast from "react-native-toast-message";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { Image } from "react-native";
+import { KeyboardAvoidingView, Platform,Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -131,13 +132,9 @@ export default function RegisterScreen() {
   };
 
   return (
-    <KeyboardAwareScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={styles.container}
-      enableOnAndroid={true}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0B1120" }}>
+
+      {/* LOGO FIXED */}
       <View style={styles.logoContainer}>
         <Image
           source={require("../../assets/images/logo_no_bg.png")}
@@ -150,143 +147,159 @@ export default function RegisterScreen() {
         </Text>
       </View>
 
-      {/* USERNAME */}
-      <View style={styles.inputWrapper}>
-        <Ionicons name="person-outline" size={20} color="#94A3B8" />
-        <TextInput
-          placeholder="Username"
-          placeholderTextColor="#64748B"
-          value={username}
-          onChangeText={setUsername}
-          style={styles.input}
-        />
-      </View>
-
-      {/* MOBILE */}
-      <View style={styles.inputWrapper}>
-        <Ionicons name="call-outline" size={20} color="#94A3B8" />
-        <TextInput
-          placeholder="Mobile Number"
-          placeholderTextColor="#64748B"
-          value={mobile}
-          onChangeText={(text) =>
-            setMobile(text.replace(/[^0-9]/g, ""))
-          }
-          keyboardType="numeric"
-          maxLength={10}
-          style={styles.input}
-        />
-      </View>
-
-      {/* EMAIL */}
-      <View style={styles.inputWrapper}>
-        <Ionicons name="mail-outline" size={20} color="#94A3B8" />
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor="#64748B"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          style={styles.input}
-        />
-      </View>
-
-      {/* ADMIN CODE */}
-      <View style={styles.inputWrapper}>
-        <Ionicons
-          name="shield-checkmark-outline"
-          size={20}
-          color="#94A3B8"
-        />
-        <TextInput
-          placeholder="Admin Code (optional)"
-          placeholderTextColor="#64748B"
-          value={adminCode}
-          onChangeText={setAdminCode}
-          style={styles.input}
-        />
-      </View>
-
-      {/* PASSWORD */}
-      <View style={styles.inputWrapper}>
-        <Ionicons name="lock-closed-outline" size={20} color="#94A3B8" />
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="#64748B"
-          secureTextEntry={secure}
-          value={password}
-          onChangeText={setPassword}
-          style={styles.input}
-        />
-        <TouchableOpacity onPress={() => setSecure(!secure)}>
-          <Ionicons
-            name={secure ? "eye-off-outline" : "eye-outline"}
-            size={20}
-            color="#94A3B8"
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* CONFIRM PASSWORD */}
-      <View style={styles.inputWrapper}>
-        <Ionicons name="lock-closed-outline" size={20} color="#94A3B8" />
-        <TextInput
-          placeholder="Confirm Password"
-          placeholderTextColor="#64748B"
-          secureTextEntry={secureConfirm}
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          style={styles.input}
-        />
-        <TouchableOpacity
-          onPress={() => setSecureConfirm(!secureConfirm)}
-        >
-          <Ionicons
-            name={
-              secureConfirm ? "eye-off-outline" : "eye-outline"
-            }
-            size={20}
-            color="#94A3B8"
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* REGISTER BUTTON */}
-      <TouchableOpacity
-        style={styles.registerButton}
-        onPress={handleRegister}
-        disabled={loading}
+      {/* SCROLL ONLY FIELDS */}
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContainer}
+        enableOnAndroid
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.registerText}>Register</Text>
-        )}
-      </TouchableOpacity>
+        {/* USERNAME */}
+        <View style={styles.inputWrapper}>
+          <Ionicons name="person-outline" size={20} color="#94A3B8" />
+          <TextInput
+            placeholder="Username"
+            placeholderTextColor="#64748B"
+            value={username}
+            onChangeText={setUsername}
+            style={styles.input}
+          />
+        </View>
 
-      {/* LOGIN LINK */}
-      <Text style={styles.loginRedirect}>
-        Already have an account?{" "}
-        <Text
-          style={{ color: "#06B6D4" }}
-          onPress={() => router.push("/(auth)/login")}
+        {/* MOBILE */}
+        <View style={styles.inputWrapper}>
+          <Ionicons name="call-outline" size={20} color="#94A3B8" />
+          <TextInput
+            placeholder="Mobile Number"
+            placeholderTextColor="#64748B"
+            value={mobile}
+            onChangeText={(text) =>
+              setMobile(text.replace(/[^0-9]/g, ""))
+            }
+            keyboardType="numeric"
+            maxLength={10}
+            style={styles.input}
+          />
+        </View>
+
+        {/* EMAIL */}
+        <View style={styles.inputWrapper}>
+          <Ionicons name="mail-outline" size={20} color="#94A3B8" />
+          <TextInput
+            placeholder="Email"
+            placeholderTextColor="#64748B"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            style={styles.input}
+          />
+        </View>
+
+        {/* ADMIN CODE */}
+        <View style={styles.inputWrapper}>
+          <Ionicons
+            name="shield-checkmark-outline"
+            size={20}
+            color="#94A3B8"
+          />
+          <TextInput
+            placeholder="Admin Code (optional)"
+            placeholderTextColor="#64748B"
+            value={adminCode}
+            onChangeText={setAdminCode}
+            style={styles.input}
+          />
+        </View>
+
+        {/* PASSWORD */}
+        <View style={styles.inputWrapper}>
+          <Ionicons name="lock-closed-outline" size={20} color="#94A3B8" />
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor="#64748B"
+            secureTextEntry={secure}
+            value={password}
+            onChangeText={setPassword}
+            style={styles.input}
+          />
+          <TouchableOpacity onPress={() => setSecure(!secure)}>
+            <Ionicons
+              name={secure ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color="#94A3B8"
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* CONFIRM PASSWORD */}
+        <View style={styles.inputWrapper}>
+          <Ionicons name="lock-closed-outline" size={20} color="#94A3B8" />
+          <TextInput
+            placeholder="Confirm Password"
+            placeholderTextColor="#64748B"
+            secureTextEntry={secureConfirm}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            style={styles.input}
+          />
+          <TouchableOpacity
+            onPress={() => setSecureConfirm(!secureConfirm)}
+          >
+            <Ionicons
+              name={
+                secureConfirm ? "eye-off-outline" : "eye-outline"
+              }
+              size={20}
+              color="#94A3B8"
+            />
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScrollView>
+
+      {/* FIXED BOTTOM SECTION */}
+      <KeyboardAvoidingView
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+>
+  <View style={styles.bottomContainer}>
+        <TouchableOpacity
+          style={styles.registerButton}
+          onPress={handleRegister}
+          disabled={loading}
         >
-          Login
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.registerText}>Register</Text>
+          )}
+        </TouchableOpacity>
+
+        <Text style={styles.loginRedirect}>
+          Already have an account?{" "}
+          <Text
+            style={{ color: "#06B6D4" }}
+            onPress={() => router.push("/(auth)/login")}
+          >
+            Login
+          </Text>
         </Text>
-      </Text>
-    </KeyboardAwareScrollView>
+     
+        </View>
+</KeyboardAvoidingView>
+
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-  flexGrow: 1,
-  paddingHorizontal: 24,
-  paddingTop: 60,
-  paddingBottom: 110,   // 👈 IMPORTANT
-  backgroundColor: "#0B1120",
-},
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 60,
+    paddingBottom: 110,   // 👈 IMPORTANT
+    backgroundColor: "#0B1120",
+  },
 
   title: {
     fontSize: 24,
@@ -350,5 +363,16 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     marginBottom: 12,
+  },
+
+  scrollContainer: {
+    paddingHorizontal: 24,
+    
+  },
+
+  bottomContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 10,
+    backgroundColor: "#0B1120",
   },
 });

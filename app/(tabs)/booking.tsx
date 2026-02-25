@@ -9,7 +9,6 @@ import {
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,6 +19,7 @@ import {
 import { auth, db } from "../../firebase";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { LinearGradient } from "expo-linear-gradient";
+import Toast from "react-native-toast-message";
 
 const BOOKING_STATUS = {
   BOOKED: "Booked",
@@ -77,7 +77,11 @@ export default function BookingScreen() {
   const handleBooking = async () => {
     const error = validate();
     if (error) {
-      Alert.alert("Validation", error);
+      Toast.show({
+        type: "warning",
+        text1: "Validation Error",
+        text2: error,
+      });
       return;
     }
 
@@ -89,7 +93,12 @@ export default function BookingScreen() {
       const user = auth.currentUser;
 
       if (!user) {
-        Alert.alert("Error", "User not logged in");
+        Toast.show({
+          type: "error",
+          text1: "Authentication Error",
+          text2: "Please login again",
+        });
+        setLoading(false);
         return;
       }
 
@@ -101,7 +110,11 @@ export default function BookingScreen() {
         createdAt: serverTimestamp(),
       });
 
-      Alert.alert("Success", `Booking Successful: ${bookingId}`);
+      Toast.show({
+        type: "success",
+        text1: "Booking Successful 🎉",
+        text2: `Booking ID: ${bookingId}`,
+      });
 
       setFormData({
         name: "",
@@ -115,7 +128,11 @@ export default function BookingScreen() {
         location: "",
       });
     } catch (error) {
-      Alert.alert("Error", "Booking failed");
+      Toast.show({
+        type: "error",
+        text1: "Booking Failed",
+        text2: "Something went wrong. Try again.",
+      });
     } finally {
       setLoading(false);
     }
@@ -273,8 +290,8 @@ const styles = StyleSheet.create({
 
   gradientButton: {
     paddingVertical: 13,
-    borderRadius: 50, 
-    paddingHorizontal: 40,         
+    borderRadius: 50,
+    paddingHorizontal: 40,
     alignItems: "center",
     marginTop: 20,
     alignSelf: "center",

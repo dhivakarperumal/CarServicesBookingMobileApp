@@ -97,36 +97,6 @@ export default function ProductDetails() {
         if (qty > 1) setQty(qty - 1);
     };
 
-    // const handleAddToCart = async () => {
-    //     const user = auth.currentUser;
-
-    //     if (!user) {
-    //         Alert.alert("Login Required", "Please login first");
-    //         return;
-    //     }
-
-    //     const cartRef = doc(db, "users", user.uid, "cart", product.docId);
-    //     const existing = await getDoc(cartRef);
-
-    //     if (existing.exists()) {
-    //         await updateDoc(cartRef, {
-    //             quantity: existing.data().quantity + qty,
-    //         });
-    //     } else {
-    //         await setDoc(cartRef, {
-    //             docId: product.docId,
-    //             sku: variant.sku,
-    //             name: product.name,
-    //             price: product.offerPrice,
-    //             image: product.images?.[0],
-    //             quantity: qty,
-    //             createdAt: serverTimestamp(),
-    //         });
-    //     }
-
-    //     router.push("/(app)/cart");
-    // };
-
     const handleAddToCart = async () => {
         const user = auth.currentUser;
 

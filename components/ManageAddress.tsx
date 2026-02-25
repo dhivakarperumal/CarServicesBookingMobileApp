@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  Alert,
   StyleSheet,
   ActivityIndicator,
   ScrollView,
@@ -24,11 +23,13 @@ import {
 import { auth, db } from "../firebase";
 import { Picker } from "@react-native-picker/picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import Toast from "react-native-toast-message";
+import { Modal } from "react-native";
 
 
 const INDIAN_STATES = [
-  "Tamil Nadu","Kerala","Karnataka","Maharashtra",
-  "Delhi","Telangana","Andhra Pradesh"
+  "Tamil Nadu", "Kerala", "Karnataka", "Maharashtra",
+  "Delhi", "Telangana", "Andhra Pradesh"
 ];
 
 const initialForm = {
@@ -47,6 +48,8 @@ export default function ManageAddress() {
   const [addresses, setAddresses] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const user = auth.currentUser;
 
@@ -72,65 +75,90 @@ export default function ManageAddress() {
 
   /* ================= SAVE ================= */
   const clean = (val: string) =>
-  val?.trim().toLowerCase();
+    val?.trim().toLowerCase();
 
-const handleSave = async () => {
-  if (!user) return;
+  const handleSave = async () => {
+    if (!user) return;
 
-  let {
-    fullName,
-    phone,
-    email,
-    street,
-    city,
-    pinCode,
-    state,
-    country = "India",
-  } = form;
+    let {
+      fullName,
+      phone,
+      email,
+      street,
+      city,
+      pinCode,
+      state,
+      country = "India",
+    } = form;
 
-  // ✅ Trim values
-  fullName = fullName?.trim();
-  phone = phone?.trim();
-  email = email?.trim();
-  street = street?.trim();
-  city = city?.trim();
-  pinCode = pinCode?.trim();
-  state = state?.trim();
+    // ✅ Trim values
+    fullName = fullName?.trim();
+    phone = phone?.trim();
+    email = email?.trim();
+    street = street?.trim();
+    city = city?.trim();
+    pinCode = pinCode?.trim();
+    state = state?.trim();
 
-  if (!fullName || !phone || !street || !city || !pinCode || !state) {
-    Alert.alert("Error", "Please fill all required fields");
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    const ref = collection(db, "users", user.uid, "addresses");
-    const snap = await getDocs(ref);
-
-    const duplicate = snap.docs.some((doc) => {
-      if (editId && doc.id === editId) return false; // allow update
-
-      const d = doc.data();
-      return (
-        clean(d.fullName) === clean(fullName) &&
-        clean(d.phone) === clean(phone) &&
-        clean(d.street) === clean(street) &&
-        clean(d.city) === clean(city) &&
-        clean(d.state) === clean(state) &&
-        clean(d.pinCode) === clean(pinCode)
-      );
-    });
-
-    if (duplicate) {
-      Alert.alert("Duplicate", "This address already exists");
+    if (!fullName || !phone || !street || !city || !pinCode || !state) {
+      Toast.show({
+        type: "warning",
+        text1: "Validation Error",
+        text2: "Please fill all required fields",
+      });
       return;
     }
 
-    if (editId) {
-      await updateDoc(
-        doc(db, "users", user.uid, "addresses", editId),
-        {
+    try {
+      setLoading(true);
+
+      const ref = collection(db, "users", user.uid, "addresses");
+      const snap = await getDocs(ref);
+
+      const duplicate = snap.docs.some((doc) => {
+        if (editId && doc.id === editId) return false; // allow update
+
+        const d = doc.data();
+        return (
+          clean(d.fullName) === clean(fullName) &&
+          clean(d.phone) === clean(phone) &&
+          clean(d.street) === clean(street) &&
+          clean(d.city) === clean(city) &&
+          clean(d.state) === clean(state) &&
+          clean(d.pinCode) === clean(pinCode)
+        );
+      });
+
+      if (duplicate) {
+        Toast.show({
+          type: "warning",
+          text1: "Duplicate Address",
+          text2: "This address already exists",
+        });
+        return;
+      }
+
+      if (editId) {
+        await updateDoc(
+          doc(db, "users", user.uid, "addresses", editId),
+          {
+            fullName,
+            phone,
+            email,
+            street,
+            city,
+            pinCode,
+            state,
+            country,
+          }
+        );
+        Toast.show({
+          type: "success",
+          text1: "Updated Successfully",
+          text2: "Address has been updated",
+        });
+      } else {
+        await addDoc(ref, {
           fullName,
           phone,
           email,
@@ -139,48 +167,53 @@ const handleSave = async () => {
           pinCode,
           state,
           country,
-        }
-      );
-      Alert.alert("Success", "Address updated");
-    } else {
-      await addDoc(ref, {
-        fullName,
-        phone,
-        email,
-        street,
-        city,
-        pinCode,
-        state,
-        country,
-        createdAt: serverTimestamp(),
-      });
-      Alert.alert("Success", "Address added");
-    }
+          createdAt: serverTimestamp(),
+        });
+        Toast.show({
+          type: "success",
+          text1: "Address Added",
+          text2: "New address saved successfully",
+        });
+      }
 
-    setForm(initialForm);
-    setEditId(null);
-    fetchAddresses();
-  } catch (err) {
-    Alert.alert("Error", "Failed to save address");
-  } finally {
-    setLoading(false);
-  }
-};
+      setForm(initialForm);
+      setEditId(null);
+      fetchAddresses();
+    } catch (err) {
+      Toast.show({
+        type: "error",
+        text1: "Save Failed",
+        text2: "Failed to save address",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* ================= DELETE ================= */
-  const handleDelete = (id: string) => {
-    Alert.alert("Confirm", "Delete this address?", [
-      { text: "Cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          await deleteDoc(doc(db, "users", user.uid, "addresses", id));
-          fetchAddresses();
-        },
-      },
-    ]);
-  };
+  const confirmDelete = async () => {
+  if (!deleteId) return;
+
+  try {
+    await deleteDoc(doc(db, "users", user.uid, "addresses", deleteId));
+    fetchAddresses();
+
+    Toast.show({
+      type: "success",
+      text1: "Deleted",
+      text2: "Address removed successfully",
+    });
+  } catch {
+    Toast.show({
+      type: "error",
+      text1: "Delete Failed",
+      text2: "Something went wrong",
+    });
+  } finally {
+    setShowDeleteModal(false);
+    setDeleteId(null);
+  }
+};
 
   /* ================= EDIT ================= */
   const handleEdit = (addr: any) => {
@@ -189,13 +222,13 @@ const handleSave = async () => {
   };
 
   return (
-       <KeyboardAwareScrollView
+    <KeyboardAwareScrollView
       style={{ flex: 1, backgroundColor: "#0B1120" }}
       enableOnAndroid={true}
       extraScrollHeight={20}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 60 }} 
+      contentContainerStyle={{ paddingBottom: 60 }}
     >
 
       {/* ===== SAVED ADDRESSES ===== */}
@@ -221,7 +254,10 @@ const handleSave = async () => {
 
                 <TouchableOpacity
                   style={styles.deleteBtn}
-                  onPress={() => handleDelete(item.id)}
+                  onPress={() => {
+  setDeleteId(item.id);
+  setShowDeleteModal(true);
+}}
                 >
                   <Text>Delete</Text>
                 </TouchableOpacity>
@@ -232,13 +268,13 @@ const handleSave = async () => {
       )}
 
       {/* ===== FORM ===== */}
-     <TextInput
-  placeholder="Full Name"
-  placeholderTextColor="#9CA3AF"
-  style={styles.input}
-  value={form.fullName}
-  onChangeText={(v) => setForm({ ...form, fullName: v })}
-/>
+      <TextInput
+        placeholder="Full Name"
+        placeholderTextColor="#9CA3AF"
+        style={styles.input}
+        value={form.fullName}
+        onChangeText={(v) => setForm({ ...form, fullName: v })}
+      />
       <TextInput
         placeholder="Phone"
         placeholderTextColor="#9CA3AF"
@@ -248,13 +284,13 @@ const handleSave = async () => {
       />
 
       <TextInput
-  placeholder="Email"
-  placeholderTextColor="#9CA3AF"
-  style={styles.input}
-  value={form.email}
-  onChangeText={(v) => setForm({ ...form, email: v })}
-  keyboardType="email-address"
-/>
+        placeholder="Email"
+        placeholderTextColor="#9CA3AF"
+        style={styles.input}
+        value={form.email}
+        onChangeText={(v) => setForm({ ...form, email: v })}
+        keyboardType="email-address"
+      />
 
       <TextInput
         placeholder="Street"
@@ -304,6 +340,38 @@ const handleSave = async () => {
           </Text>
         )}
       </TouchableOpacity>
+        <Modal
+  transparent
+  visible={showDeleteModal}
+  animationType="fade"
+>
+  <View style={modalStyles.overlay}>
+    <View style={modalStyles.container}>
+      <Text style={modalStyles.title}>Delete Address?</Text>
+      <Text style={modalStyles.subtitle}>
+        Are you sure you want to delete this address?
+      </Text>
+
+      <View style={modalStyles.buttonRow}>
+        <TouchableOpacity
+          style={modalStyles.cancelBtn}
+          onPress={() => setShowDeleteModal(false)}
+        >
+          <Text style={{ color: "#fff" }}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={modalStyles.deleteBtn}
+          onPress={confirmDelete}
+        >
+          <Text style={{ color: "#fff", fontWeight: "700" }}>
+            Delete
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+</Modal>
     </KeyboardAwareScrollView>
   );
 }
@@ -342,5 +410,45 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     marginTop: 10,
+  },
+  
+});
+
+const modalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  container: {
+    width: "85%",
+    backgroundColor: "#1e293b",
+    padding: 20,
+    borderRadius: 16,
+  },
+  title: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  subtitle: {
+    color: "#94a3b8",
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  cancelBtn: {
+    padding: 10,
+    marginRight: 10,
+  },
+  deleteBtn: {
+    backgroundColor: "#ef4444",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
   },
 });
