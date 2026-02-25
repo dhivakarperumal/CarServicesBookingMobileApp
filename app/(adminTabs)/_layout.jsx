@@ -37,35 +37,33 @@ function AdminHeader({ title = "Admin" }) {
 
   /* 🔹 TODAY RANGE */
   useEffect(() => {
-    const start = Timestamp.fromDate(
-      new Date(new Date().setHours(0, 0, 0, 0))
-    );
+    const start = Timestamp.fromDate(new Date(new Date().setHours(0, 0, 0, 0)));
     const end = Timestamp.fromDate(
-      new Date(new Date().setHours(23, 59, 59, 999))
+      new Date(new Date().setHours(23, 59, 59, 999)),
     );
 
     const unsubBookings = onSnapshot(
       query(
         collection(db, "bookings"),
         where("createdAt", ">=", start),
-        where("createdAt", "<=", end)
+        where("createdAt", "<=", end),
       ),
       (snap) => {
         const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         setTodayBookings(list);
-      }
+      },
     );
 
     const unsubOrders = onSnapshot(
       query(
         collection(db, "orders"),
         where("createdAt", ">=", start),
-        where("createdAt", "<=", end)
+        where("createdAt", "<=", end),
       ),
       (snap) => {
         const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         setTodayOrders(list);
-      }
+      },
     );
 
     return () => {
@@ -101,9 +99,7 @@ function AdminHeader({ title = "Admin" }) {
 
           {totalNotifications > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>
-                {totalNotifications}
-              </Text>
+              <Text style={styles.badgeText}>{totalNotifications}</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -127,12 +123,13 @@ function AdminHeader({ title = "Admin" }) {
             {/* HEADER */}
             <View style={styles.notifHeader}>
               <Text style={styles.notifTitle}>Notifications</Text>
-              <Text style={styles.notifCount}>
-                {totalNotifications} New
-              </Text>
+              <Text style={styles.notifCount}>{totalNotifications} New</Text>
             </View>
 
-            <ScrollView style={{ maxHeight: 300 }}>
+            <ScrollView
+              style={{ maxHeight: 300 }}
+              contentContainerStyle={{ paddingBottom: 8 }}
+            >
               {/* BOOKINGS */}
               {todayBookings.map((b) => (
                 <TouchableOpacity
@@ -144,12 +141,8 @@ function AdminHeader({ title = "Admin" }) {
                   }}
                 >
                   <Text style={styles.notifName}>{b.name}</Text>
-                  <Text style={styles.notifSub}>
-                    Booking ID: {b.bookingId}
-                  </Text>
-                  <Text style={styles.notifSub}>
-                    {b.address || b.location}
-                  </Text>
+                  <Text style={styles.notifSub}>Booking ID: {b.bookingId}</Text>
+                  <Text style={styles.notifSub}>{b.address || b.location}</Text>
                 </TouchableOpacity>
               ))}
 
@@ -169,9 +162,7 @@ function AdminHeader({ title = "Admin" }) {
                   <Text style={styles.notifSub}>
                     Order ID: {o.orderId || o.id}
                   </Text>
-                  <Text style={styles.notifSub}>
-                    Total ₹ {o.total}
-                  </Text>
+                  <Text style={styles.notifSub}>Total ₹ {o.total}</Text>
                 </TouchableOpacity>
               ))}
 
@@ -183,9 +174,7 @@ function AdminHeader({ title = "Admin" }) {
                     size={36}
                     color="#9ca3af"
                   />
-                  <Text style={styles.emptyText}>
-                    You're all caught up
-                  </Text>
+                  <Text style={styles.emptyText}>You're all caught up</Text>
                   <Text style={styles.emptySub}>
                     No new notifications right now
                   </Text>
@@ -198,10 +187,7 @@ function AdminHeader({ title = "Admin" }) {
 
       {/* 👤 PROFILE DROPDOWN */}
       <Modal transparent visible={menuVisible} animationType="fade">
-        <Pressable
-          style={styles.overlay}
-          onPress={() => setMenuVisible(false)}
-        >
+        <Pressable style={styles.overlay} onPress={() => setMenuVisible(false)}>
           <View style={styles.dropdown}>
             <MenuItem
               icon="person-outline"
@@ -252,11 +238,7 @@ function AdminHeader({ title = "Admin" }) {
 function MenuItem({ icon, label, onPress, danger }) {
   return (
     <TouchableOpacity style={styles.menuItem} onPress={onPress}>
-      <Ionicons
-        name={icon}
-        size={18}
-        color={danger ? "#ef4444" : "#38bdf8"}
-      />
+      <Ionicons name={icon} size={18} color={danger ? "#ef4444" : "#38bdf8"} />
       <Text
         style={[
           styles.menuText,
@@ -295,9 +277,7 @@ export default function AdminTabsLayout() {
     <SafeAreaView style={styles.safe}>
       <Tabs
         screenOptions={{
-          header: () => (
-            <AdminHeader title={getHeaderTitle(current)} />
-          ),
+          header: () => <AdminHeader title={getHeaderTitle(current)} />,
           tabBarActiveTintColor: "#06b6d4",
           tabBarInactiveTintColor: "#9ca3af",
           sceneContainerStyle: { backgroundColor: "#0f172a" },
@@ -307,11 +287,55 @@ export default function AdminTabsLayout() {
           tabBarActiveBackgroundColor: "#1e293b",
         }}
       >
-        <Tabs.Screen name="home" options={{ tabBarLabel: "Home", tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} /> }} />
-        <Tabs.Screen name="bookings" options={{ tabBarLabel: "Bookings", tabBarIcon: ({ color, size }) => <FontAwesome5 name="clipboard-list" size={size} color={color} /> }} />
-        <Tabs.Screen name="services" options={{ tabBarLabel: "Services", tabBarIcon: ({ color, size }) => <MaterialIcons name="miscellaneous-services" size={size} color={color} /> }} />
-        <Tabs.Screen name="products" options={{ tabBarLabel: "Products", tabBarIcon: ({ color, size }) => <MaterialIcons name="inventory" size={size} color={color} /> }} />
-        <Tabs.Screen name="settings" options={{ tabBarLabel: "Settings", tabBarIcon: ({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} /> }} />
+        <Tabs.Screen
+          name="home"
+          options={{
+            tabBarLabel: "Home",
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="home" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="bookings"
+          options={{
+            tabBarLabel: "Bookings",
+            tabBarIcon: ({ color, size }) => (
+              <FontAwesome5 name="clipboard-list" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="services"
+          options={{
+            tabBarLabel: "Services",
+            tabBarIcon: ({ color, size }) => (
+              <MaterialIcons
+                name="miscellaneous-services"
+                size={size}
+                color={color}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="products"
+          options={{
+            tabBarLabel: "Products",
+            tabBarIcon: ({ color, size }) => (
+              <MaterialIcons name="inventory" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            tabBarLabel: "Settings",
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="settings-outline" size={size} color={color} />
+            ),
+          }}
+        />
       </Tabs>
     </SafeAreaView>
   );
@@ -367,56 +391,65 @@ const styles = StyleSheet.create({
 
   profileText: { color: "#fff", fontWeight: "bold", fontSize: 14 },
 
-overlay: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.65)",
-  alignItems: "flex-end",
-  paddingTop: 70,
-  paddingRight: 16,
-},
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.65)",
+    alignItems: "flex-end",
+    paddingTop: 70,
+    paddingRight: 16,
+  },
 
   dropdown: {
-  width: 220,
-  backgroundColor: "#020617",
-  borderRadius: 18,
-
-  borderWidth: 1,
-  borderColor: "rgba(56,189,248,0.35)",
-
-  shadowColor: "#38bdf8",
-  shadowOpacity: 0.45,
-  shadowRadius: 12,
-  elevation: 20,
-
-  paddingVertical: 6,
-},
+    width: 260,
+    backgroundColor: "#020617",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.3)",
+    overflow: "hidden",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 18,
+  },
 
   notifHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderColor: "#e5e7eb",
-    paddingBottom: 8,
-    marginBottom: 6,
-    backgroundColor: "#f9fafb",
-    padding: 10,                
-    borderTopLeftRadius: 8,     
-    borderTopRightRadius: 8,
-  },
-
-  notifTitle: { fontWeight: "bold", fontSize: 14, color: "#11182" },
-
-  notifCount: { fontSize: 12, color: "#6b7280" },
-
-  notifItem: {
+    paddingHorizontal: 14,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderColor: "#f1f5f9",
+    borderColor: "#1e293b",
+    backgroundColor: "#020617",
   },
 
-  notifName: { fontSize: 14, fontWeight: "600", color: "#111827" },
+  notifTitle: {
+    fontWeight: "700",
+    fontSize: 16,
+    color: "#e5e7eb",
+  },
 
-  notifSub: { fontSize: 12, color: "#6b7280" },
+  notifCount: {
+    fontSize: 13,
+    color: "#38bdf8",
+  },
+
+  notifItem: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: "#1e293b",
+  },
+
+  notifName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#f8fafc",
+  },
+
+  notifSub: {
+    fontSize: 12,
+    color: "#94a3b8",
+  },
 
   emptyBox: {
     alignItems: "center",
@@ -424,23 +457,30 @@ overlay: {
     paddingVertical: 30,
   },
 
-  emptyText: { fontSize: 14, fontWeight: "600", color: "#374151" },
+  emptyText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#e5e7eb",
+  },
 
-  emptySub: { fontSize: 12, color: "#9ca3af" },
+  emptySub: {
+    fontSize: 12,
+    color: "#94a3b8",
+  },
 
-menuItem: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  paddingVertical: 14,
-},
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
 
   menuText: {
-  fontSize: 14,
-  color: "#e5e7eb",
-  marginLeft: 12,
-  fontWeight: "700",
-},
+    fontSize: 14,
+    color: "#e5e7eb",
+    marginLeft: 12,
+    fontWeight: "700",
+  },
 
   tabBar: {
     position: "absolute",
@@ -458,5 +498,3 @@ menuItem: {
 
   tabLabel: { fontSize: 12, marginBottom: 4 },
 });
-
-
