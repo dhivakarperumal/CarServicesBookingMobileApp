@@ -25,7 +25,7 @@ import { Picker } from "@react-native-picker/picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Toast from "react-native-toast-message";
 import { Modal } from "react-native";
-
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 
 const INDIAN_STATES = [
   "Tamil Nadu", "Kerala", "Karnataka", "Maharashtra",
@@ -49,7 +49,7 @@ export default function ManageAddress() {
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const user = auth.currentUser;
 
@@ -116,7 +116,7 @@ const [showDeleteModal, setShowDeleteModal] = useState(false);
       const snap = await getDocs(ref);
 
       const duplicate = snap.docs.some((doc) => {
-        if (editId && doc.id === editId) return false; // allow update
+        if (editId && doc.id === editId) return false; 
 
         const d = doc.data();
         return (
@@ -192,28 +192,28 @@ const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   /* ================= DELETE ================= */
   const confirmDelete = async () => {
-  if (!deleteId) return;
+    if (!deleteId) return;
 
-  try {
-    await deleteDoc(doc(db, "users", user.uid, "addresses", deleteId));
-    fetchAddresses();
+    try {
+      await deleteDoc(doc(db, "users", user.uid, "addresses", deleteId));
+      fetchAddresses();
 
-    Toast.show({
-      type: "success",
-      text1: "Deleted",
-      text2: "Address removed successfully",
-    });
-  } catch {
-    Toast.show({
-      type: "error",
-      text1: "Delete Failed",
-      text2: "Something went wrong",
-    });
-  } finally {
-    setShowDeleteModal(false);
-    setDeleteId(null);
-  }
-};
+      Toast.show({
+        type: "success",
+        text1: "Deleted",
+        text2: "Address removed successfully",
+      });
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: "Delete Failed",
+        text2: "Something went wrong",
+      });
+    } finally {
+      setShowDeleteModal(false);
+      setDeleteId(null);
+    }
+  };
 
   /* ================= EDIT ================= */
   const handleEdit = (addr: any) => {
@@ -244,24 +244,24 @@ const [showDeleteModal, setShowDeleteModal] = useState(false);
               </Text>
               <Text style={styles.text}>{item.phone}</Text>
 
-              <View style={styles.row}>
-                <TouchableOpacity
-                  style={styles.editBtn}
-                  onPress={() => handleEdit(item)}
-                >
-                  <Text>Edit</Text>
-                </TouchableOpacity>
+             <View style={styles.row}>
+  <TouchableOpacity
+    style={styles.editBtn}
+    onPress={() => handleEdit(item)}
+  >
+    <Ionicons name="create-outline" size={20} color="#fff" />
+  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={styles.deleteBtn}
-                  onPress={() => {
-  setDeleteId(item.id);
-  setShowDeleteModal(true);
-}}
-                >
-                  <Text>Delete</Text>
-                </TouchableOpacity>
-              </View>
+  <TouchableOpacity
+    style={styles.deleteBtn}
+    onPress={() => {
+      setDeleteId(item.id);
+      setShowDeleteModal(true);
+    }}
+  >
+    <MaterialIcons name="delete-outline" size={22} color="#fff" />
+  </TouchableOpacity>
+</View>
             </View>
           )}
         />
@@ -340,38 +340,38 @@ const [showDeleteModal, setShowDeleteModal] = useState(false);
           </Text>
         )}
       </TouchableOpacity>
-        <Modal
-  transparent
-  visible={showDeleteModal}
-  animationType="fade"
->
-  <View style={modalStyles.overlay}>
-    <View style={modalStyles.container}>
-      <Text style={modalStyles.title}>Delete Address?</Text>
-      <Text style={modalStyles.subtitle}>
-        Are you sure you want to delete this address?
-      </Text>
+      <Modal
+        transparent
+        visible={showDeleteModal}
+        animationType="fade"
+      >
+        <View style={modalStyles.overlay}>
+          <View style={modalStyles.container}>
+            <Text style={modalStyles.title}>Delete Address?</Text>
+            <Text style={modalStyles.subtitle}>
+              Are you sure you want to delete this address?
+            </Text>
 
-      <View style={modalStyles.buttonRow}>
-        <TouchableOpacity
-          style={modalStyles.cancelBtn}
-          onPress={() => setShowDeleteModal(false)}
-        >
-          <Text style={{ color: "#fff" }}>Cancel</Text>
-        </TouchableOpacity>
+            <View style={modalStyles.buttonRow}>
+              <TouchableOpacity
+                style={modalStyles.cancelBtn}
+                onPress={() => setShowDeleteModal(false)}
+              >
+                <Text style={{ color: "#fff" }}>Cancel</Text>
+              </TouchableOpacity>
 
-        <TouchableOpacity
-          style={modalStyles.deleteBtn}
-          onPress={confirmDelete}
-        >
-          <Text style={{ color: "#fff", fontWeight: "700" }}>
-            Delete
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </View>
-</Modal>
+              <TouchableOpacity
+                style={modalStyles.deleteBtn}
+                onPress={confirmDelete}
+              >
+                <Text style={{ color: "#fff", fontWeight: "700" }}>
+                  Delete
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAwareScrollView>
   );
 }
@@ -386,16 +386,17 @@ const styles = StyleSheet.create({
   name: { color: "#fff", fontWeight: "700" },
   text: { color: "#94a3b8", fontSize: 13, marginTop: 2 },
   row: { flexDirection: "row", marginTop: 8 },
+
   editBtn: {
     backgroundColor: "#0ea5e9",
-    padding: 6,
-    borderRadius: 6,
+    padding: 7,
+    borderRadius: 25,
     marginRight: 10,
   },
   deleteBtn: {
     backgroundColor: "#ef4444",
     padding: 6,
-    borderRadius: 6,
+    borderRadius: 25,
   },
   input: {
     backgroundColor: "#111827",
@@ -411,7 +412,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
   },
-  
+
 });
 
 const modalStyles = StyleSheet.create({
@@ -445,10 +446,17 @@ const modalStyles = StyleSheet.create({
     padding: 10,
     marginRight: 10,
   },
-  deleteBtn: {
-    backgroundColor: "#ef4444",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
+ 
+  editBtn: {
+  backgroundColor: "#4CAF50",
+  padding: 10,
+  borderRadius: 8,
+  marginRight: 10,
+},
+
+deleteBtn: {
+  backgroundColor: "#F44336",
+  padding: 10,
+  borderRadius: 8,
+},
 });

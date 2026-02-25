@@ -104,7 +104,7 @@ export default function BookingScreen() {
 
       await addDoc(collection(db, "bookings"), {
         bookingId,
-        uid: user.uid,              // 🔥 ADD THIS
+        uid: user.uid,             
         ...formData,
         status: BOOKING_STATUS.BOOKED,
         createdAt: serverTimestamp(),
@@ -112,7 +112,7 @@ export default function BookingScreen() {
 
       Toast.show({
         type: "success",
-        text1: "Booking Successful 🎉",
+        text1: "Booking Successful",
         text2: `Booking ID: ${bookingId}`,
       });
 
