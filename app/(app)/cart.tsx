@@ -19,6 +19,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { auth, db } from "../../firebase";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Cart() {
     const [items, setItems] = useState<any[]>([]);
@@ -186,12 +188,20 @@ export default function Cart() {
                         </View>
 
                         <TouchableOpacity
-                            style={styles.checkoutBtn}
+                            activeOpacity={0.8}
                             onPress={() => router.push("/(app)/checkout")}
                         >
-                            <Text style={styles.checkoutText}>
-                                Proceed To Checkout
-                            </Text>
+                            <LinearGradient
+                                colors={["#0EA5E9", "#2563EB"]}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                style={styles.gradientCheckoutButton}
+                            >
+                                <Ionicons name="arrow-forward-circle-outline" size={18} color="#fff" />
+                                <Text style={styles.gradientCheckoutText}>
+                                    Proceed To Checkout
+                                </Text>
+                            </LinearGradient>
                         </TouchableOpacity>
                     </View>
                 </>
@@ -324,16 +334,23 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         fontSize: 18,
     },
-    checkoutBtn: {
+    gradientCheckoutButton: {
         marginTop: 20,
-        backgroundColor: "#0EA5E9",
         paddingVertical: 14,
+        paddingHorizontal: 30,   // 👈 makes width small
         borderRadius: 30,
+        flexDirection: "row",
+        justifyContent: "center",
         alignItems: "center",
+        alignSelf: "center",     // 👈 centers button
     },
-    checkoutText: {
-        color: "#000",
+
+    gradientCheckoutText: {
+        color: "#FFFFFF",
+        fontSize: 15,
         fontWeight: "700",
+        marginLeft: 8,
+        letterSpacing: 0.5,
     },
     shopBtn: {
         backgroundColor: "#0EA5E9",

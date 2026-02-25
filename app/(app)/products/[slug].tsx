@@ -517,20 +517,20 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     gradientCartButton: {
-  flexDirection: "row",
-  paddingVertical: 14,
-  borderRadius: 30,
-  justifyContent: "center",
-  alignItems: "center",
-},
+        flexDirection: "row",
+        paddingVertical: 14,
+        borderRadius: 30,
+        justifyContent: "center",
+        alignItems: "center",
+    },
 
-gradientBuyButton: {
-  flexDirection: "row",
-  paddingVertical: 14,
-  borderRadius: 30,
-  justifyContent: "center",
-  alignItems: "center",
-},
+    gradientBuyButton: {
+        flexDirection: "row",
+        paddingVertical: 14,
+        borderRadius: 30,
+        justifyContent: "center",
+        alignItems: "center",
+    },
 
     gradientCartText: {
         color: "#FFFFFF",
