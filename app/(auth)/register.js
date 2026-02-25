@@ -7,7 +7,6 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -18,6 +17,7 @@ import {
   View,
 } from "react-native";
 import { auth, db } from "../../firebase";
+import Toast from "react-native-toast-message";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -37,23 +37,59 @@ export default function RegisterScreen() {
     if (loading) return;
 
     // 🔎 Validations (Same as Web)
-    if (!username.trim())
-      return Alert.alert("Error", "Username is required");
+    if (!username.trim()) {
+      Toast.show({
+        type: "warning",
+        text1: "Username Required",
+        text2: "Please enter your username",
+      });
+      return;
+    }
 
-    if (!email.trim())
-      return Alert.alert("Error", "Email is required");
+    if (!email.trim()) {
+      Toast.show({
+        type: "warning",
+        text1: "Email Required",
+        text2: "Please enter your email",
+      });
+      return;
+    }
 
-    if (!mobile.trim())
-      return Alert.alert("Error", "Mobile number is required");
+    if (!mobile.trim()) {
+      Toast.show({
+        type: "warning",
+        text1: "Mobile Required",
+        text2: "Please enter your mobile number",
+      });
+      return;
+    }
 
-    if (mobile.length !== 10)
-      return Alert.alert("Error", "Enter valid 10 digit mobile number");
+    if (mobile.length !== 10) {
+      Toast.show({
+        type: "warning",
+        text1: "Invalid Mobile",
+        text2: "Enter a valid 10 digit mobile number",
+      });
+      return;
+    }
 
-    if (password.length < 6)
-      return Alert.alert("Error", "Password must be at least 6 characters");
+    if (password.length < 6) {
+      Toast.show({
+        type: "warning",
+        text1: "Weak Password",
+        text2: "Password must be at least 6 characters",
+      });
+      return;
+    }
 
-    if (password !== confirmPassword)
-      return Alert.alert("Error", "Passwords do not match");
+    if (password !== confirmPassword) {
+      Toast.show({
+        type: "error",
+        text1: "Password Mismatch",
+        text2: "Passwords do not match",
+      });
+      return;
+    }
 
     setLoading(true);
 
@@ -77,11 +113,19 @@ export default function RegisterScreen() {
         createdAt: serverTimestamp(),
       });
 
-      Alert.alert("Success", "Account created successfully");
+      Toast.show({
+        type: "success",
+        text1: "Account Created",
+        text2: "Your account was created successfully",
+      });
 
       router.replace("/(tabs)/home");
     } catch (err) {
-      Alert.alert("Register Failed", err.message);
+      Toast.show({
+        type: "error",
+        text1: "Register Failed",
+        text2: err?.message || "Something went wrong",
+      });
     } finally {
       setLoading(false);
     }
