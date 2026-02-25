@@ -10,7 +10,6 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getAuth } from "firebase/auth";
 import {
   collection,
@@ -25,12 +24,23 @@ import { db } from "../../firebase";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 
+/* 🔁 STATUS FLOW */
+const STATUS_FLOW = [
+  "Processing",
+  "Service Going on",
+  "Bill Pending",
+  "Bill Completed",
+  "Service Completed",
+];
+
 export default function EmployeeDashboard() {
   const auth = getAuth();
   const user = auth.currentUser;
 
   const [employee, setEmployee] = useState(null);
-  const [services, setServices] = useState([]);
+  const [allServices, setAllServices] = useState([]);
+  const [todayServices, setTodayServices] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -40,7 +50,7 @@ export default function EmployeeDashboard() {
   const loadEmployee = async () => {
     const q = query(
       collection(db, "employees"),
-      where("authUid", "==", user.uid),
+      where("authUid", "==", user.uid)
     );
 
     const snap = await getDocs(q);
@@ -50,29 +60,31 @@ export default function EmployeeDashboard() {
     }
   };
 
-  /* ================= LOAD TODAY SERVICES ================= */
-  const loadServices = async () => {
+  /* ================= LOAD SERVICES ================= */
+  const loadAllServices = async () => {
     const q = query(
       collection(db, "assignedServices"),
-      where("employeeAuthUid", "==", user.uid),
+      where("employeeAuthUid", "==", user.uid)
     );
 
     const snap = await getDocs(q);
 
-    const list = snap.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .filter((s) => {
-        if (!s.assignedAt) return false;
-        const date = s.assignedAt.toDate().toISOString().split("T")[0];
-        return date === todayStr;
-      });
+    const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    setAllServices(list);
 
-    setServices(list);
+    /* 🔥 TODAY FILTER */
+    const todayList = list.filter((s) => {
+      if (!s.assignedAt) return false;
+      const date = s.assignedAt.toDate().toISOString().split("T")[0];
+      return date === todayStr;
+    });
+
+    setTodayServices(todayList);
   };
 
   const init = async () => {
     await loadEmployee();
-    await loadServices();
+    await loadAllServices();
     setLoading(false);
   };
 
@@ -80,64 +92,60 @@ export default function EmployeeDashboard() {
     init();
   }, []);
 
-  /* 🔄 AUTO REFRESH WHEN SCREEN FOCUS */
   useFocusEffect(
     useCallback(() => {
       loadEmployee();
-      loadServices();
-    }, []),
+      loadAllServices();
+    }, [])
   );
 
-  /* 🔄 PULL TO REFRESH */
   const onRefresh = async () => {
     setRefreshing(true);
     await loadEmployee();
-    await loadServices();
+    await loadAllServices();
     setRefreshing(false);
   };
 
-  /* ================= TIME CALC ================= */
-  const calculateHours = () => {
-    if (!employee?.timeIn || !employee?.timeOut) return "0h";
-
-    const [inH, inM] = employee.timeIn.split(":").map(Number);
-    const [outH, outM] = employee.timeOut.split(":").map(Number);
-
-    const diff = outH * 60 + outM - (inH * 60 + inM);
-    if (diff <= 0) return "0h";
-
-    const h = Math.floor(diff / 60);
-    const m = diff % 60;
-
-    return `${h}h ${m}m`;
-  };
-
-  /* ================= MARK TIME ================= */
-  const markTime = async (type) => {
+  /* ================= UPDATE STATUS ================= */
+  const updateServiceStatus = async (service, newStatus) => {
     try {
-      const now = new Date().toTimeString().slice(0, 5);
-
-      await updateDoc(doc(db, "employees", employee.id), {
-        [type]: now,
+      const updateData = {
+        serviceStatus: newStatus,
         updatedAt: serverTimestamp(),
-      });
+      };
 
-      loadEmployee();
-    } catch {
-      Alert.alert("Error", "Failed to update time");
-    }
-  };
+      if (newStatus === "Service Going on") {
+        updateData.startedAt = serverTimestamp();
+      }
 
-  /* ================= UPDATE SERVICE STATUS ================= */
-  const updateServiceStatus = async (id, status) => {
-    try {
-      await updateDoc(doc(db, "assignedServices", id), {
-        serviceStatus: status,
-        updatedAt: serverTimestamp(),
-      });
+      if (newStatus === "Service Completed") {
+        updateData.completedAt = serverTimestamp();
+      }
 
-      loadServices();
-    } catch {
+      /* 🔥 1️⃣ assignedServices */
+      await updateDoc(doc(db, "assignedServices", service.id), updateData);
+
+      /* 🔥 2️⃣ allServices */
+      if (service.bookingDocId) {
+        await updateDoc(
+          doc(db, "allServices", service.bookingDocId),
+          updateData
+        );
+      }
+
+      /* 🔥 3️⃣ FREE EMPLOYEE */
+      if (newStatus === "Service Completed" && employee?.id) {
+        await updateDoc(doc(db, "employees", employee.id), {
+          assigned: false,
+          workStatus: "idle",
+          currentServiceId: null,
+          currentServiceCode: null,
+        });
+      }
+
+      loadAllServices();
+    } catch (error) {
+      console.log("Status update error:", error);
       Alert.alert("Error", "Failed to update service");
     }
   };
@@ -150,17 +158,20 @@ export default function EmployeeDashboard() {
     );
   }
 
-  /* ================= SUMMARY ================= */
-  const assigned = services.filter(
-    (s) => s.serviceStatus === "Assigned",
+  /* ================= SUMMARY COUNTS ================= */
+  const assigned = allServices.filter(
+    (s) => s.serviceStatus === "Processing"
   ).length;
 
-  const inprogress = services.filter(
-    (s) => s.serviceStatus === "In Progress",
+  const inprogress = allServices.filter(
+    (s) =>
+      s.serviceStatus === "Service Going on" ||
+      s.serviceStatus === "Bill Pending" ||
+      s.serviceStatus === "Bill Completed"
   ).length;
 
-  const completed = services.filter(
-    (s) => s.serviceStatus === "Completed",
+  const completed = allServices.filter(
+    (s) => s.serviceStatus === "Service Completed"
   ).length;
 
   return (
@@ -173,56 +184,19 @@ export default function EmployeeDashboard() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* WELCOME CARD */}
-        <View style={styles.card}>
-          {/* STATUS BADGE - TOP RIGHT */}
-          <View
-            style={[
-              styles.statusBadge,
-              employee.status === "Active"
-                ? styles.statusActive
-                : styles.statusInactive,
-            ]}
-          >
-            <Text style={styles.statusText}>
-              {employee.status || "Inactive"}
-            </Text>
-          </View>
-          <Text style={styles.welcome}>Welcome 👋</Text>
-          <Text style={styles.name}>{employee.name}</Text>
-          <Text style={styles.sub}>
-            {employee.role} • {employee.department}
-          </Text>
-        </View>
-
         {/* SUMMARY CARDS */}
         <View style={styles.summaryRow}>
-          <LinearGradient
-            colors={["#2563eb", "#020617"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.summaryCard}
-          >
+          <LinearGradient colors={["#2563eb", "#020617"]} style={styles.summaryCard}>
             <Text style={styles.summaryNumber}>{assigned}</Text>
             <Text style={styles.summaryLabel}>Assigned</Text>
           </LinearGradient>
 
-          <LinearGradient
-            colors={["#38bdf8", "#020617"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.summaryCard}
-          >
+          <LinearGradient colors={["#38bdf8", "#020617"]} style={styles.summaryCard}>
             <Text style={styles.summaryNumber}>{inprogress}</Text>
             <Text style={styles.summaryLabel}>In Progress</Text>
           </LinearGradient>
 
-          <LinearGradient
-            colors={["#10b981", "#020617"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.summaryCard}
-          >
+          <LinearGradient colors={["#10b981", "#020617"]} style={styles.summaryCard}>
             <Text style={styles.summaryNumber}>{completed}</Text>
             <Text style={styles.summaryLabel}>Completed</Text>
           </LinearGradient>
@@ -232,11 +206,11 @@ export default function EmployeeDashboard() {
         <View style={styles.card}>
           <Text style={styles.label}>Today Services</Text>
 
-          {services.length === 0 && (
+          {todayServices.length === 0 && (
             <Text style={styles.sub}>No services assigned</Text>
           )}
 
-          {services.map((s) => (
+          {todayServices.map((s) => (
             <View key={s.id} style={styles.serviceItem}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.serviceTitle}>
@@ -246,19 +220,23 @@ export default function EmployeeDashboard() {
                 <Text style={styles.small}>Status: {s.serviceStatus}</Text>
               </View>
 
-              {s.serviceStatus === "Assigned" && (
+              {s.serviceStatus === "Processing" && (
                 <TouchableOpacity
                   style={styles.startBtn}
-                  onPress={() => updateServiceStatus(s.id, "In Progress")}
+                  onPress={() =>
+                    updateServiceStatus(s, "Service Going on")
+                  }
                 >
                   <Text style={styles.btnText}>Start</Text>
                 </TouchableOpacity>
               )}
 
-              {s.serviceStatus === "In Progress" && (
+              {s.serviceStatus === "Service Going on" && (
                 <TouchableOpacity
                   style={styles.doneBtn}
-                  onPress={() => updateServiceStatus(s.id, "Completed")}
+                  onPress={() =>
+                    updateServiceStatus(s, "Service Completed")
+                  }
                 >
                   <Text style={styles.btnText}>Done</Text>
                 </TouchableOpacity>
