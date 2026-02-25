@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  Alert,
   StyleSheet,
   ActivityIndicator,
   ScrollView,
@@ -24,11 +23,12 @@ import {
 import { auth, db } from "../firebase";
 import { Picker } from "@react-native-picker/picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import Toast from "react-native-toast-message";
 
 
 const INDIAN_STATES = [
-  "Tamil Nadu","Kerala","Karnataka","Maharashtra",
-  "Delhi","Telangana","Andhra Pradesh"
+  "Tamil Nadu", "Kerala", "Karnataka", "Maharashtra",
+  "Delhi", "Telangana", "Andhra Pradesh"
 ];
 
 const initialForm = {
@@ -72,65 +72,90 @@ export default function ManageAddress() {
 
   /* ================= SAVE ================= */
   const clean = (val: string) =>
-  val?.trim().toLowerCase();
+    val?.trim().toLowerCase();
 
-const handleSave = async () => {
-  if (!user) return;
+  const handleSave = async () => {
+    if (!user) return;
 
-  let {
-    fullName,
-    phone,
-    email,
-    street,
-    city,
-    pinCode,
-    state,
-    country = "India",
-  } = form;
+    let {
+      fullName,
+      phone,
+      email,
+      street,
+      city,
+      pinCode,
+      state,
+      country = "India",
+    } = form;
 
-  // ✅ Trim values
-  fullName = fullName?.trim();
-  phone = phone?.trim();
-  email = email?.trim();
-  street = street?.trim();
-  city = city?.trim();
-  pinCode = pinCode?.trim();
-  state = state?.trim();
+    // ✅ Trim values
+    fullName = fullName?.trim();
+    phone = phone?.trim();
+    email = email?.trim();
+    street = street?.trim();
+    city = city?.trim();
+    pinCode = pinCode?.trim();
+    state = state?.trim();
 
-  if (!fullName || !phone || !street || !city || !pinCode || !state) {
-    Alert.alert("Error", "Please fill all required fields");
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    const ref = collection(db, "users", user.uid, "addresses");
-    const snap = await getDocs(ref);
-
-    const duplicate = snap.docs.some((doc) => {
-      if (editId && doc.id === editId) return false; // allow update
-
-      const d = doc.data();
-      return (
-        clean(d.fullName) === clean(fullName) &&
-        clean(d.phone) === clean(phone) &&
-        clean(d.street) === clean(street) &&
-        clean(d.city) === clean(city) &&
-        clean(d.state) === clean(state) &&
-        clean(d.pinCode) === clean(pinCode)
-      );
-    });
-
-    if (duplicate) {
-      Alert.alert("Duplicate", "This address already exists");
+    if (!fullName || !phone || !street || !city || !pinCode || !state) {
+      Toast.show({
+        type: "warning",
+        text1: "Validation Error",
+        text2: "Please fill all required fields",
+      });
       return;
     }
 
-    if (editId) {
-      await updateDoc(
-        doc(db, "users", user.uid, "addresses", editId),
-        {
+    try {
+      setLoading(true);
+
+      const ref = collection(db, "users", user.uid, "addresses");
+      const snap = await getDocs(ref);
+
+      const duplicate = snap.docs.some((doc) => {
+        if (editId && doc.id === editId) return false; // allow update
+
+        const d = doc.data();
+        return (
+          clean(d.fullName) === clean(fullName) &&
+          clean(d.phone) === clean(phone) &&
+          clean(d.street) === clean(street) &&
+          clean(d.city) === clean(city) &&
+          clean(d.state) === clean(state) &&
+          clean(d.pinCode) === clean(pinCode)
+        );
+      });
+
+      if (duplicate) {
+        Toast.show({
+          type: "warning",
+          text1: "Duplicate Address",
+          text2: "This address already exists",
+        });
+        return;
+      }
+
+      if (editId) {
+        await updateDoc(
+          doc(db, "users", user.uid, "addresses", editId),
+          {
+            fullName,
+            phone,
+            email,
+            street,
+            city,
+            pinCode,
+            state,
+            country,
+          }
+        );
+        Toast.show({
+          type: "success",
+          text1: "Updated Successfully",
+          text2: "Address has been updated",
+        });
+      } else {
+        await addDoc(ref, {
           fullName,
           phone,
           email,
@@ -139,47 +164,47 @@ const handleSave = async () => {
           pinCode,
           state,
           country,
-        }
-      );
-      Alert.alert("Success", "Address updated");
-    } else {
-      await addDoc(ref, {
-        fullName,
-        phone,
-        email,
-        street,
-        city,
-        pinCode,
-        state,
-        country,
-        createdAt: serverTimestamp(),
-      });
-      Alert.alert("Success", "Address added");
-    }
+          createdAt: serverTimestamp(),
+        });
+        Toast.show({
+          type: "success",
+          text1: "Address Added",
+          text2: "New address saved successfully",
+        });
+      }
 
-    setForm(initialForm);
-    setEditId(null);
-    fetchAddresses();
-  } catch (err) {
-    Alert.alert("Error", "Failed to save address");
-  } finally {
-    setLoading(false);
-  }
-};
+      setForm(initialForm);
+      setEditId(null);
+      fetchAddresses();
+    } catch (err) {
+      Toast.show({
+        type: "error",
+        text1: "Save Failed",
+        text2: "Failed to save address",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* ================= DELETE ================= */
-  const handleDelete = (id: string) => {
-    Alert.alert("Confirm", "Delete this address?", [
-      { text: "Cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          await deleteDoc(doc(db, "users", user.uid, "addresses", id));
-          fetchAddresses();
-        },
-      },
-    ]);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "users", user.uid, "addresses", id));
+      fetchAddresses();
+
+      Toast.show({
+        type: "success",
+        text1: "Deleted",
+        text2: "Address removed successfully",
+      });
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: "Delete Failed",
+        text2: "Something went wrong",
+      });
+    }
   };
 
   /* ================= EDIT ================= */
@@ -189,13 +214,13 @@ const handleSave = async () => {
   };
 
   return (
-       <KeyboardAwareScrollView
+    <KeyboardAwareScrollView
       style={{ flex: 1, backgroundColor: "#0B1120" }}
       enableOnAndroid={true}
       extraScrollHeight={20}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 60 }} 
+      contentContainerStyle={{ paddingBottom: 60 }}
     >
 
       {/* ===== SAVED ADDRESSES ===== */}
@@ -232,13 +257,13 @@ const handleSave = async () => {
       )}
 
       {/* ===== FORM ===== */}
-     <TextInput
-  placeholder="Full Name"
-  placeholderTextColor="#9CA3AF"
-  style={styles.input}
-  value={form.fullName}
-  onChangeText={(v) => setForm({ ...form, fullName: v })}
-/>
+      <TextInput
+        placeholder="Full Name"
+        placeholderTextColor="#9CA3AF"
+        style={styles.input}
+        value={form.fullName}
+        onChangeText={(v) => setForm({ ...form, fullName: v })}
+      />
       <TextInput
         placeholder="Phone"
         placeholderTextColor="#9CA3AF"
@@ -248,13 +273,13 @@ const handleSave = async () => {
       />
 
       <TextInput
-  placeholder="Email"
-  placeholderTextColor="#9CA3AF"
-  style={styles.input}
-  value={form.email}
-  onChangeText={(v) => setForm({ ...form, email: v })}
-  keyboardType="email-address"
-/>
+        placeholder="Email"
+        placeholderTextColor="#9CA3AF"
+        style={styles.input}
+        value={form.email}
+        onChangeText={(v) => setForm({ ...form, email: v })}
+        keyboardType="email-address"
+      />
 
       <TextInput
         placeholder="Street"
