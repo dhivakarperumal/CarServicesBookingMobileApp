@@ -95,6 +95,8 @@ const whyData = [
   },
 ];
 
+
+
 const { width } = Dimensions.get("window");
 const REVIEW_CARD_WIDTH = width - 40;
 
@@ -117,6 +119,7 @@ export default function HomeScreen({ navigation }) {
   const [username, setUsername] = useState("");
 
   const [myVehicles, setMyVehicles] = useState([]);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
 
   const [reviews, setReviews] = useState([]);
   const extendedReviews = [...reviews, ...reviews];
@@ -374,70 +377,81 @@ export default function HomeScreen({ navigation }) {
       </LinearGradient>
 
       {/* MY VEHICLES */}
-{myVehicles.length > 0 && (
-  <>
-    <View style={styles.premiumSectionHeader}>
-      <View style={styles.premiumAccent} />
-      <Ionicons
-        name="car-sport-outline"
-        size={18}
-        color="#0EA5E9"
-        style={{ marginRight: 6 }}
-      />
-      <Text style={styles.premiumSectionTitle}>
-        My Vehicles
-      </Text>
-    </View>
-
-    <View style={{ marginBottom: 20 }}>
-      {myVehicles.map((vehicle) => (
-        <View key={vehicle.id} style={styles.premiumCard}>
-          
-          {/* Top Row */}
-          <View style={styles.cardTopRow}>
-            <View style={styles.carIconBox}>
-              <FontAwesome5 name="motorcycle" size={18} color="#0EA5E9" />
-            </View>
-
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={styles.premiumCarName}>
-                {vehicle.brand} {vehicle.model}
-              </Text>
-              <Text style={styles.premiumService}>
-                {vehicle.vehicleType} • {vehicle.vehicleNumber}
-              </Text>
-            </View>
-
-            <View
-              style={[
-                styles.premiumStatus,
-                { backgroundColor: "#F59E0B" },
-              ]}
-            >
-              <Text style={styles.premiumStatusText}>
-                {vehicle.addVehicleStatus}
-              </Text>
-            </View>
-          </View>
-
-          {/* Divider */}
-          <View style={styles.cardDivider} />
-
-          {/* Bottom Row */}
-          <View style={styles.cardBottomRow}>
-            <Text style={styles.bookingIdText}>
-              ID: {vehicle.addVehicleId}
-            </Text>
-
-            <Text style={styles.viewDetailsText}>
-              {vehicle.serviceStatus}
+      {myVehicles.length > 0 && (
+        <>
+          <View style={styles.premiumSectionHeader}>
+            <View style={styles.premiumAccent} />
+            <Ionicons
+              name="car-sport-outline"
+              size={18}
+              color="#0EA5E9"
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.premiumSectionTitle}>
+              My Vehicles
             </Text>
           </View>
-        </View>
-      ))}
-    </View>
-  </>
-)}
+
+          <View style={{ marginBottom: 20 }}>
+            {myVehicles.map((vehicle) => (
+              <TouchableOpacity
+                key={vehicle.id}
+                style={styles.premiumCard}
+                activeOpacity={0.85}
+                onPress={() => setSelectedVehicle(vehicle)}
+              >
+
+                {/* Top Row */}
+                <View style={styles.cardTopRow}>
+                  <View style={styles.carIconBox}>
+                    <FontAwesome5 name="motorcycle" size={18} color="#0EA5E9" />
+                  </View>
+
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={styles.premiumCarName}>
+                      {vehicle.brand} {vehicle.model}
+                    </Text>
+                    <Text style={styles.premiumService}>
+                      {vehicle.vehicleType} • {vehicle.vehicleNumber}
+                    </Text>
+                  </View>
+
+                  <View
+                    style={[
+                      styles.premiumStatus,
+                      { backgroundColor: "#F59E0B" },
+                    ]}
+                  >
+                    <Text style={styles.premiumStatusText}>
+                      {vehicle.addVehicleStatus}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Divider */}
+                <View style={styles.cardDivider} />
+
+                {/* Bottom Row */}
+                <View style={styles.cardBottomRow}>
+                  <Text style={styles.bookingIdText}>
+                    ID: {vehicle.addVehicleId}
+                  </Text>
+
+                  <Text style={styles.viewDetailsText}>
+                    {vehicle.serviceStatus}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+          {selectedVehicle && (
+            <VehicleDetailModal
+              vehicle={selectedVehicle}
+              onClose={() => setSelectedVehicle(null)}
+            />
+          )}
+        </>
+      )}
 
       {/* ACTIVE BOOKING */}
       {allBookings
@@ -832,6 +846,224 @@ function BookingDetailModal({ booking, onClose }) {
             >
               <Text style={styles.closeModalButtonText}>Close</Text>
             </TouchableOpacity>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function VehicleDetailModal({ vehicle, onClose }) {
+  const normalizedStatus =
+    STATUS_NORMALIZER[vehicle.serviceStatus] || vehicle.serviceStatus;
+  return (
+    <Modal visible transparent animationType="slide">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalCard}>
+          <ScrollView showsVerticalScrollIndicator={false}>
+
+            {/* Close */}
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+            >
+              <Text style={{ color: "#fff", fontSize: 18 }}>✕</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.modalTitle}>
+              Vehicle Details
+            </Text>
+
+            {/* Add Vehicle ID */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Vehicle ID</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.addVehicleId}
+              </Text>
+            </View>
+
+            {/* Name */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Customer Name</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.name}
+              </Text>
+            </View>
+
+            {/* Phone */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Phone</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.phone}
+              </Text>
+            </View>
+
+            {/* Email */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Email</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.email}
+              </Text>
+            </View>
+
+            {/* Brand */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Brand</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.brand}
+              </Text>
+            </View>
+
+            {/* Model */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Model</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.model}
+              </Text>
+            </View>
+
+            {/* Vehicle Type */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Vehicle Type</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.vehicleType}
+              </Text>
+            </View>
+
+            {/* Vehicle Number */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Vehicle Number</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.vehicleNumber}
+              </Text>
+            </View>
+
+            {/* Issue */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Issue</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.issue}
+              </Text>
+            </View>
+
+            {/* Address */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Address</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.address}
+              </Text>
+            </View>
+
+            {/* Created Date */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Created Date</Text>
+              <Text style={styles.detailValue}>
+                {vehicle.createdDate} • {vehicle.createdTime}
+              </Text>
+            </View>
+
+            {/* Status */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Vehicle Status</Text>
+              <Text style={[styles.detailValue, { color: "#F59E0B" }]}>
+                {vehicle.addVehicleStatus}
+              </Text>
+            </View>
+
+            {/* Service Status */}
+            <View style={styles.detailSection}>
+              <Text style={styles.detailLabel}>Service Status</Text>
+              <Text style={[styles.detailValue, { color: "#38bdf8" }]}>
+                {vehicle.serviceStatus}
+              </Text>
+            </View>
+
+            {/* SERVICE TRACKER */}
+            <View style={styles.trackerMainContainer}>
+
+              {/* Line + Circles */}
+              <View style={styles.lineContainer}>
+                {STATUS_FLOW.map((status, index) => {
+                  const currentIndex = STATUS_FLOW.indexOf(normalizedStatus);
+                  const isCompleted = index <= currentIndex;
+
+                  return (
+                    <View
+                      key={status}
+                      style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+                    >
+                      <View
+                        style={[
+                          styles.trackerCircle,
+                          isCompleted && styles.trackerActiveCircle,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.trackerCircleText,
+                            isCompleted && styles.trackerActiveText,
+                          ]}
+                        >
+                          {index + 1}
+                        </Text>
+                      </View>
+
+                      {index !== STATUS_FLOW.length - 1 && (
+                        <View
+                          style={[
+                            styles.trackerLine,
+                            index < currentIndex && styles.trackerActiveLine,
+                          ]}
+                        />
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
+
+              {/* CURRENT STATUS */}
+              <View style={styles.currentStatusContainer}>
+                <Text style={styles.currentStatusLabel}>
+                  Current Status
+                </Text>
+
+                <Text style={styles.currentStatusValue}>
+                  {STATUS_LABELS[normalizedStatus]}
+                </Text>
+              </View>
+
+              {/* LEGEND */}
+              <View style={styles.statusLegendContainer}>
+                {STATUS_FLOW.map((status, index) => {
+                  const currentIndex = STATUS_FLOW.indexOf(normalizedStatus);
+                  const isCurrent = index === currentIndex;
+
+                  return (
+                    <View key={status} style={styles.legendRow}>
+                      <Text
+                        style={[
+                          styles.statusLegendText,
+                          isCurrent && styles.statusLegendActiveText,
+                        ]}
+                      >
+                        {index + 1} - {STATUS_LABELS[status]}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+
+            </View>
+
+            <TouchableOpacity
+              style={styles.closeModalButton}
+              onPress={onClose}
+            >
+              <Text style={styles.closeModalButtonText}>
+                Close
+              </Text>
+            </TouchableOpacity>
+
           </ScrollView>
         </View>
       </View>
