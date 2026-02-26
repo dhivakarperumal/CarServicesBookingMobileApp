@@ -55,6 +55,7 @@ export default function ManageAddress() {
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   const user = auth.currentUser;
 
@@ -70,6 +71,8 @@ export default function ManageAddress() {
     }));
 
     setAddresses(list);
+
+    setShowForm(list.length === 0);
   };
 
   useEffect(() => {
@@ -246,6 +249,7 @@ export default function ManageAddress() {
   const handleEdit = (addr: any) => {
     setForm(addr);
     setEditId(addr.id);
+    setShowForm(true);
   };
 
   return (
@@ -291,103 +295,136 @@ export default function ManageAddress() {
         </>
       )}
 
-      {/* ===== FORM ===== */}
-      <TextInput
-        placeholder="Full Name"
-        placeholderTextColor="#9CA3AF"
-        style={styles.input}
-        value={form.fullName}
-        onChangeText={(v) => {
-          const cleaned = v.replace(/[^a-zA-Z\s]/g, "");
-          setForm({ ...form, fullName: cleaned });
-        }}
-      />
-      <TextInput
-        placeholder="Phone"
-        placeholderTextColor="#9CA3AF"
-        style={styles.input}
-        value={form.phone}
-        keyboardType="numeric"
-        maxLength={10}
-        onChangeText={(v) => {
-          const cleaned = v.replace(/[^0-9]/g, "");
-          if (cleaned.length <= 10) {
-            setForm({ ...form, phone: cleaned });
-          }
-        }}
-      />
-
-      <TextInput
-        placeholder="Email"
-        placeholderTextColor="#9CA3AF"
-        style={styles.input}
-        value={form.email}
-        onChangeText={(v) => setForm({ ...form, email: v })}
-        keyboardType="email-address"
-      />
-
-      <TextInput
-        placeholder="Street"
-        placeholderTextColor="#9CA3AF"
-        style={styles.input}
-        value={form.street}
-        onChangeText={(v) => setForm({ ...form, street: v })}
-      />
-
-      <TextInput
-        placeholder="City"
-        placeholderTextColor="#9CA3AF"
-        style={styles.input}
-        value={form.city}
-        onChangeText={(v) => setForm({ ...form, city: v })}
-      />
-
-      <TextInput
-        placeholder="Pin Code"
-        placeholderTextColor="#9CA3AF"
-        style={styles.input}
-        value={form.pinCode}
-        keyboardType="numeric"
-        maxLength={6}
-        onChangeText={(v) => {
-          const cleaned = v.replace(/[^0-9]/g, "");
-          if (cleaned.length <= 6) {
-            setForm({ ...form, pinCode: cleaned });
-          }
-        }}
-      />
-
-      <Picker
-        selectedValue={form.state}
-        onValueChange={(v) => setForm({ ...form, state: v })}
-        style={styles.input}
-      >
-        <Picker.Item label="Select State" value="" />
-        {INDIAN_STATES.map((s) => (
-          <Picker.Item key={s} label={s} value={s} />
-        ))}
-      </Picker>
-
-      <TouchableOpacity
-        onPress={handleSave}
-        disabled={loading}
-        activeOpacity={0.8}
-      >
-        <LinearGradient
-          colors={["#0EA5E9", "#2563EB"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradientSaveBtn}
+      {addresses.length > 0 && !showForm && (
+        <TouchableOpacity
+          onPress={() => setShowForm(true)}
+          activeOpacity={0.8}
+          style={{ marginVertical: 15 }}
         >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.gradientSaveText}>
-              {editId ? "Update Address" : "Add Address"}
-            </Text>
-          )}
-        </LinearGradient>
-      </TouchableOpacity>
+          <LinearGradient
+            colors={["#0EA5E9", "#2563EB"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientSaveBtn}
+          >
+            <Text style={styles.gradientSaveText}>+ Add New Address</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      )}
+
+      {showForm && (
+        <>
+          <View style={{ alignItems: "flex-end", marginBottom: 10 }}>
+            <TouchableOpacity
+              onPress={() => {
+                setShowForm(false);
+                setEditId(null);
+                setForm(initialForm);
+              }}
+              style={styles.hideBtn}
+            >
+              <Text style={styles.hideText}>Hide Form</Text>
+            </TouchableOpacity>
+          </View>
+          {/* ===== FORM ===== */}
+          <TextInput
+            placeholder="Full Name"
+            placeholderTextColor="#9CA3AF"
+            style={styles.input}
+            value={form.fullName}
+            onChangeText={(v) => {
+              const cleaned = v.replace(/[^a-zA-Z\s]/g, "");
+              setForm({ ...form, fullName: cleaned });
+            }}
+          />
+          <TextInput
+            placeholder="Phone"
+            placeholderTextColor="#9CA3AF"
+            style={styles.input}
+            value={form.phone}
+            keyboardType="numeric"
+            maxLength={10}
+            onChangeText={(v) => {
+              const cleaned = v.replace(/[^0-9]/g, "");
+              if (cleaned.length <= 10) {
+                setForm({ ...form, phone: cleaned });
+              }
+            }}
+          />
+
+          <TextInput
+            placeholder="Email"
+            placeholderTextColor="#9CA3AF"
+            style={styles.input}
+            value={form.email}
+            onChangeText={(v) => setForm({ ...form, email: v })}
+            keyboardType="email-address"
+          />
+
+          <TextInput
+            placeholder="Street"
+            placeholderTextColor="#9CA3AF"
+            style={styles.input}
+            value={form.street}
+            onChangeText={(v) => setForm({ ...form, street: v })}
+          />
+
+          <TextInput
+            placeholder="City"
+            placeholderTextColor="#9CA3AF"
+            style={styles.input}
+            value={form.city}
+            onChangeText={(v) => setForm({ ...form, city: v })}
+          />
+
+          <TextInput
+            placeholder="Pin Code"
+            placeholderTextColor="#9CA3AF"
+            style={styles.input}
+            value={form.pinCode}
+            keyboardType="numeric"
+            maxLength={6}
+            onChangeText={(v) => {
+              const cleaned = v.replace(/[^0-9]/g, "");
+              if (cleaned.length <= 6) {
+                setForm({ ...form, pinCode: cleaned });
+              }
+            }}
+          />
+
+          <Picker
+            selectedValue={form.state}
+            onValueChange={(v) => setForm({ ...form, state: v })}
+            style={styles.input}
+          >
+            <Picker.Item label="Select State" value="" />
+            {INDIAN_STATES.map((s) => (
+              <Picker.Item key={s} label={s} value={s} />
+            ))}
+          </Picker>
+
+          <TouchableOpacity
+            onPress={handleSave}
+            disabled={loading}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={["#0EA5E9", "#2563EB"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientSaveBtn}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.gradientSaveText}>
+                  {editId ? "Update Address" : "Add Address"}
+                </Text>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        </>
+      )}
       <Modal transparent visible={showDeleteModal} animationType="fade">
         <View style={modalStyles.overlay}>
           <View style={modalStyles.container}>
@@ -428,6 +465,19 @@ const styles = StyleSheet.create({
   name: { color: "#fff", fontWeight: "700" },
   text: { color: "#94a3b8", fontSize: 13, marginTop: 2 },
   row: { flexDirection: "row", marginTop: 8 },
+
+  hideBtn: {
+    backgroundColor: "#334155",
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+  },
+
+  hideText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
+  },
 
   editBtn: {
     backgroundColor: "#0ea5e9",
