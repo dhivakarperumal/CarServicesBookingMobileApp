@@ -4,13 +4,13 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
-    Image,
-    Modal,
-    Pressable,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { auth, db } from "../firebase";
@@ -24,48 +24,67 @@ export default function MobileNavbar() {
 
   const [cartCount, setCartCount] = useState(0);
 
+  // notification
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+
+
   /* ================= AUTH ================= */
   useEffect(() => {
     let unsubCart = null;
+    let unsubBookings = null;
 
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         setUserData(null);
         setCartCount(0);
+        setNotifications([]);
         return;
       }
 
-      // get user data
+      // Get user data
       const snap = await getDoc(doc(db, "users", user.uid));
       if (snap.exists()) {
-        const data = snap.data();
-        setUserData(data);
-
-        // 🔥 previously we used to auto‑redirect here based on role.
-      //    that made sense during login, but Header is mounted on every
-      //    public screen (tabs/app) so it would kick an admin back to the
-      //    admin panel whenever they tried to visit the normal homepage.
-      //    the login page already handles role redirects, so drop this
-      //    logic entirely to let admins stay on (tabs) if they choose.
-      //
-      // if (data.role === "admin") {
-      //   router.replace("/(adminTabs)/home");
-      // } else if (data.role === "mechanic") {
-      //   router.replace("/(EmployeesDash)/dashboard");
-      // }
+        setUserData(snap.data());
       }
 
-      // 🔥 LISTEN TO CART
+      // 🔥 CART LISTENER
       const cartRef = collection(db, "users", user.uid, "cart");
-
       unsubCart = onSnapshot(cartRef, (snapshot) => {
-        setCartCount(snapshot.size); // number of products
+        setCartCount(snapshot.size);
+      });
+
+      // 🔔 BOOKINGS LISTENER
+      const bookingRef = collection(db, "bookings");
+      unsubBookings = onSnapshot(bookingRef, (snapshot) => {
+        const updated = [];
+
+        snapshot.forEach((docItem) => {
+          const data = docItem.data();
+
+          if (
+            data.uid === user.uid &&
+            data.status &&
+            data.status !== "Pending"
+          ) {
+            updated.push({
+              id: docItem.id,
+              bookingId: data.bookingId,
+              status: data.status,
+              trackNumber: data.trackNumber,
+              createdAt: data.createdAt,
+            });
+          }
+        });
+
+        setNotifications(updated);
       });
     });
 
     return () => {
       unsubAuth();
       if (unsubCart) unsubCart();
+      if (unsubBookings) unsubBookings();
     };
   }, []);
 
@@ -76,8 +95,10 @@ export default function MobileNavbar() {
     router.replace("/(auth)/login");
   };
 
+
   /* ================= RENDER ================= */
   return (
+
     <>
       {/* ================= HEADER ================= */}
       <SafeAreaView edges={["top"]} style={styles.safeArea}>
@@ -102,6 +123,22 @@ export default function MobileNavbar() {
                 <View style={styles.cartBadge}>
                   <Text style={styles.cartBadgeText}>
                     {cartCount}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* 🔔 NOTIFICATION */}
+            <TouchableOpacity
+              onPress={() => setNotificationOpen(true)}
+              style={styles.iconButton}
+            >
+              <Ionicons name="notifications-outline" size={22} color="#0EA5E9" />
+
+              {notifications.length > 0 && (
+                <View style={styles.cartBadge}>
+                  <Text style={styles.cartBadgeText}>
+                    {notifications.length}
                   </Text>
                 </View>
               )}
@@ -196,6 +233,40 @@ export default function MobileNavbar() {
         </View>
       </Modal>
 
+      {/* ================= NOTIFICATION DROPDOWN ================= */}
+      <Modal visible={notificationOpen} transparent animationType="fade">
+        <Pressable
+          style={styles.overlay}
+          onPress={() => setNotificationOpen(false)}
+        />
+
+        <View style={styles.avatarMenu}>
+          {notifications.length === 0 ? (
+            <View style={styles.menuItem}>
+              <Text style={styles.menuText}>No Notifications</Text>
+            </View>
+          ) : (
+            notifications.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.menuItem}
+                onPress={() => {
+                  setNotificationOpen(false);
+                  router.push("/(tabs)/profile");
+                }}
+              >
+                <Text style={styles.menuText}>
+                  Booking {item.bookingId}
+                </Text>
+                <Text style={{ color: "#22C55E", fontSize: 12 }}>
+                  Status: {item.status}
+                </Text>
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
+      </Modal>
+
       {/* ================= DRAWER ================= */}
       {/* <Modal visible={drawerOpen} transparent animationType="slide">
         <Pressable
@@ -225,6 +296,7 @@ export default function MobileNavbar() {
           ))}
         </View>
       </Modal> */}
+
     </>
   );
 }
