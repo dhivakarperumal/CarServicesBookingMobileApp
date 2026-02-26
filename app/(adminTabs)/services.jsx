@@ -376,7 +376,7 @@
 //                     setModalVisible(true);
 //                   }}
 //                   style={{
-//                     backgroundColor: "#2563eb", 
+//                     backgroundColor: "#2563eb",
 //                     paddingVertical: 12,
 //                     borderRadius: 14,
 //                     shadowColor: "#38bdf8",
@@ -411,7 +411,7 @@
 //             position: "absolute",
 //             bottom: 60,
 //             right: 20,
-//             backgroundColor: "#2563eb",   
+//             backgroundColor: "#2563eb",
 //             width: 56,
 //             height: 56,
 //             borderRadius: 28,
@@ -531,7 +531,6 @@
 //   );
 // }
 
-
 import { useEffect, useMemo, useState } from "react";
 import {
   View,
@@ -552,7 +551,7 @@ import {
   serverTimestamp,
   addDoc,
   arrayUnion,
-  runTransaction
+  runTransaction,
 } from "firebase/firestore";
 import { db } from "../../firebase";
 import { Picker } from "@react-native-picker/picker";
@@ -560,6 +559,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 const BOOKING_STATUS = [
+  "Approved",
+  "Processing",
+  "Waiting for Spare",
+  "Service Going on",
+  "Bill Pending",
+  "Bill Completed",
+  "Service Completed",
+];
+
+const STATUS_STEPS = [
   "Approved",
   "Processing",
   "Waiting for Spare",
@@ -598,7 +607,6 @@ export default function Services() {
     return () => unsub();
   }, []);
 
-
   /* 🔥 EMPLOYEES */
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "employees"), (snap) => {
@@ -628,25 +636,33 @@ export default function Services() {
 
   /* 🔹 MAIN TAB FILTER */
   const bookedServices = searchedServices.filter((s) => !s.addVehicle);
-  const addVehicleServices = searchedServices.filter((s) => s.addVehicle === true);
+  const addVehicleServices = searchedServices.filter(
+    (s) => s.addVehicle === true,
+  );
 
   const currentMainList =
     mainTab === "booked" ? bookedServices : addVehicleServices;
 
   /* 🔹 SUB TAB FILTER */
   const assignedServices = currentMainList.filter((s) => s.assignedEmployeeId);
-  const unassignedServices = currentMainList.filter((s) => !s.assignedEmployeeId);
+  const unassignedServices = currentMainList.filter(
+    (s) => !s.assignedEmployeeId,
+  );
 
-  const listData = subTab === "assigned" ? assignedServices : unassignedServices;
+  const listData =
+    subTab === "assigned" ? assignedServices : unassignedServices;
 
   /* 👨‍🔧 AVAILABLE EMPLOYEES */
   const availableEmployees = employees.filter((e) => e.workStatus !== "busy");
 
-
   // const bookedCount = bookedServices.length;
   // const addVehicleCount = addVehicleServices.length;
-  const assignedCount = currentMainList.filter((s) => s.assignedEmployeeId).length;
-  const unassignedCount = currentMainList.filter((s) => !s.assignedEmployeeId).length;
+  const assignedCount = currentMainList.filter(
+    (s) => s.assignedEmployeeId,
+  ).length;
+  const unassignedCount = currentMainList.filter(
+    (s) => !s.assignedEmployeeId,
+  ).length;
 
   /* 🎨 STATUS COLOR */
   const getStatusColor = (status) => {
@@ -690,286 +706,382 @@ export default function Services() {
     }
   };
 
-
   const generateServiceId = async () => {
-  const counterRef = doc(db, "counters", "serviceCounter");
+    const counterRef = doc(db, "counters", "serviceCounter");
 
-  const newId = await runTransaction(db, async (transaction) => {
-    const counterDoc = await transaction.get(counterRef);
+    const newId = await runTransaction(db, async (transaction) => {
+      const counterDoc = await transaction.get(counterRef);
 
-    let newCount = 1;
+      let newCount = 1;
 
-    if (counterDoc.exists()) {
-      newCount = (counterDoc.data().current || 0) + 1;
-    }
+      if (counterDoc.exists()) {
+        newCount = (counterDoc.data().current || 0) + 1;
+      }
 
-    transaction.set(counterRef, { current: newCount }, { merge: true });
+      transaction.set(counterRef, { current: newCount }, { merge: true });
 
-    return `SER${String(newCount).padStart(3, "0")}`;
-  });
+      return `SER${String(newCount).padStart(3, "0")}`;
+    });
 
-  return newId;
-};
+    return newId;
+  };
 
   /* 🧑‍🔧 ASSIGN EMPLOYEE */
-const assignEmployee = async () => {
-  if (!selectedBooking || !selectedEmployeeId || assigning) return;
+  const assignEmployee = async () => {
+    if (!selectedBooking || !selectedEmployeeId || assigning) return;
 
-  if (selectedBooking.assignedEmployeeId) {
-    Alert.alert("Already Assigned", "This service already has a mechanic.");
-    return;
-  }
-
-  try {
-    setAssigning(true);
-
-    const bookingDocId = selectedBooking.id;
-
-    /* 🔥 GENERATE SERVICE ID */
-    const serviceId = await generateServiceId();
-
-    /* BOOKING FLAG (your rule) */
-    const bookingId = selectedBooking.bookingId || "";
-    const hasBookingId = false;
-
-    /* VEHICLE */
-    const vehicleId = selectedBooking.addVehicleId || "";
-    const hasVehicle = vehicleId ? true : false;
-
-    const customerUid = selectedBooking.uid || "";
-
-    const selectedEmployee = employees.find(
-      (emp) => emp.id === selectedEmployeeId
-    );
-
-    if (!selectedEmployee) {
-      Alert.alert("Error", "Employee data not found");
+    if (selectedBooking.assignedEmployeeId) {
+      Alert.alert("Already Assigned", "This service already has a mechanic.");
       return;
     }
 
-    if (selectedEmployee.workStatus === "busy") {
-      Alert.alert("Busy", "This mechanic is already working on another job.");
-      return;
+    try {
+      setAssigning(true);
+
+      const bookingDocId = selectedBooking.id;
+
+      /* 🔥 GENERATE SERVICE ID */
+      const serviceId = await generateServiceId();
+
+      /* BOOKING FLAG (your rule) */
+      const bookingId = selectedBooking.bookingId || "";
+      const hasBookingId = false;
+
+      /* VEHICLE */
+      const vehicleId = selectedBooking.addVehicleId || "";
+      const hasVehicle = vehicleId ? true : false;
+
+      const customerUid = selectedBooking.uid || "";
+
+      const selectedEmployee = employees.find(
+        (emp) => emp.id === selectedEmployeeId,
+      );
+
+      if (!selectedEmployee) {
+        Alert.alert("Error", "Employee data not found");
+        return;
+      }
+
+      if (selectedEmployee.workStatus === "busy") {
+        Alert.alert("Busy", "This mechanic is already working on another job.");
+        return;
+      }
+
+      const employeeAuthUid = selectedEmployee.authUid || "";
+
+      /* 1️⃣ UPDATE allServices */
+      await updateDoc(doc(db, "allServices", bookingDocId), {
+        assigned: true,
+
+        serviceId, // ✅ SER001
+        bookingId,
+        hasBookingId,
+
+        addVehicleId: vehicleId,
+        addVehicle: hasVehicle,
+
+        assignedEmployeeId: selectedEmployeeId,
+        assignedEmployeeAuthUid: employeeAuthUid,
+        assignedEmployeeName: selectedEmployee.name || "",
+
+        serviceStatus: "Processing",
+        assignedAt: serverTimestamp(),
+      });
+
+      /* 2️⃣ UPDATE employees */
+      await updateDoc(doc(db, "employees", selectedEmployeeId), {
+        assigned: true,
+        workStatus: "busy",
+        currentServiceId: bookingDocId,
+        currentServiceCode: serviceId, // ✅ SER001
+        assignedBookingIds: arrayUnion(bookingDocId),
+      });
+
+      /* 3️⃣ CREATE assignedServices */
+      await addDoc(collection(db, "assignedServices"), {
+        assigned: true,
+
+        bookingDocId,
+        serviceId, // ✅ SER001
+        bookingId,
+        hasBookingId,
+
+        addVehicleId: vehicleId,
+        addVehicle: hasVehicle,
+
+        customerUid,
+
+        employeeDocId: selectedEmployeeId,
+        employeeAuthUid,
+        employeeName: selectedEmployee.name || "",
+
+        carBrand: selectedBooking.brand || "",
+        carModel: selectedBooking.model || "",
+        carNumber: selectedBooking.vehicleNumber || "",
+        carIssue: selectedBooking.issue || "",
+
+        customerName: selectedBooking.name || "",
+        customerPhone: selectedBooking.phone || "",
+        customerEmail: selectedBooking.email || "",
+
+        serviceStatus: "Assigned",
+
+        assignedAt: serverTimestamp(),
+        startedAt: null,
+        completedAt: null,
+      });
+
+      Alert.alert("Success", `Mechanic assigned → ${serviceId}`);
+
+      setModalVisible(false);
+      setSelectedBooking(null);
+      setSelectedEmployeeId(null);
+    } catch (error) {
+      console.log("Assign Error:", error);
+      Alert.alert("Error", "Assignment failed");
+    } finally {
+      setAssigning(false);
     }
-
-    const employeeAuthUid = selectedEmployee.authUid || "";
-
-    /* 1️⃣ UPDATE allServices */
-    await updateDoc(doc(db, "allServices", bookingDocId), {
-      assigned: true,
-
-      serviceId, // ✅ SER001
-      bookingId,
-      hasBookingId,
-
-      addVehicleId: vehicleId,
-      addVehicle: hasVehicle,
-
-      assignedEmployeeId: selectedEmployeeId,
-      assignedEmployeeAuthUid: employeeAuthUid,
-      assignedEmployeeName: selectedEmployee.name || "",
-
-      serviceStatus: "Processing",
-      assignedAt: serverTimestamp(),
-    });
-
-    /* 2️⃣ UPDATE employees */
-    await updateDoc(doc(db, "employees", selectedEmployeeId), {
-      assigned: true,
-      workStatus: "busy",
-      currentServiceId: bookingDocId,
-      currentServiceCode: serviceId, // ✅ SER001
-      assignedBookingIds: arrayUnion(bookingDocId),
-    });
-
-    /* 3️⃣ CREATE assignedServices */
-    await addDoc(collection(db, "assignedServices"), {
-      assigned: true,
-
-      bookingDocId,
-      serviceId, // ✅ SER001
-      bookingId,
-      hasBookingId,
-
-      addVehicleId: vehicleId,
-      addVehicle: hasVehicle,
-
-      customerUid,
-
-      employeeDocId: selectedEmployeeId,
-      employeeAuthUid,
-      employeeName: selectedEmployee.name || "",
-
-      carBrand: selectedBooking.brand || "",
-      carModel: selectedBooking.model || "",
-      carNumber: selectedBooking.vehicleNumber || "",
-      carIssue: selectedBooking.issue || "",
-
-      customerName: selectedBooking.name || "",
-      customerPhone: selectedBooking.phone || "",
-      customerEmail: selectedBooking.email || "",
-
-      serviceStatus: "Assigned",
-
-      assignedAt: serverTimestamp(),
-      startedAt: null,
-      completedAt: null,
-    });
-
-    Alert.alert("Success", `Mechanic assigned → ${serviceId}`);
-
-    setModalVisible(false);
-    setSelectedBooking(null);
-    setSelectedEmployeeId(null);
-  } catch (error) {
-    console.log("Assign Error:", error);
-    Alert.alert("Error", "Assignment failed");
-  } finally {
-    setAssigning(false);
-  }
-};
+  };
 
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 
-  const renderCard = ({ item }) => (
-    <View
-      style={{
-        backgroundColor: "#020617",
-        padding: 18,
-        borderRadius: 20,
-        marginBottom: 14,
-        borderWidth: 1,
-        borderColor: "rgba(56,189,248,0.25)",
-        shadowColor: "#38bdf8",
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
-        elevation: 6,
-        position: "relative",
-      }}
-    >
-      {/* 🔹 STATUS BADGE */}
+  const renderCard = ({ item }) => {
+    const currentStepIndex = STATUS_STEPS.indexOf(
+      item.serviceStatus || "Approved",
+    );
+
+    return (
       <View
         style={{
-          position: "absolute",
-          top: 12,
-          right: 12,
-          backgroundColor: getStatusColor(item.serviceStatus),
-          paddingHorizontal: 10,
-          paddingVertical: 4,
-          borderRadius: 12,
+          backgroundColor: "#020617",
+          padding: 18,
+          borderRadius: 20,
+          marginBottom: 14,
+          borderWidth: 1,
+          borderColor: "rgba(56,189,248,0.25)",
+          shadowColor: "#38bdf8",
+          shadowOpacity: 0.15,
+          shadowRadius: 10,
+          elevation: 6,
+          position: "relative",
         }}
       >
-        <Text style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
-          {item.serviceStatus || "Approved"}
-        </Text>
-      </View>
-
-      {/* 🔹 ID */}
-      <Text style={{ color: "#38bdf8", fontWeight: "900", fontSize: 15 }}>
-        {item.bookingId}
-      </Text>
-
-      {/* 🔹 CUSTOMER */}
-      <Text style={{ color: "#fff", marginTop: 10, fontSize: 16, fontWeight: "700" }}>
-        {item.name}
-      </Text>
-
-      <Text style={{ color: "#fff", fontSize: 14 }}>{item.phone}</Text>
-
-      {/* 🔹 VEHICLE */}
-      <Text style={{ color: "#4ade80", marginTop: 3, fontWeight: "700", fontSize: 16 }}>
-        {item.vehicleNumber}
-      </Text>
-
-      <Text style={{ color: "#fff" }}>
-        {item.brand} {item.model}
-      </Text>
-
-      {/* 🔹 ISSUE */}
-      {item.issue && (
-        <Text
+        {/* 🔹 STATUS BADGE */}
+        <View
           style={{
-            color: "#38bdf8",
-            marginTop: 6,
-            fontSize: 17,
-            fontWeight: "600",
+            position: "absolute",
+            top: 12,
+            right: 12,
+            backgroundColor: getStatusColor(item.serviceStatus),
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+            borderRadius: 12,
           }}
         >
-          Issue: {item.issue}
-        </Text>
-      )}
+          <Text style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
+            {item.serviceStatus || "Approved"}
+          </Text>
+        </View>
 
-      {/* 🔹 ADDRESS */}
-      {item.address && (
-        <Text style={{ color: "#fff", marginTop: 4 , fontSize: 16 }}>
-          {item.address}
+        {/* 🔹 ID */}
+        <Text style={{ color: "#38bdf8", fontWeight: "900", fontSize: 15 }}>
+          {item.bookingId}
         </Text>
-      )}
 
-      {/* 🔹 ASSIGNED EMPLOYEE */}
-      {item.assignedEmployeeName && (
+        {/* 🔹 CUSTOMER */}
         <Text
           style={{
-            color: "#38bdf8",
-            marginTop: 8,
-            fontSize: 14,
+            color: "#fff",
+            marginTop: 10,
+            fontSize: 16,
             fontWeight: "700",
           }}
         >
-          {item.assignedEmployeeName}
+          {item.name}
         </Text>
-      )}
 
-      {/* 🔹 STATUS PICKER */}
-      {item.assignedEmployeeId && (
-        <View
+        <Text style={{ color: "#fff", fontSize: 14 }}>{item.phone}</Text>
+
+        {/* 🔹 VEHICLE */}
+        <Text
           style={{
-            marginTop: 10,
-            borderWidth: 1,
-            borderColor: "#38bdf8",
-            borderRadius: 10,
-            overflow: "hidden",
+            color: "#4ade80",
+            marginTop: 3,
+            fontWeight: "700",
+            fontSize: 16,
           }}
         >
-          <Picker
-            selectedValue={item.serviceStatus || "Approved"}
-            onValueChange={(v) => handleStatusChange(item, v)}
-            dropdownIconColor="#38bdf8"
-            style={{ color: "#fff" }}
+          {item.vehicleNumber}
+        </Text>
+
+        <Text style={{ color: "#fff" }}>
+          {item.brand} {item.model}
+        </Text>
+
+        {/* 🔹 ISSUE */}
+        {item.issue && (
+          <Text
+            style={{
+              color: "#38bdf8",
+              marginTop: 6,
+              fontSize: 17,
+              fontWeight: "600",
+            }}
           >
-            {BOOKING_STATUS.map((s) => (
-              <Picker.Item key={s} label={s} value={s} />
-            ))}
-          </Picker>
-        </View>
-      )}
-
-      {/* 🔹 ASSIGN BUTTON */}
-      {!item.assignedEmployeeId && (
-        <TouchableOpacity
-          onPress={() => {
-            setSelectedBooking(item);
-            setModalVisible(true);
-          }}
-          style={{
-            backgroundColor: "#2563eb",
-            paddingVertical: 12,
-            borderRadius: 14,
-            marginTop: 12,
-            alignItems: "center",
-            shadowColor: "#38bdf8",
-            shadowOpacity: 0.4,
-            shadowRadius: 8,
-            elevation: 4,
-          }}
-        >
-          <Text style={{ color: "#fff", fontWeight: "900", fontSize: 14 }}>
-            Assign Mechanic
+            Issue: {item.issue}
           </Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
+        )}
+
+        {/* 🔹 ADDRESS */}
+        {item.address && (
+          <Text style={{ color: "#fff", marginTop: 4, fontSize: 16 }}>
+            {item.address}
+          </Text>
+        )}
+
+        {/* 🔹 ASSIGNED EMPLOYEE */}
+        {item.assignedEmployeeName && (
+          <Text
+            style={{
+              color: "#38bdf8",
+              marginTop: 8,
+              fontSize: 14,
+              fontWeight: "700",
+            }}
+          >
+            {item.assignedEmployeeName}
+          </Text>
+        )}
+
+        <View style={{ marginTop: 18 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            {STATUS_STEPS.map((step, index) => {
+              const active = index <= currentStepIndex;
+              const isLast = index === STATUS_STEPS.length - 1;
+
+              return (
+                <View
+                  key={step}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    flex: 1,
+                  }}
+                >
+                  {/* 🔵 Circle */}
+                  <View
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 14,
+                      backgroundColor: active ? "#38bdf8" : "#1e293b",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderWidth: 2,
+                      borderColor: active ? "#38bdf8" : "#334155",
+                      zIndex: 2,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: active ? "#020617" : "#64748b",
+                        fontSize: 11,
+                        fontWeight: "800",
+                      }}
+                    >
+                      {index + 1}
+                    </Text>
+                  </View>
+
+                  {/* 🔹 Line */}
+                  {!isLast && (
+                    <View
+                      style={{
+                        flex: 1,
+                        height: 3,
+                        backgroundColor:
+                          index < currentStepIndex ? "#38bdf8" : "#1e293b",
+                        marginHorizontal: 4,
+                      }}
+                    />
+                  )}
+                </View>
+              );
+            })}
+          </View>
+
+          {/* Status Label */}
+          <Text
+            style={{
+              marginTop: 10,
+              textAlign: "center",
+              color: "#38bdf8",
+              fontWeight: "700",
+              fontSize: 13,
+            }}
+          >
+            {item.serviceStatus || "Approved"}
+          </Text>
+        </View>
+
+        {/* 🔹 STATUS PICKER */}
+        {item.assignedEmployeeId && (
+          <View
+            style={{
+              marginTop: 10,
+              borderWidth: 1,
+              borderColor: "#38bdf8",
+              borderRadius: 10,
+              overflow: "hidden",
+            }}
+          >
+            <Picker
+              selectedValue={item.serviceStatus || "Approved"}
+              onValueChange={(v) => handleStatusChange(item, v)}
+              dropdownIconColor="#38bdf8"
+              style={{ color: "#fff" }}
+            >
+              {BOOKING_STATUS.map((s) => (
+                <Picker.Item key={s} label={s} value={s} />
+              ))}
+            </Picker>
+          </View>
+        )}
+
+        {/* 🔹 ASSIGN BUTTON */}
+        {!item.assignedEmployeeId && (
+          <TouchableOpacity
+            onPress={() => {
+              setSelectedBooking(item);
+              setModalVisible(true);
+            }}
+            style={{
+              backgroundColor: "#2563eb",
+              paddingVertical: 12,
+              borderRadius: 14,
+              marginTop: 12,
+              alignItems: "center",
+              shadowColor: "#38bdf8",
+              shadowOpacity: 0.4,
+              shadowRadius: 8,
+              elevation: 4,
+            }}
+          >
+            <Text style={{ color: "#fff", fontWeight: "900", fontSize: 14 }}>
+              Assign Mechanic
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
@@ -992,7 +1104,7 @@ const assignEmployee = async () => {
                 fontWeight: "700",
               }}
             >
-              Booked 
+              Booked
             </Text>
           </TouchableOpacity>
 
@@ -1013,7 +1125,7 @@ const assignEmployee = async () => {
                 fontWeight: "700",
               }}
             >
-              Add Service Vehicle 
+              Add Service Vehicle
             </Text>
           </TouchableOpacity>
         </View>
@@ -1078,7 +1190,6 @@ const assignEmployee = async () => {
             </Text>
           </TouchableOpacity>
         </View>
-
 
         {/* 📋 LIST */}
         <FlatList
