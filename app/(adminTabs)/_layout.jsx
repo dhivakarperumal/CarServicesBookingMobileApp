@@ -809,6 +809,7 @@ export default function AdminTabsLayout() {
         <Tabs.Screen
           name="home"
           options={{
+            title: "Home",
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="home" size={size} color={color} />
             ),
@@ -817,6 +818,7 @@ export default function AdminTabsLayout() {
         <Tabs.Screen
           name="bookings"
           options={{
+            title: "Bookings",
             tabBarIcon: ({ color, size }) => (
               <FontAwesome5 name="clipboard-list" size={size} color={color} />
             ),
@@ -825,6 +827,7 @@ export default function AdminTabsLayout() {
         <Tabs.Screen
           name="services"
           options={{
+            title: "Services",
             tabBarIcon: ({ color, size }) => (
               <MaterialIcons
                 name="miscellaneous-services"
@@ -837,6 +840,7 @@ export default function AdminTabsLayout() {
         <Tabs.Screen
           name="products"
           options={{
+            title: "Products",
             tabBarIcon: ({ color, size }) => (
               <MaterialIcons name="inventory" size={size} color={color} />
             ),
@@ -845,6 +849,7 @@ export default function AdminTabsLayout() {
         <Tabs.Screen
           name="settings"
           options={{
+            title: "Settings",
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="settings-outline" size={size} color={color} />
             ),
