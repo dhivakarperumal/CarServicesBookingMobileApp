@@ -159,9 +159,7 @@ export default function EmployeeDashboard() {
   }
 
   /* ================= SUMMARY COUNTS ================= */
-  const assigned = allServices.filter(
-    (s) => s.serviceStatus === "Processing",
-  ).length;
+  const assigned = allServices.filter((s) => !s.addVehicle).length;
 
   const inprogress = allServices.filter(
     (s) =>
