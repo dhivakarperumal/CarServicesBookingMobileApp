@@ -45,7 +45,10 @@ export default function BookingScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const [coords, setCoords] = useState<{ lat: number | null; lng: number | null }>({
+  const [coords, setCoords] = useState<{
+    lat: number | null;
+    lng: number | null;
+  }>({
     lat: null,
     lng: null,
   });
@@ -53,7 +56,7 @@ export default function BookingScreen() {
   const [locationLoading, setLocationLoading] = useState(false);
   const [isServiceAvailable, setIsServiceAvailable] = useState(true);
 
-  // use current location 
+  // use current location
   const handleUseCurrentLocation = async () => {
     try {
       setLocationLoading(true);
@@ -86,16 +89,12 @@ export default function BookingScreen() {
 
       const address = reverseGeocode[0];
 
-      const city =
-        address.city ||
-        address.subregion ||
-        address.district ||
-        "";
+      const city = address.city || address.subregion || address.district || "";
 
       const allowedCities = ["chennai", "tirupathur"];
 
       const available = allowedCities.some((allowed) =>
-        city.toLowerCase().includes(allowed)
+        city.toLowerCase().includes(allowed),
       );
 
       setIsServiceAvailable(available);
@@ -115,9 +114,8 @@ export default function BookingScreen() {
 
       handleChange(
         "location",
-        `${address.name || ""}, ${address.street || ""}, ${address.city || ""}`
+        `${address.name || ""}, ${address.street || ""}, ${address.city || ""}`,
       );
-
     } catch (error) {
       console.log("Location error:", error);
 
@@ -155,22 +153,53 @@ export default function BookingScreen() {
   };
 
   const validate = () => {
-    if (!formData.name) return "Name is required";
-    if (!formData.phone) return "Phone is required";
-    if (!formData.brand) return "Car brand is required";
-    if (!formData.model) return "Car model is required";
-    if (!formData.issue) return "Issue is required";
-    if (!formData.location) return "Location is required";
-    if (!formData.address) return "Address is required";
-    if (!coords.lat || !coords.lng)
+    const name = formData.name.trim();
+    const phone = formData.phone.trim();
+    const email = formData.email.trim();
+    const brand = formData.brand.trim();
+    const model = formData.model.trim();
+    const issue = formData.issue.trim();
+    const otherIssue = formData.otherIssue.trim();
+    const location = formData.location.trim();
+    const address = formData.address.trim();
+
+    // Name
+    if (!name) return "Full name is required";
+
+    // Phone (10 digits)
+    if (!/^[6-9][0-9]{9}$/.test(phone))
+      return "Mobile number must start with 6-9 and be 10 digits";
+
+    // Email (optional but validate if provided)
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return "Enter valid email address";
+
+    // Brand & Model
+    if (!brand) return "Car brand is required";
+    if (!model) return "Car model is required";
+
+    // Issue
+    if (!issue) return "Please select an issue";
+
+    if (issue === "Others" && !otherIssue) return "Please describe your issue";
+
+    // Location
+    if (!location) return "Location is required";
+    if (!address) return "Service address is required";
+
+    // Coordinates check (FIXED)
+    if (coords.lat === null || coords.lng === null)
       return "Please use current location";
 
+    // Service availability
     if (!isServiceAvailable)
       return "Service available only in Chennai & Tirupattur";
+
     return null;
   };
 
   const handleBooking = async () => {
+    if (loading) return;
     const error = validate();
     if (error) {
       Toast.show({
@@ -201,7 +230,17 @@ export default function BookingScreen() {
       await addDoc(collection(db, "bookings"), {
         bookingId,
         uid: user.uid,
-        ...formData,
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
+        brand: formData.brand.trim(),
+        model: formData.model.trim(),
+        issue:
+          formData.issue === "Others"
+            ? formData.otherIssue.trim()
+            : formData.issue,
+        location: formData.location.trim(),
+        address: formData.address.trim(),
         latitude: coords.lat,
         longitude: coords.lng,
         status: BOOKING_STATUS.BOOKED,
@@ -244,9 +283,12 @@ export default function BookingScreen() {
   };
 
   return (
-    <ImageBackground source={{
-      uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQfAJ3Ai3tu58SWAJ2mK_EhozE-OIgQXcLXNg&s",
-    }} style={{ flex: 1 }}>
+    <ImageBackground
+      source={{
+        uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQfAJ3Ai3tu58SWAJ2mK_EhozE-OIgQXcLXNg&s",
+      }}
+      style={{ flex: 1 }}
+    >
       <View style={styles.overlay} />
 
       <KeyboardAwareScrollView
@@ -260,12 +302,32 @@ export default function BookingScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-
         <Text style={styles.title}>Book Service</Text>
 
-        <Input label="Full Name" placeholder="Enter your full name" value={formData.name} onChange={(v) => handleChange("name", v)} />
-        <Input label="Mobile" placeholder="Enter mobile number" value={formData.phone} onChange={(v) => handleChange("phone", v)} />
-        <Input label="Email" placeholder="Enter email address" value={formData.email} onChange={(v) => handleChange("email", v)} />
+        <Input
+          label="Full Name"
+          placeholder="Enter your full name"
+          value={formData.name}
+          onChange={(v) => handleChange("name", v)}
+        />
+        <Input
+          label="Mobile"
+          placeholder="Enter mobile number"
+          value={formData.phone}
+          keyboardType="numeric"
+          onChange={(v) => {
+            const cleaned = v.replace(/[^0-9]/g, "");
+            if (cleaned.length <= 10) {
+              handleChange("phone", cleaned);
+            }
+          }}
+        />
+        <Input
+          label="Email"
+          placeholder="Enter email address"
+          value={formData.email}
+          onChange={(v) => handleChange("email", v)}
+        />
 
         {/* BRAND */}
         <Text style={styles.label}>Car Brand</Text>
@@ -284,7 +346,12 @@ export default function BookingScreen() {
           </Picker>
         </View>
 
-        <Input label="Car Model" placeholder="Ex: Swift / City / X5" value={formData.model} onChange={(v) => handleChange("model", v)} />
+        <Input
+          label="Car Model"
+          placeholder="Ex: Swift / City / X5"
+          value={formData.model}
+          onChange={(v) => handleChange("model", v)}
+        />
 
         {/* ISSUE */}
         <Text style={styles.label}>Issue</Text>
@@ -292,7 +359,12 @@ export default function BookingScreen() {
           <Picker
             dropdownIconColor="#0EA5E9"
             selectedValue={formData.issue}
-            onValueChange={(v) => handleChange("issue", v)}
+            onValueChange={(v) => {
+              handleChange("issue", v);
+              if (v !== "Others") {
+                handleChange("otherIssue", "");
+              }
+            }}
             style={{ color: "#fff" }}
           >
             <Picker.Item label="Select Issue" value="" />
@@ -343,9 +415,19 @@ export default function BookingScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
-        <Input label="Service Address" placeholder="House No, Street, Area" value={formData.address} onChange={(v) => handleChange("address", v)} multiline />
+        <Input
+          label="Service Address"
+          placeholder="House No, Street, Area"
+          value={formData.address}
+          onChange={(v) => handleChange("address", v)}
+          multiline
+        />
 
-        <TouchableOpacity onPress={handleBooking} disabled={loading} activeOpacity={0.8}>
+        <TouchableOpacity
+          onPress={handleBooking}
+          disabled={loading}
+          activeOpacity={0.8}
+        >
           <LinearGradient
             colors={["#0EA5E9", "#2563EB"]}
             start={{ x: 0, y: 0 }}
@@ -372,12 +454,14 @@ function Input({
   onChange,
   multiline = false,
   placeholder,
+  keyboardType = "default",
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   multiline?: boolean;
   placeholder?: string;
+  keyboardType?: any;
 }) {
   return (
     <View style={{ marginBottom: 16 }}>
@@ -389,6 +473,8 @@ function Input({
         placeholder={placeholder || label}
         placeholderTextColor="#64748B"
         multiline={multiline}
+        keyboardType={keyboardType}
+        maxLength={multiline ? undefined : 10}
         style={[styles.input, multiline && { height: 90 }]}
       />
     </View>
