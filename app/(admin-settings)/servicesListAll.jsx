@@ -124,109 +124,129 @@ export default function ServicesListAll() {
 
   return (
     <KeyboardAvoidingView
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-    style={{ flex: 1 }}
-  >
-    <View style={styles.container}>
-      {/* 🔹 SEARCH */}
-      <TextInput
-        placeholder="Search service..."
-        value={search}
-        onChangeText={setSearch}
-        style={styles.search}
-        placeholderTextColor="#64748b"
-        color="#fff"
-      />
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <View style={styles.container}>
+        {/* 🔹 SEARCH */}
+        <TextInput
+          placeholder="Search service..."
+          value={search}
+          onChangeText={setSearch}
+          style={styles.search}
+          placeholderTextColor="#64748b"
+          color="#fff"
+        />
 
-      {/* 🔹 CATEGORY FILTER */}
-      <FlatList
-        horizontal
-        data={categories}
-        keyExtractor={(item) => item}
-        showsHorizontalScrollIndicator={false}
-        style={{ marginBottom: 10 }}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => setCategoryFilter(item)}
-            style={[styles.chip, categoryFilter === item && styles.chipActive]}
-          >
-            <Text
-              style={
-                categoryFilter === item
-                  ? styles.chipTextActive
-                  : styles.chipText
-              }
-            >
-              {item}
-            </Text>
-          </TouchableOpacity>
-        )}
-      />
+        {/* 🔹 CATEGORY FILTER */}
+        <View style={{ height: 40, marginBottom: 10 }}>
+          <FlatList
+            horizontal
+            data={categories}
+            keyExtractor={(item) => item}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ alignItems: "center" }}
+            renderItem={({ item }) => {
+              const isActive = categoryFilter === item;
+              const isAll = item === "all";
 
-      {/* 🔹 GRID LIST */}
-      <FlatList
-        data={paginatedServices}
-        keyExtractor={(item) => item.docId}
-        numColumns={2}
-        columnWrapperStyle={{ justifyContent: "space-between" }}
-        contentContainerStyle={{ paddingBottom: 120 }}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            {/* IMAGE */}
-            {item.image ? (
-              <Image
-                source={{ uri: item.image }}
-                style={styles.image}
-                resizeMode="cover"
-              />
-            ) : (
-              <View style={styles.imagePlaceholder}>
-                <Ionicons name="image-outline" size={24} color="#9ca3af" />
+              return (
+                <TouchableOpacity
+                  onPress={() => setCategoryFilter(item)}
+                  style={[
+                    styles.chip,
+                    isActive && styles.chipActive,
+                    isAll && styles.allChip,
+                  ]}
+                >
+                  {isAll && (
+                    <Ionicons
+                      name="apps-outline"
+                      size={12}
+                      color={isActive ? "#020617" : "#38bdf8"}
+                      style={{ marginRight: 4 }}
+                    />
+                  )}
+
+                  <Text
+                    style={isActive ? styles.chipTextActive : styles.chipText}
+                  >
+                    {isAll
+                      ? "All"
+                      : item.charAt(0).toUpperCase() + item.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        </View>
+
+        {/* 🔹 GRID LIST */}
+        <FlatList
+          data={paginatedServices}
+          keyExtractor={(item) => item.docId}
+          numColumns={2}
+          columnWrapperStyle={{ justifyContent: "space-between" }}
+          contentContainerStyle={{ paddingBottom: 120 }}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              {/* IMAGE */}
+              {item.image ? (
+                <Image
+                  source={{ uri: item.image }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.imagePlaceholder}>
+                  <Ionicons name="image-outline" size={24} color="#9ca3af" />
+                </View>
+              )}
+
+              {/* NAME */}
+              <Text numberOfLines={1} style={styles.title}>
+                {item.name}
+              </Text>
+
+              {/* PRICE */}
+              <Text style={styles.price}>
+                ₹{Number(item.price || 0).toLocaleString()}
+              </Text>
+
+              {/* ACTIONS */}
+              <View style={styles.actions}>
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push(`/(admin-settings)/addService?id=${item.docId}`)
+                  }
+                  style={styles.iconBtn}
+                >
+                  <MaterialIcons name="edit" size={16} color="#38bdf8" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => handleDelete(item.docId)}
+                  style={styles.iconBtn}
+                >
+                  <MaterialIcons name="delete" size={16} color="#ef4444" />
+                </TouchableOpacity>
               </View>
-            )}
-
-            {/* NAME */}
-            <Text numberOfLines={1} style={styles.title}>
-              {item.name}
-            </Text>
-
-            {/* PRICE */}
-            <Text style={styles.price}>
-              ₹{Number(item.price || 0).toLocaleString()}
-            </Text>
-
-            {/* ACTIONS */}
-            <View style={styles.actions}>
-              <TouchableOpacity
-                onPress={() =>
-                  router.push(`/(admin-settings)/addService?id=${item.docId}`)
-                }
-                style={styles.iconBtn}
-              >
-                <MaterialIcons name="edit" size={16} color="#38bdf8" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => handleDelete(item.docId)}
-                style={styles.iconBtn}
-              >
-                <MaterialIcons name="delete" size={16} color="#ef4444" />
-              </TouchableOpacity>
             </View>
-          </View>
-        )}
-        ListEmptyComponent={<Text style={styles.empty}>No services found</Text>}
-      />
+          )}
+          ListEmptyComponent={
+            <Text style={styles.empty}>No services found</Text>
+          }
+        />
 
-      {/* 🔹 FAB */}
-      <TouchableOpacity
-        onPress={() => router.push("/(admin-settings)/addService")}
-        style={styles.fab}
-        activeOpacity={0.85}
-      >
-        <Ionicons name="add" size={28} color="#fff" />
-      </TouchableOpacity>
-    </View>
+        {/* 🔹 FAB */}
+        <TouchableOpacity
+          onPress={() => router.push("/(admin-settings)/addService")}
+          style={styles.fab}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="add" size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -252,30 +272,41 @@ const styles = StyleSheet.create({
   },
 
   chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 2,
+    borderRadius: 16,
+    marginRight: 10,
     backgroundColor: "#0f172a",
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginRight: 8,
     borderWidth: 1,
-    borderColor: "#0b3b6f",
+    borderColor: "#1e3a8a",
+    height: 35,
+  },
+
+  allChip: {
+    borderColor: "#38bdf8",
   },
 
   chipActive: {
     backgroundColor: "#38bdf8",
     borderColor: "#38bdf8",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
 
   chipText: {
     fontSize: 12,
     color: "#94a3b8",
-    fontWeight: "500",
+    fontWeight: "600",
   },
 
   chipTextActive: {
     fontSize: 12,
     color: "#020617",
-    fontWeight: "600",
+    fontWeight: "700",
   },
 
   card: {
