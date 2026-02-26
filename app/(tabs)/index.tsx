@@ -19,7 +19,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View, TextInput
 } from "react-native";
 import { auth, db } from "../../firebase";
 
@@ -869,6 +869,9 @@ function BookingDetailModal({ booking, onClose }) {
 function VehicleDetailModal({ vehicle, onClose }) {
   const normalizedStatus =
     STATUS_NORMALIZER[vehicle.serviceStatus] || vehicle.serviceStatus;
+  const [rejectModalVisible, setRejectModalVisible] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [selectedIssueIndex, setSelectedIssueIndex] = useState(null);
   const handleIssueUpdate = async (issueIndex, newStatus) => {
     try {
       const ref = doc(db, "allServices", vehicle.id);
@@ -901,6 +904,38 @@ function VehicleDetailModal({ vehicle, onClose }) {
         issuesDetails: updatedIssues,
         serviceStatus: newServiceStatus,
       });
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const confirmReject = async () => {
+    if (!rejectReason.trim()) {
+      alert("Please enter rejection reason");
+      return;
+    }
+
+    try {
+      const ref = doc(db, "allServices", vehicle.id);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return;
+
+      const data = snap.data();
+      const updatedIssues = [...data.issuesDetails];
+
+      updatedIssues[selectedIssueIndex] = {
+        ...updatedIssues[selectedIssueIndex],
+        approvalStatus: "rejected",
+        rejectionReason: rejectReason
+      };
+
+      await updateDoc(ref, {
+        issuesDetails: updatedIssues
+      });
+
+      setRejectModalVisible(false);
+      setRejectReason("");
+      setSelectedIssueIndex(null);
 
     } catch (error) {
       console.log(error);
@@ -1184,7 +1219,10 @@ function VehicleDetailModal({ vehicle, onClose }) {
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                          onPress={() => handleIssueUpdate(index, "rejected")}
+                          onPress={() => {
+                            setSelectedIssueIndex(index);
+                            setRejectModalVisible(true);
+                          }}
                           style={{
                             backgroundColor: "#EF4444",
                             paddingVertical: 8,
@@ -1202,6 +1240,80 @@ function VehicleDetailModal({ vehicle, onClose }) {
                 ))}
               </>
             )}
+
+            {/* Reject Reason Modal */}
+            <Modal
+              visible={rejectModalVisible}
+              transparent
+              animationType="fade"
+            >
+              <View style={{
+                flex: 1,
+                backgroundColor: "rgba(0,0,0,0.7)",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 20
+              }}>
+                <View style={{
+                  backgroundColor: "#0f172a",
+                  width: "100%",
+                  borderRadius: 16,
+                  padding: 20
+                }}>
+                  <Text style={{
+                    color: "#38bdf8",
+                    fontSize: 16,
+                    fontWeight: "700",
+                    marginBottom: 15
+                  }}>
+                    Enter Rejection Reason
+                  </Text>
+
+                  <TextInput
+                    placeholder="Enter reason..."
+                    placeholderTextColor="#9CA3AF"
+                    value={rejectReason}
+                    onChangeText={setRejectReason}
+                    multiline
+                    style={{
+                      backgroundColor: "#111827",
+                      color: "#fff",
+                      padding: 12,
+                      borderRadius: 12,
+                      minHeight: 80,
+                      marginBottom: 15
+                    }}
+                  />
+
+                  <TouchableOpacity
+                    onPress={confirmReject}
+                    style={{
+                      backgroundColor: "#EF4444",
+                      paddingVertical: 12,
+                      borderRadius: 12,
+                      alignItems: "center"
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontWeight: "700" }}>
+                      Confirm Reject
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => setRejectModalVisible(false)}
+                    style={{
+                      marginTop: 10,
+                      alignItems: "center"
+                    }}
+                  >
+                    <Text style={{ color: "#9CA3AF" }}>
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+
+                </View>
+              </View>
+            </Modal>
 
             <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
               <LinearGradient
