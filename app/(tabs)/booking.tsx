@@ -22,6 +22,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Toast from "react-native-toast-message";
 import { useRouter } from "expo-router";
 import { ImageBackground } from "react-native";
+import * as Location from "expo-location";
 
 const BOOKING_STATUS = {
   BOOKED: "Booked",
@@ -42,6 +43,92 @@ export default function BookingScreen() {
 
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const [coords, setCoords] = useState<{ lat: number | null; lng: number | null }>({
+    lat: null,
+    lng: null,
+  });
+
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [isServiceAvailable, setIsServiceAvailable] = useState(true);
+
+  // use current location 
+ const handleUseCurrentLocation = async () => {
+  try {
+    setLocationLoading(true);
+
+    const { status } = await Location.requestForegroundPermissionsAsync();
+
+    if (status !== "granted") {
+      Toast.show({
+        type: "error",
+        text1: "Permission Denied",
+        text2: "Allow location access to continue",
+      });
+      return;
+    }
+
+    const location = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced,
+    });
+
+    const { latitude, longitude } = location.coords;
+
+    const reverseGeocode = await Location.reverseGeocodeAsync({
+      latitude,
+      longitude,
+    });
+
+    if (!reverseGeocode.length) {
+      throw new Error("Address not found");
+    }
+
+    const address = reverseGeocode[0];
+
+    const city =
+      address.city ||
+      address.subregion ||
+      address.district ||
+      "";
+
+    const allowedCities = ["chennai", "tirupathur"];
+
+    const available = allowedCities.some((allowed) =>
+      city.toLowerCase().includes(allowed)
+    );
+
+    setIsServiceAvailable(available);
+
+    if (!available) {
+      Toast.show({
+        type: "error",
+        text1: "Service Not Available",
+        text2: "Service available only in Chennai & Tirupattur",
+      });
+    }
+
+    setCoords({
+      lat: latitude,
+      lng: longitude,
+    });
+
+    handleChange(
+      "location",
+      `${address.name || ""}, ${address.street || ""}, ${address.city || ""}`
+    );
+
+  } catch (error) {
+    console.log("Location error:", error);
+
+    Toast.show({
+      type: "error",
+      text1: "Location Error",
+      text2: "Unable to fetch location",
+    });
+  } finally {
+    setLocationLoading(false);
+  }
+};
 
   const generateBookingId = async () => {
     const counterRef = doc(db, "counters", "bookingCounter");
@@ -74,6 +161,11 @@ export default function BookingScreen() {
     if (!formData.issue) return "Issue is required";
     if (!formData.location) return "Location is required";
     if (!formData.address) return "Address is required";
+    if (!coords.lat || !coords.lng)
+      return "Please use current location";
+
+    if (!isServiceAvailable)
+      return "Service available only in Chennai & Tirupattur";
     return null;
   };
 
@@ -107,8 +199,10 @@ export default function BookingScreen() {
 
       await addDoc(collection(db, "bookings"), {
         bookingId,
-        uid: user.uid,             
+        uid: user.uid,
         ...formData,
+        latitude: coords.lat,
+        longitude: coords.lng,
         status: BOOKING_STATUS.BOOKED,
         createdAt: serverTimestamp(),
       });
@@ -149,92 +243,118 @@ export default function BookingScreen() {
   };
 
   return (
-      <ImageBackground source={{
-                uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQfAJ3Ai3tu58SWAJ2mK_EhozE-OIgQXcLXNg&s",
-            }} style={{ flex: 1 }}>
-    <View style={styles.overlay} />
+    <ImageBackground source={{
+      uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQfAJ3Ai3tu58SWAJ2mK_EhozE-OIgQXcLXNg&s",
+    }} style={{ flex: 1 }}>
+      <View style={styles.overlay} />
 
-    <KeyboardAwareScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{
-        padding: 20,
-        paddingBottom: 50,
-      }}
-      enableOnAndroid
-      extraScrollHeight={20}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          padding: 20,
+          paddingBottom: 50,
+        }}
+        enableOnAndroid
+        extraScrollHeight={20}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
 
-      <Text style={styles.title}>Book Service</Text>
+        <Text style={styles.title}>Book Service</Text>
 
-      <Input label="Full Name" placeholder="Enter your full name"  value={formData.name} onChange={(v) => handleChange("name", v)} />
-      <Input label="Mobile" placeholder="Enter mobile number" value={formData.phone} onChange={(v) => handleChange("phone", v)} />
-      <Input label="Email" placeholder="Enter email address" value={formData.email} onChange={(v) => handleChange("email", v)} />
+        <Input label="Full Name" placeholder="Enter your full name" value={formData.name} onChange={(v) => handleChange("name", v)} />
+        <Input label="Mobile" placeholder="Enter mobile number" value={formData.phone} onChange={(v) => handleChange("phone", v)} />
+        <Input label="Email" placeholder="Enter email address" value={formData.email} onChange={(v) => handleChange("email", v)} />
 
-      {/* BRAND */}
-      <Text style={styles.label}>Car Brand</Text>
-      <View style={styles.pickerWrapper}>
-        <Picker
-          dropdownIconColor="#0EA5E9"
-          selectedValue={formData.brand}
-          onValueChange={(v) => handleChange("brand", v)}
-          style={{ color: "#fff" }}
-        >
-          <Picker.Item label="Select Brand" value="" />
-          <Picker.Item label="Honda" value="Honda" />
-          <Picker.Item label="Hyundai" value="Hyundai" />
-          <Picker.Item label="BMW" value="BMW" />
-          <Picker.Item label="Audi" value="Audi" />
-        </Picker>
-      </View>
+        {/* BRAND */}
+        <Text style={styles.label}>Car Brand</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            dropdownIconColor="#0EA5E9"
+            selectedValue={formData.brand}
+            onValueChange={(v) => handleChange("brand", v)}
+            style={{ color: "#fff" }}
+          >
+            <Picker.Item label="Select Brand" value="" />
+            <Picker.Item label="Honda" value="Honda" />
+            <Picker.Item label="Hyundai" value="Hyundai" />
+            <Picker.Item label="BMW" value="BMW" />
+            <Picker.Item label="Audi" value="Audi" />
+          </Picker>
+        </View>
 
-      <Input label="Car Model"  placeholder="Ex: Swift / City / X5" value={formData.model} onChange={(v) => handleChange("model", v)} />
+        <Input label="Car Model" placeholder="Ex: Swift / City / X5" value={formData.model} onChange={(v) => handleChange("model", v)} />
 
-      {/* ISSUE */}
-      <Text style={styles.label}>Issue</Text>
-      <View style={styles.pickerWrapper}>
-        <Picker
-          dropdownIconColor="#0EA5E9"
-          selectedValue={formData.issue}
-          onValueChange={(v) => handleChange("issue", v)}
-          style={{ color: "#fff" }}
-        >
-          <Picker.Item label="Select Issue" value="" />
-          <Picker.Item label="Engine Problem" value="Engine Problem" />
-          <Picker.Item label="Brake Issue" value="Brake Issue" />
-          <Picker.Item label="Electrical" value="Electrical" />
-          <Picker.Item label="Others" value="Others" />
-        </Picker>
-      </View>
+        {/* ISSUE */}
+        <Text style={styles.label}>Issue</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            dropdownIconColor="#0EA5E9"
+            selectedValue={formData.issue}
+            onValueChange={(v) => handleChange("issue", v)}
+            style={{ color: "#fff" }}
+          >
+            <Picker.Item label="Select Issue" value="" />
+            <Picker.Item label="Engine Problem" value="Engine Problem" />
+            <Picker.Item label="Brake Issue" value="Brake Issue" />
+            <Picker.Item label="Electrical" value="Electrical" />
+            <Picker.Item label="Others" value="Others" />
+          </Picker>
+        </View>
 
-      {formData.issue === "Others" && (
+        {formData.issue === "Others" && (
+          <Input
+            label="Describe Issue"
+            placeholder="Describe your problem"
+            value={formData.otherIssue}
+            onChange={(v) => handleChange("otherIssue", v)}
+          />
+        )}
+
         <Input
-          label="Describe Issue"
-          placeholder="Describe your problem"
-          value={formData.otherIssue}
-          onChange={(v) => handleChange("otherIssue", v)}
+          label="Location"
+          placeholder="Area / Landmark"
+          value={formData.location}
+          onChange={(v) => handleChange("location", v)}
         />
-      )}
 
-      <Input label="Location" placeholder="Area / Landmark" value={formData.location} onChange={(v) => handleChange("location", v)} />
-      <Input label="Service Address" placeholder="House No, Street, Area" value={formData.address} onChange={(v) => handleChange("address", v)} multiline />
-
-      <TouchableOpacity onPress={handleBooking} disabled={loading} activeOpacity={0.8}>
-        <LinearGradient
-          colors={["#0EA5E9", "#2563EB"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradientButton}
+        <TouchableOpacity
+          onPress={handleUseCurrentLocation}
+          disabled={locationLoading}
+          style={{
+            marginTop: 10,
+            backgroundColor: "#0EA5E9",
+            padding: 12,
+            borderRadius: 12,
+            alignItems: "center",
+          }}
         >
-          {loading ? (
+          {locationLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.gradientButtonText}>Book Now</Text>
+            <Text style={{ color: "#fff", fontWeight: "600" }}>
+              Use Current Location
+            </Text>
           )}
-        </LinearGradient>
-      </TouchableOpacity>
-    </KeyboardAwareScrollView>
+        </TouchableOpacity>
+
+        <Input label="Service Address" placeholder="House No, Street, Area" value={formData.address} onChange={(v) => handleChange("address", v)} multiline />
+
+        <TouchableOpacity onPress={handleBooking} disabled={loading} activeOpacity={0.8}>
+          <LinearGradient
+            colors={["#0EA5E9", "#2563EB"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientButton}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.gradientButtonText}>Book Now</Text>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+      </KeyboardAwareScrollView>
     </ImageBackground>
   );
 }
@@ -280,9 +400,9 @@ const styles = StyleSheet.create({
   },
 
   overlay: {
-  ...StyleSheet.absoluteFillObject,
-  backgroundColor: "rgba(0,0,0,0.8)",
-},
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.8)",
+  },
 
   title: {
     fontSize: 24,
