@@ -470,21 +470,21 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 
-gradientCloseBtn: {
-  paddingVertical: 13,
-  paddingHorizontal: 40,
-  borderRadius: 50,
-  alignItems: "center",
-  marginTop: 20,
-  alignSelf: "center",   
-},
+  gradientCloseBtn: {
+    paddingVertical: 13,
+    paddingHorizontal: 40,
+    borderRadius: 50,
+    alignItems: "center",
+    marginTop: 20,
+    alignSelf: "center",
+  },
 
-gradientCloseText: {
-  color: "#FFFFFF",
-  fontWeight: "700",
-  fontSize: 16,
-  letterSpacing: 0.5,
-},
+  gradientCloseText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 16,
+    letterSpacing: 0.5,
+  },
 
   /* Service Tracker Styles */
   trackerSection: {

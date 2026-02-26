@@ -23,6 +23,7 @@ import Toast from "react-native-toast-message";
 import { useRouter } from "expo-router";
 import { ImageBackground } from "react-native";
 import * as Location from "expo-location";
+import { Ionicons } from "@expo/vector-icons";
 
 const BOOKING_STATUS = {
   BOOKED: "Booked",
@@ -53,82 +54,82 @@ export default function BookingScreen() {
   const [isServiceAvailable, setIsServiceAvailable] = useState(true);
 
   // use current location 
- const handleUseCurrentLocation = async () => {
-  try {
-    setLocationLoading(true);
+  const handleUseCurrentLocation = async () => {
+    try {
+      setLocationLoading(true);
 
-    const { status } = await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync();
 
-    if (status !== "granted") {
+      if (status !== "granted") {
+        Toast.show({
+          type: "error",
+          text1: "Permission Denied",
+          text2: "Allow location access to continue",
+        });
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const { latitude, longitude } = location.coords;
+
+      const reverseGeocode = await Location.reverseGeocodeAsync({
+        latitude,
+        longitude,
+      });
+
+      if (!reverseGeocode.length) {
+        throw new Error("Address not found");
+      }
+
+      const address = reverseGeocode[0];
+
+      const city =
+        address.city ||
+        address.subregion ||
+        address.district ||
+        "";
+
+      const allowedCities = ["chennai", "tirupathur"];
+
+      const available = allowedCities.some((allowed) =>
+        city.toLowerCase().includes(allowed)
+      );
+
+      setIsServiceAvailable(available);
+
+      if (!available) {
+        Toast.show({
+          type: "error",
+          text1: "Service Not Available",
+          text2: "Service available only in Chennai & Tirupattur",
+        });
+      }
+
+      setCoords({
+        lat: latitude,
+        lng: longitude,
+      });
+
+      handleChange(
+        "location",
+        `${address.name || ""}, ${address.street || ""}, ${address.city || ""}`
+      );
+
+    } catch (error) {
+      console.log("Location error:", error);
+
       Toast.show({
         type: "error",
-        text1: "Permission Denied",
-        text2: "Allow location access to continue",
+        text1: "Location Error",
+        text2: "Unable to fetch location",
       });
-      return;
+    } finally {
+      setLocationLoading(false);
     }
-
-    const location = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.Balanced,
-    });
-
-    const { latitude, longitude } = location.coords;
-
-    const reverseGeocode = await Location.reverseGeocodeAsync({
-      latitude,
-      longitude,
-    });
-
-    if (!reverseGeocode.length) {
-      throw new Error("Address not found");
-    }
-
-    const address = reverseGeocode[0];
-
-    const city =
-      address.city ||
-      address.subregion ||
-      address.district ||
-      "";
-
-    const allowedCities = ["chennai", "tirupathur"];
-
-    const available = allowedCities.some((allowed) =>
-      city.toLowerCase().includes(allowed)
-    );
-
-    setIsServiceAvailable(available);
-
-    if (!available) {
-      Toast.show({
-        type: "error",
-        text1: "Service Not Available",
-        text2: "Service available only in Chennai & Tirupattur",
-      });
-    }
-
-    setCoords({
-      lat: latitude,
-      lng: longitude,
-    });
-
-    handleChange(
-      "location",
-      `${address.name || ""}, ${address.street || ""}, ${address.city || ""}`
-    );
-
-  } catch (error) {
-    console.log("Location error:", error);
-
-    Toast.show({
-      type: "error",
-      text1: "Location Error",
-      text2: "Unable to fetch location",
-    });
-  } finally {
-    setLocationLoading(false);
-  }
-};
+  };
 
   const generateBookingId = async () => {
     const counterRef = doc(db, "counters", "bookingCounter");
@@ -321,21 +322,25 @@ export default function BookingScreen() {
         <TouchableOpacity
           onPress={handleUseCurrentLocation}
           disabled={locationLoading}
-          style={{
-            marginTop: 10,
-            backgroundColor: "#0EA5E9",
-            padding: 12,
-            borderRadius: 12,
-            alignItems: "center",
-          }}
+          activeOpacity={0.8}
         >
-          {locationLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={{ color: "#fff", fontWeight: "600" }}>
-              Use Current Location
-            </Text>
-          )}
+          <LinearGradient
+            colors={["#0EA5E9", "#2563EB"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientLocationBtn}
+          >
+            {locationLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Ionicons name="location-outline" size={18} color="#fff" />
+                <Text style={styles.gradientLocationText}>
+                  Use Current Location
+                </Text>
+              </>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
 
         <Input label="Service Address" placeholder="House No, Street, Area" value={formData.address} onChange={(v) => handleChange("address", v)} multiline />
@@ -447,6 +452,24 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "700",
     fontSize: 16,
+    letterSpacing: 0.5,
+  },
+  gradientLocationBtn: {
+    flexDirection: "row",
+    paddingVertical: 13,
+    paddingHorizontal: 24,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 12,
+    alignSelf: "center",
+  },
+
+  gradientLocationText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 15,
+    marginLeft: 8,
     letterSpacing: 0.5,
   },
 });

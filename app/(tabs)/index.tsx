@@ -840,11 +840,15 @@ function BookingDetailModal({ booking, onClose }) {
             </View>
 
             {/* Close Button */}
-            <TouchableOpacity
-              style={styles.closeModalButton}
-              onPress={onClose}
-            >
-              <Text style={styles.closeModalButtonText}>Close</Text>
+            <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
+              <LinearGradient
+                colors={["#0EA5E9", "#2563EB"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientCloseBtn}
+              >
+                <Text style={styles.gradientCloseText}>Close</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -1055,13 +1059,15 @@ function VehicleDetailModal({ vehicle, onClose }) {
 
             </View>
 
-            <TouchableOpacity
-              style={styles.closeModalButton}
-              onPress={onClose}
-            >
-              <Text style={styles.closeModalButtonText}>
-                Close
-              </Text>
+            <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
+              <LinearGradient
+                colors={["#0EA5E9", "#2563EB"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientCloseBtn}
+              >
+                <Text style={styles.gradientCloseText}>Close</Text>
+              </LinearGradient>
             </TouchableOpacity>
 
           </ScrollView>
@@ -1741,4 +1747,20 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
+  gradientCloseBtn: {
+    paddingVertical: 13,
+    paddingHorizontal: 40,
+    borderRadius: 50,
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 10,
+    alignSelf: "center",
+  },
+
+  gradientCloseText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 16,
+    letterSpacing: 0.5,
+  },
 });
