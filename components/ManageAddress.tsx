@@ -28,8 +28,13 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 const INDIAN_STATES = [
-  "Tamil Nadu", "Kerala", "Karnataka", "Maharashtra",
-  "Delhi", "Telangana", "Andhra Pradesh"
+  "Tamil Nadu",
+  "Kerala",
+  "Karnataka",
+  "Maharashtra",
+  "Delhi",
+  "Telangana",
+  "Andhra Pradesh",
 ];
 
 const initialForm = {
@@ -57,9 +62,7 @@ export default function ManageAddress() {
   const fetchAddresses = async () => {
     if (!user) return;
 
-    const snap = await getDocs(
-      collection(db, "users", user.uid, "addresses")
-    );
+    const snap = await getDocs(collection(db, "users", user.uid, "addresses"));
 
     const list = snap.docs.map((d) => ({
       id: d.id,
@@ -74,10 +77,18 @@ export default function ManageAddress() {
   }, []);
 
   /* ================= SAVE ================= */
-  const clean = (val: string) =>
-    val?.trim().toLowerCase();
+  const clean = (val: string) => val?.trim().toLowerCase();
+
+  const showError = (message: string) => {
+    Toast.show({
+      type: "warning",
+      text1: "Validation Error",
+      text2: message,
+    });
+  };
 
   const handleSave = async () => {
+    if (loading) return;
     if (!user) return;
 
     let {
@@ -100,14 +111,33 @@ export default function ManageAddress() {
     pinCode = pinCode?.trim();
     state = state?.trim();
 
-    if (!fullName || !phone || !street || !city || !pinCode || !state) {
-      Toast.show({
-        type: "warning",
-        text1: "Validation Error",
-        text2: "Please fill all required fields",
-      });
-      return;
-    }
+    // ===== VALIDATION =====
+
+    // Name
+    if (!fullName) return showError("Full name is required");
+
+    // Phone
+    if (!phone) return showError("Phone number is required");
+    if (!/^[6-9][0-9]{9}$/.test(phone))
+      return showError("Phone must start with 6-9 and be 10 digits");
+
+    // Email (optional)
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return showError("Enter valid email address");
+
+    // Street
+    if (!street) return showError("Street is required");
+
+    // City
+    if (!city) return showError("City is required");
+
+    // Pin Code
+    if (!pinCode) return showError("Pin code is required");
+    if (!/^[0-9]{6}$/.test(pinCode))
+      return showError("Pin code must be exactly 6 digits");
+
+    // State
+    if (!state) return showError("Please select a state");
 
     try {
       setLoading(true);
@@ -139,19 +169,16 @@ export default function ManageAddress() {
       }
 
       if (editId) {
-        await updateDoc(
-          doc(db, "users", user.uid, "addresses", editId),
-          {
-            fullName,
-            phone,
-            email,
-            street,
-            city,
-            pinCode,
-            state,
-            country,
-          }
-        );
+        await updateDoc(doc(db, "users", user.uid, "addresses", editId), {
+          fullName,
+          phone,
+          email,
+          street,
+          city,
+          pinCode,
+          state,
+          country,
+        });
         Toast.show({
           type: "success",
           text1: "Updated Successfully",
@@ -230,7 +257,6 @@ export default function ManageAddress() {
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 60 }}
     >
-
       {/* ===== SAVED ADDRESSES ===== */}
       {addresses.length > 0 && (
         <>
@@ -257,11 +283,7 @@ export default function ManageAddress() {
                     setShowDeleteModal(true);
                   }}
                 >
-                  <MaterialIcons
-                    name="delete-outline"
-                    size={22}
-                    color="#fff"
-                  />
+                  <MaterialIcons name="delete-outline" size={22} color="#fff" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -275,14 +297,24 @@ export default function ManageAddress() {
         placeholderTextColor="#9CA3AF"
         style={styles.input}
         value={form.fullName}
-        onChangeText={(v) => setForm({ ...form, fullName: v })}
+        onChangeText={(v) => {
+          const cleaned = v.replace(/[^a-zA-Z\s]/g, "");
+          setForm({ ...form, fullName: cleaned });
+        }}
       />
       <TextInput
         placeholder="Phone"
         placeholderTextColor="#9CA3AF"
         style={styles.input}
         value={form.phone}
-        onChangeText={(v) => setForm({ ...form, phone: v })}
+        keyboardType="numeric"
+        maxLength={10}
+        onChangeText={(v) => {
+          const cleaned = v.replace(/[^0-9]/g, "");
+          if (cleaned.length <= 10) {
+            setForm({ ...form, phone: cleaned });
+          }
+        }}
       />
 
       <TextInput
@@ -315,7 +347,14 @@ export default function ManageAddress() {
         placeholderTextColor="#9CA3AF"
         style={styles.input}
         value={form.pinCode}
-        onChangeText={(v) => setForm({ ...form, pinCode: v })}
+        keyboardType="numeric"
+        maxLength={6}
+        onChangeText={(v) => {
+          const cleaned = v.replace(/[^0-9]/g, "");
+          if (cleaned.length <= 6) {
+            setForm({ ...form, pinCode: cleaned });
+          }
+        }}
       />
 
       <Picker
@@ -330,30 +369,26 @@ export default function ManageAddress() {
       </Picker>
 
       <TouchableOpacity
-  onPress={handleSave}
-  disabled={loading}
-  activeOpacity={0.8}
->
-  <LinearGradient
-    colors={["#0EA5E9", "#2563EB"]}
-    start={{ x: 0, y: 0 }}
-    end={{ x: 1, y: 1 }}
-    style={styles.gradientSaveBtn}
-  >
-    {loading ? (
-      <ActivityIndicator color="#fff" />
-    ) : (
-      <Text style={styles.gradientSaveText}>
-        {editId ? "Update Address" : "Add Address"}
-      </Text>
-    )}
-  </LinearGradient>
-</TouchableOpacity>
-      <Modal
-        transparent
-        visible={showDeleteModal}
-        animationType="fade"
+        onPress={handleSave}
+        disabled={loading}
+        activeOpacity={0.8}
       >
+        <LinearGradient
+          colors={["#0EA5E9", "#2563EB"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientSaveBtn}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.gradientSaveText}>
+              {editId ? "Update Address" : "Add Address"}
+            </Text>
+          )}
+        </LinearGradient>
+      </TouchableOpacity>
+      <Modal transparent visible={showDeleteModal} animationType="fade">
         <View style={modalStyles.overlay}>
           <View style={modalStyles.container}>
             <Text style={modalStyles.title}>Delete Address?</Text>
@@ -373,9 +408,7 @@ export default function ManageAddress() {
                 style={modalStyles.deleteBtn}
                 onPress={confirmDelete}
               >
-                <Text style={{ color: "#fff", fontWeight: "700" }}>
-                  Delete
-                </Text>
+                <Text style={{ color: "#fff", fontWeight: "700" }}>Delete</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -415,23 +448,21 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-
   gradientSaveBtn: {
-  paddingVertical: 13,
-  paddingHorizontal: 40,
-  borderRadius: 50,
-  alignItems: "center",
-  marginTop: 25,
-  alignSelf: "center",   
-},
+    paddingVertical: 13,
+    paddingHorizontal: 40,
+    borderRadius: 50,
+    alignItems: "center",
+    marginTop: 25,
+    alignSelf: "center",
+  },
 
-gradientSaveText: {
-  color: "#FFFFFF",
-  fontWeight: "700",
-  fontSize: 16,
-  letterSpacing: 0.5,
-},
-
+  gradientSaveText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 16,
+    letterSpacing: 0.5,
+  },
 });
 
 const modalStyles = StyleSheet.create({
