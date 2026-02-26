@@ -16,6 +16,7 @@ import ManageAddress from "../../components/ManageAddress";
 import ChangePassword from "../../components/ChangePassword";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function AccountScreen() {
   const params = useLocalSearchParams();
@@ -24,6 +25,7 @@ export default function AccountScreen() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [activeTab, setActiveTab] = useState("servicestatus");
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     if (params?.tab) {
@@ -141,34 +143,47 @@ export default function AccountScreen() {
 
   return (
     <View style={styles.container}>
-      {/* ===== TOP TABS ===== */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.tabContainer}
-        style={{ flexGrow: 0 }}
-      >
-        {[
-          ["servicestatus", "Service"],
-          ["personal", "Profile"],
-          ["changepassword", "Change Password"],
-          ["orders", "Orders"],
-          ["address", "Address"],
-        ].map(([key, label]) => {
-          const active = activeTab === key;
-          return (
-            <TouchableOpacity
-              key={key}
-              onPress={() => setActiveTab(key)}
-              style={[styles.tabButton, active && styles.activeTab]}
-            >
-              <Text style={[styles.tabText, active && styles.activeTabText]}>
-                {label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+      {/* ===== FILTER DROPDOWN ===== */}
+{/* ===== FILTER DROPDOWN ===== */}
+<View style={styles.filterWrapper}>
+  <TouchableOpacity
+    onPress={() => setShowDropdown(!showDropdown)}
+    activeOpacity={0.8}
+  >
+    <LinearGradient
+      colors={["#0EA5E9", "#2563EB"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.gradientFilterBtn}
+    >
+      <Ionicons name="funnel-outline" size={18} color="#fff" />
+      <Text style={styles.filterLabel}>Filter</Text>
+    </LinearGradient>
+  </TouchableOpacity>
+
+  {showDropdown && (
+    <View style={styles.dropdown}>
+      {[
+        ["servicestatus", "Service"],
+        ["personal", "Profile"],
+        ["changepassword", "Change Password"],
+        ["orders", "Orders"],
+        ["address", "Address"],
+      ].map(([key, label]) => (
+        <TouchableOpacity
+          key={key}
+          style={styles.dropdownItem}
+          onPress={() => {
+            setActiveTab(key);
+            setShowDropdown(false);
+          }}
+        >
+          <Text style={styles.dropdownText}>{label}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  )}
+</View>
 
       {/* ===== CONTENT CARD ===== */}
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 20 }}>
@@ -256,18 +271,63 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   gradientLogout: {
-  paddingVertical: 13,
-  paddingHorizontal: 40,
-  borderRadius: 50,
-  alignItems: "center",
-  marginTop: 25,
-  alignSelf: "center",   // ⭐ centered pill (NOT full width)
+    paddingVertical: 13,
+    paddingHorizontal: 40,
+    borderRadius: 50,
+    alignItems: "center",
+    marginTop: 25,
+    alignSelf: "center",   // ⭐ centered pill (NOT full width)
+  },
+
+  gradientLogoutText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 16,
+    letterSpacing: 0.5,
+  },
+
+  /* Filter Dropdown */
+/* Filter Wrapper */
+filterWrapper: {
+  alignItems: "flex-start",   // 👈 LEFT SIDE
+  paddingHorizontal: 16,
+  paddingTop: 16,
+  zIndex: 100,
 },
 
-gradientLogoutText: {
+gradientFilterBtn: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 10,
+  paddingHorizontal: 18,
+  borderRadius: 50,           // pill style
+  gap: 6,
+},
+
+filterLabel: {
   color: "#FFFFFF",
   fontWeight: "700",
-  fontSize: 16,
-  letterSpacing: 0.5,
+  fontSize: 14,
+},
+
+dropdown: {
+  position: "absolute",
+  top: 55,
+  left: 16,                   // 👈 dropdown aligned left
+  backgroundColor: "#1e293b",
+  borderRadius: 12,
+  paddingVertical: 8,
+  width: 180,
+  elevation: 5,
+},
+
+dropdownItem: {
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+},
+
+dropdownText: {
+  color: "#fff",
+  fontWeight: "600",
 },
 });
