@@ -699,14 +699,15 @@ function BookingDetailModal({ booking, onClose }) {
     <Modal visible transparent animationType="slide">
       <View style={styles.modalOverlay}>
         <View style={styles.modalCard}>
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <TouchableOpacity
+            style={styles.stickyCloseButton}
+            onPress={onClose}
+          >
+            <Text style={{ color: "#fff", fontSize: 18 }}>✕</Text>
+          </TouchableOpacity>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 40 }}>
             {/* Close Button */}
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={onClose}
-            >
-              <Text style={{ color: "#fff", fontSize: 18 }}>✕</Text>
-            </TouchableOpacity>
+
 
             {/* Title */}
             <Text style={styles.modalTitle}>
@@ -849,7 +850,7 @@ function BookingDetailModal({ booking, onClose }) {
             </View>
 
             {/* Close Button */}
-            <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
+            {/* <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
               <LinearGradient
                 colors={["#0EA5E9", "#2563EB"]}
                 start={{ x: 0, y: 0 }}
@@ -858,7 +859,7 @@ function BookingDetailModal({ booking, onClose }) {
               >
                 <Text style={styles.gradientCloseText}>Close</Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </ScrollView>
         </View>
       </View>
@@ -945,15 +946,13 @@ function VehicleDetailModal({ vehicle, onClose }) {
     <Modal visible transparent animationType="slide">
       <View style={styles.modalOverlay}>
         <View style={styles.modalCard}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-
-            {/* Close */}
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={onClose}
-            >
-              <Text style={{ color: "#fff", fontSize: 18 }}>✕</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={onClose}
+          >
+            <Text style={{ color: "#fff", fontSize: 18 }}>✕</Text>
+          </TouchableOpacity>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 30 }}>
 
             <Text style={styles.modalTitle}>
               Vehicle Details
@@ -1324,7 +1323,7 @@ function VehicleDetailModal({ vehicle, onClose }) {
               </View>
             </Modal>
 
-            <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
+            {/* <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
               <LinearGradient
                 colors={["#0EA5E9", "#2563EB"]}
                 start={{ x: 0, y: 0 }}
@@ -1333,7 +1332,7 @@ function VehicleDetailModal({ vehicle, onClose }) {
               >
                 <Text style={styles.gradientCloseText}>Close</Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
           </ScrollView>
         </View>
@@ -2028,4 +2027,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     letterSpacing: 0.5,
   },
+  stickyCloseButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  }
 });
