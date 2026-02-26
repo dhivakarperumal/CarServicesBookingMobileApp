@@ -249,6 +249,7 @@ export default function ManageAddress() {
   const handleEdit = (addr: any) => {
     setForm(addr);
     setEditId(addr.id);
+    setShowForm(true);
   };
 
   return (
@@ -422,36 +423,34 @@ export default function ManageAddress() {
               )}
             </LinearGradient>
           </TouchableOpacity>
-          <Modal transparent visible={showDeleteModal} animationType="fade">
-            <View style={modalStyles.overlay}>
-              <View style={modalStyles.container}>
-                <Text style={modalStyles.title}>Delete Address?</Text>
-                <Text style={modalStyles.subtitle}>
-                  Are you sure you want to delete this address?
-                </Text>
-
-                <View style={modalStyles.buttonRow}>
-                  <TouchableOpacity
-                    style={modalStyles.cancelBtn}
-                    onPress={() => setShowDeleteModal(false)}
-                  >
-                    <Text style={{ color: "#fff" }}>Cancel</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={modalStyles.deleteBtn}
-                    onPress={confirmDelete}
-                  >
-                    <Text style={{ color: "#fff", fontWeight: "700" }}>
-                      Delete
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </Modal>
         </>
       )}
+      <Modal transparent visible={showDeleteModal} animationType="fade">
+        <View style={modalStyles.overlay}>
+          <View style={modalStyles.container}>
+            <Text style={modalStyles.title}>Delete Address?</Text>
+            <Text style={modalStyles.subtitle}>
+              Are you sure you want to delete this address?
+            </Text>
+
+            <View style={modalStyles.buttonRow}>
+              <TouchableOpacity
+                style={modalStyles.cancelBtn}
+                onPress={() => setShowDeleteModal(false)}
+              >
+                <Text style={{ color: "#fff" }}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={modalStyles.deleteBtn}
+                onPress={confirmDelete}
+              >
+                <Text style={{ color: "#fff", fontWeight: "700" }}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAwareScrollView>
   );
 }
@@ -468,17 +467,17 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", marginTop: 8 },
 
   hideBtn: {
-  backgroundColor: "#334155",
-  paddingVertical: 6,
-  paddingHorizontal: 14,
-  borderRadius: 20,
-},
+    backgroundColor: "#334155",
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+  },
 
-hideText: {
-  color: "#fff",
-  fontSize: 13,
-  fontWeight: "600",
-},
+  hideText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
+  },
 
   editBtn: {
     backgroundColor: "#0ea5e9",
