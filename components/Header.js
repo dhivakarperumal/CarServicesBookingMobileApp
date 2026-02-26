@@ -33,6 +33,7 @@ export default function MobileNavbar() {
   useEffect(() => {
     let unsubCart = null;
     let unsubBookings = null;
+    let unsubOrders = null;
 
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -48,16 +49,16 @@ export default function MobileNavbar() {
         setUserData(snap.data());
       }
 
-      // 🔥 CART LISTENER
+      // 🛒 CART
       const cartRef = collection(db, "users", user.uid, "cart");
       unsubCart = onSnapshot(cartRef, (snapshot) => {
         setCartCount(snapshot.size);
       });
 
-      // 🔔 BOOKINGS LISTENER
+      // 🔔 BOOKINGS
       const bookingRef = collection(db, "bookings");
       unsubBookings = onSnapshot(bookingRef, (snapshot) => {
-        const updated = [];
+        const bookingUpdates = [];
 
         snapshot.forEach((docItem) => {
           const data = docItem.data();
@@ -67,17 +68,47 @@ export default function MobileNavbar() {
             data.status &&
             data.status !== "Pending"
           ) {
-            updated.push({
-              id: docItem.id,
-              bookingId: data.bookingId,
+            bookingUpdates.push({
+              id: "booking_" + docItem.id,
+              type: "booking",
+              title: `Booking ${data.bookingId}`,
               status: data.status,
-              trackNumber: data.trackNumber,
-              createdAt: data.createdAt,
             });
           }
         });
 
-        setNotifications(updated);
+        setNotifications((prev) => {
+          const ordersOnly = prev.filter(n => n.type === "order");
+          return [...ordersOnly, ...bookingUpdates];
+        });
+      });
+
+      // 🔔 ORDERS
+      const orderRef = collection(db, "orders");
+      unsubOrders = onSnapshot(orderRef, (snapshot) => {
+        const orderUpdates = [];
+
+        snapshot.forEach((docItem) => {
+          const data = docItem.data();
+
+          if (
+            data.uid === user.uid &&
+            data.status &&
+            data.status !== "orderplaced"
+          ) {
+            orderUpdates.push({
+              id: "order_" + docItem.id,
+              type: "order",
+              title: `Order ${data.orderId}`,
+              status: data.status,
+            });
+          }
+        });
+
+        setNotifications((prev) => {
+          const bookingsOnly = prev.filter(n => n.type === "booking");
+          return [...bookingsOnly, ...orderUpdates];
+        });
       });
     });
 
@@ -85,6 +116,7 @@ export default function MobileNavbar() {
       unsubAuth();
       if (unsubCart) unsubCart();
       if (unsubBookings) unsubBookings();
+      if (unsubOrders) unsubOrders();
     };
   }, []);
 
@@ -255,12 +287,15 @@ export default function MobileNavbar() {
                   router.push("/(tabs)/profile");
                 }}
               >
+
                 <Text style={styles.menuText}>
-                  Booking {item.bookingId}
+                  {item.title}
                 </Text>
+
                 <Text style={{ color: "#22C55E", fontSize: 12 }}>
                   Status: {item.status}
                 </Text>
+                
               </TouchableOpacity>
             ))
           )}
