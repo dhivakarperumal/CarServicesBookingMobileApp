@@ -104,8 +104,6 @@ const whyData = [
   },
 ];
 
-
-
 const { width } = Dimensions.get("window");
 const REVIEW_CARD_WIDTH = width - 40;
 
@@ -1070,9 +1068,106 @@ function VehicleDetailModal({ vehicle, onClose }) {
                 marginBottom: 15
               }}>
                 <Text style={{ color: "#10B981", fontWeight: "600" }}>
-                  ✅ Mechanic {vehicle.assignedEmployeeName} assigned to your vehicle
+                  ✅ Mechanic assigned to your vehicle
                 </Text>
               </View>
+            )}
+
+                        {vehicle.issuesAdded && vehicle.issuesDetails?.length > 0 && (
+              <>
+                <Text style={{
+                  color: "#38bdf8",
+                  fontSize: 16,
+                  fontWeight: "700",
+                  marginBottom: 15
+                }}>
+                  Spare Report Status
+                </Text>
+
+                {vehicle.issuesDetails.map((item, index) => (
+                  <View
+                    key={index}
+                    style={{
+                      backgroundColor: "#111827",
+                      padding: 15,
+                      borderRadius: 16,
+                      marginBottom: 15,
+                      borderWidth: 1,
+                      borderColor: "rgba(14,165,233,0.2)"
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontWeight: "600" }}>
+                      {item.issue}
+                    </Text>
+
+                    <Text style={{ color: "#9CA3AF", marginTop: 4 }}>
+                      Amount: ₹{item.amount}
+                    </Text>
+
+                    {/* APPROVE / REJECT BUTTONS */}
+                    {item.approvalStatus === "pending" && (
+                      <View style={{
+                        flexDirection: "row",
+                        marginTop: 10
+                      }}>
+                        <TouchableOpacity
+                          onPress={() => handleIssueUpdate(index, "approved")}
+                          style={{
+                            backgroundColor: "#10B981",
+                            paddingVertical: 8,
+                            paddingHorizontal: 18,
+                            borderRadius: 10,
+                            marginRight: 10
+                          }}
+                        >
+                          <Text style={{ color: "#fff", fontWeight: "600" }}>
+                            Approve
+                          </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          onPress={() => {
+                            setSelectedIssueIndex(index);
+                            setRejectModalVisible(true);
+                          }}
+                          style={{
+                            backgroundColor: "#EF4444",
+                            paddingVertical: 8,
+                            paddingHorizontal: 18,
+                            borderRadius: 10
+                          }}
+                        >
+                          <Text style={{ color: "#fff", fontWeight: "600" }}>
+                            Reject
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+
+                    )}
+                    {item.approvalStatus === "approved" && (
+                      <View style={{ marginTop: 10 }}>
+                        <Text style={{ color: "#10B981", fontWeight: "600" }}>
+                          ✅ You Approved This Spare
+                        </Text>
+                      </View>
+                    )}
+
+                    {item.approvalStatus === "rejected" && (
+                      <View style={{ marginTop: 10 }}>
+                        <Text style={{ color: "#EF4444", fontWeight: "600" }}>
+                          ❌ You Rejected This Spare
+                        </Text>
+
+                        {item.rejectionReason && (
+                          <Text style={{ color: "#9CA3AF", marginTop: 4 }}>
+                            Reason: {item.rejectionReason}
+                          </Text>
+                        )}
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </>
             )}
 
             {/* SERVICE TRACKER */}
@@ -1151,103 +1246,6 @@ function VehicleDetailModal({ vehicle, onClose }) {
               </View>
 
             </View>
-
-            {vehicle.issuesAdded && vehicle.issuesDetails?.length > 0 && (
-              <>
-                <Text style={{
-                  color: "#38bdf8",
-                  fontSize: 16,
-                  fontWeight: "700",
-                  marginBottom: 15
-                }}>
-                  Issue Inspection Report
-                </Text>
-
-                {vehicle.issuesDetails.map((item, index) => (
-                  <View
-                    key={index}
-                    style={{
-                      backgroundColor: "#111827",
-                      padding: 15,
-                      borderRadius: 16,
-                      marginBottom: 15,
-                      borderWidth: 1,
-                      borderColor: "rgba(14,165,233,0.2)"
-                    }}
-                  >
-                    <Text style={{ color: "#fff", fontWeight: "600" }}>
-                      {item.issue}
-                    </Text>
-
-                    <Text style={{ color: "#9CA3AF", marginTop: 4 }}>
-                      Amount: ₹{item.amount}
-                    </Text>
-
-                    {/* APPROVE / REJECT BUTTONS */}
-                    {item.approvalStatus === "pending" && (
-                      <View style={{
-                        flexDirection: "row",
-                        marginTop: 10
-                      }}>
-                        <TouchableOpacity
-                          onPress={() => handleIssueUpdate(index, "approved")}
-                          style={{
-                            backgroundColor: "#10B981",
-                            paddingVertical: 8,
-                            paddingHorizontal: 18,
-                            borderRadius: 10,
-                            marginRight: 10
-                          }}
-                        >
-                          <Text style={{ color: "#fff", fontWeight: "600" }}>
-                            Approve
-                          </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          onPress={() => {
-                            setSelectedIssueIndex(index);
-                            setRejectModalVisible(true);
-                          }}
-                          style={{
-                            backgroundColor: "#EF4444",
-                            paddingVertical: 8,
-                            paddingHorizontal: 18,
-                            borderRadius: 10
-                          }}
-                        >
-                          <Text style={{ color: "#fff", fontWeight: "600" }}>
-                            Reject
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-
-                    )}
-                    {item.approvalStatus === "approved" && (
-                      <View style={{ marginTop: 10 }}>
-                        <Text style={{ color: "#10B981", fontWeight: "600" }}>
-                          ✅ You Approved This Issue
-                        </Text>
-                      </View>
-                    )}
-
-                    {item.approvalStatus === "rejected" && (
-                      <View style={{ marginTop: 10 }}>
-                        <Text style={{ color: "#EF4444", fontWeight: "600" }}>
-                          ❌ You Rejected This Issue
-                        </Text>
-
-                        {item.rejectionReason && (
-                          <Text style={{ color: "#9CA3AF", marginTop: 4 }}>
-                            Reason: {item.rejectionReason}
-                          </Text>
-                        )}
-                      </View>
-                    )}
-                  </View>
-                ))}
-              </>
-            )}
 
             {/* Reject Reason Modal */}
             <Modal
