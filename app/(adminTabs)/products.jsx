@@ -596,7 +596,7 @@ const styles = StyleSheet.create({
 
   addBtn: {
     position: "absolute",
-    bottom: 70,
+    bottom: 80,
     right: 20,
     backgroundColor: "#2563eb",
     width: 56,
