@@ -2,7 +2,16 @@ import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, doc, getDoc, onSnapshot, orderBy, query, where } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+  updateDoc
+} from "firebase/firestore";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated, Dimensions, Image, Linking, Modal,
@@ -860,6 +869,43 @@ function BookingDetailModal({ booking, onClose }) {
 function VehicleDetailModal({ vehicle, onClose }) {
   const normalizedStatus =
     STATUS_NORMALIZER[vehicle.serviceStatus] || vehicle.serviceStatus;
+  const handleIssueUpdate = async (issueIndex, newStatus) => {
+    try {
+      const ref = doc(db, "allServices", vehicle.id);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return;
+
+      const data = snap.data();
+      const updatedIssues = [...data.issuesDetails];
+
+      updatedIssues[issueIndex].approvalStatus = newStatus;
+
+      // 🔥 check status logic
+      const allRejected = updatedIssues.every(
+        (item) => item.approvalStatus === "rejected"
+      );
+
+      const anyApproved = updatedIssues.some(
+        (item) => item.approvalStatus === "approved"
+      );
+
+      let newServiceStatus = "Waiting For Issue Approval";
+
+      if (allRejected) {
+        newServiceStatus = "All Issues Rejected";
+      } else if (anyApproved) {
+        newServiceStatus = "Approved - Work In Progress";
+      }
+
+      await updateDoc(ref, {
+        issuesDetails: updatedIssues,
+        serviceStatus: newServiceStatus,
+      });
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <Modal visible transparent animationType="slide">
       <View style={styles.modalOverlay}>
@@ -982,6 +1028,19 @@ function VehicleDetailModal({ vehicle, onClose }) {
               </Text>
             </View>
 
+            {vehicle.assigned && (
+              <View style={{
+                backgroundColor: "rgba(16,185,129,0.1)",
+                padding: 12,
+                borderRadius: 12,
+                marginBottom: 15
+              }}>
+                <Text style={{ color: "#10B981", fontWeight: "600" }}>
+                  ✅ Mechanic {vehicle.assignedEmployeeName} assigned to your vehicle
+                </Text>
+              </View>
+            )}
+
             {/* SERVICE TRACKER */}
             <View style={styles.trackerMainContainer}>
 
@@ -1058,6 +1117,91 @@ function VehicleDetailModal({ vehicle, onClose }) {
               </View>
 
             </View>
+
+            {vehicle.issuesAdded && vehicle.issuesDetails?.length > 0 && (
+              <>
+                <Text style={{
+                  color: "#38bdf8",
+                  fontSize: 16,
+                  fontWeight: "700",
+                  marginBottom: 15
+                }}>
+                  Issue Inspection Report
+                </Text>
+
+                {vehicle.issuesDetails.map((item, index) => (
+                  <View
+                    key={index}
+                    style={{
+                      backgroundColor: "#111827",
+                      padding: 15,
+                      borderRadius: 16,
+                      marginBottom: 15,
+                      borderWidth: 1,
+                      borderColor: "rgba(14,165,233,0.2)"
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontWeight: "600" }}>
+                      {item.issue}
+                    </Text>
+
+                    <Text style={{ color: "#9CA3AF", marginTop: 4 }}>
+                      Amount: ₹{item.amount}
+                    </Text>
+
+                    {/* STATUS DISPLAY */}
+                    {item.approvalStatus === "approved" && (
+                      <Text style={{ color: "#10B981", marginTop: 8 }}>
+                        ✅ Approved
+                      </Text>
+                    )}
+
+                    {item.approvalStatus === "rejected" && (
+                      <Text style={{ color: "#EF4444", marginTop: 8 }}>
+                        ❌ Rejected
+                      </Text>
+                    )}
+
+                    {/* APPROVE / REJECT BUTTONS */}
+                    {item.approvalStatus === "pending" && (
+                      <View style={{
+                        flexDirection: "row",
+                        marginTop: 10
+                      }}>
+                        <TouchableOpacity
+                          onPress={() => handleIssueUpdate(index, "approved")}
+                          style={{
+                            backgroundColor: "#10B981",
+                            paddingVertical: 8,
+                            paddingHorizontal: 18,
+                            borderRadius: 10,
+                            marginRight: 10
+                          }}
+                        >
+                          <Text style={{ color: "#fff", fontWeight: "600" }}>
+                            Approve
+                          </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          onPress={() => handleIssueUpdate(index, "rejected")}
+                          style={{
+                            backgroundColor: "#EF4444",
+                            paddingVertical: 8,
+                            paddingHorizontal: 18,
+                            borderRadius: 10
+                          }}
+                        >
+                          <Text style={{ color: "#fff", fontWeight: "600" }}>
+                            Reject
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </>
+            )}
 
             <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
               <LinearGradient
