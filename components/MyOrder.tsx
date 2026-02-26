@@ -221,7 +221,7 @@ function OrderModal({ order, onClose }) {
               </View>
             )}
 
-            <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
+            {/* <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
               <LinearGradient
                 colors={["#0EA5E9", "#2563EB"]}
                 start={{ x: 0, y: 0 }}
@@ -230,7 +230,7 @@ function OrderModal({ order, onClose }) {
               >
                 <Text style={styles.gradientCloseText}>Close</Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </ScrollView>
         </View>
       </View>

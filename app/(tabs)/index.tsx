@@ -19,7 +19,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View, TextInput
 } from "react-native";
 import { auth, db } from "../../firebase";
 
@@ -699,14 +699,15 @@ function BookingDetailModal({ booking, onClose }) {
     <Modal visible transparent animationType="slide">
       <View style={styles.modalOverlay}>
         <View style={styles.modalCard}>
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <TouchableOpacity
+            style={styles.stickyCloseButton}
+            onPress={onClose}
+          >
+            <Text style={{ color: "#fff", fontSize: 18 }}>✕</Text>
+          </TouchableOpacity>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 40 }}>
             {/* Close Button */}
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={onClose}
-            >
-              <Text style={{ color: "#fff", fontSize: 18 }}>✕</Text>
-            </TouchableOpacity>
+
 
             {/* Title */}
             <Text style={styles.modalTitle}>
@@ -849,7 +850,7 @@ function BookingDetailModal({ booking, onClose }) {
             </View>
 
             {/* Close Button */}
-            <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
+            {/* <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
               <LinearGradient
                 colors={["#0EA5E9", "#2563EB"]}
                 start={{ x: 0, y: 0 }}
@@ -858,7 +859,7 @@ function BookingDetailModal({ booking, onClose }) {
               >
                 <Text style={styles.gradientCloseText}>Close</Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </ScrollView>
         </View>
       </View>
@@ -869,6 +870,9 @@ function BookingDetailModal({ booking, onClose }) {
 function VehicleDetailModal({ vehicle, onClose }) {
   const normalizedStatus =
     STATUS_NORMALIZER[vehicle.serviceStatus] || vehicle.serviceStatus;
+  const [rejectModalVisible, setRejectModalVisible] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [selectedIssueIndex, setSelectedIssueIndex] = useState(null);
   const handleIssueUpdate = async (issueIndex, newStatus) => {
     try {
       const ref = doc(db, "allServices", vehicle.id);
@@ -906,19 +910,49 @@ function VehicleDetailModal({ vehicle, onClose }) {
       console.log(error);
     }
   };
+  const confirmReject = async () => {
+    if (!rejectReason.trim()) {
+      alert("Please enter rejection reason");
+      return;
+    }
+
+    try {
+      const ref = doc(db, "allServices", vehicle.id);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return;
+
+      const data = snap.data();
+      const updatedIssues = [...data.issuesDetails];
+
+      updatedIssues[selectedIssueIndex] = {
+        ...updatedIssues[selectedIssueIndex],
+        approvalStatus: "rejected",
+        rejectionReason: rejectReason
+      };
+
+      await updateDoc(ref, {
+        issuesDetails: updatedIssues
+      });
+
+      setRejectModalVisible(false);
+      setRejectReason("");
+      setSelectedIssueIndex(null);
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <Modal visible transparent animationType="slide">
       <View style={styles.modalOverlay}>
         <View style={styles.modalCard}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-
-            {/* Close */}
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={onClose}
-            >
-              <Text style={{ color: "#fff", fontSize: 18 }}>✕</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={onClose}
+          >
+            <Text style={{ color: "#fff", fontSize: 18 }}>✕</Text>
+          </TouchableOpacity>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 30 }}>
 
             <Text style={styles.modalTitle}>
               Vehicle Details
@@ -1149,19 +1183,6 @@ function VehicleDetailModal({ vehicle, onClose }) {
                       Amount: ₹{item.amount}
                     </Text>
 
-                    {/* STATUS DISPLAY */}
-                    {item.approvalStatus === "approved" && (
-                      <Text style={{ color: "#10B981", marginTop: 8 }}>
-                        ✅ Approved
-                      </Text>
-                    )}
-
-                    {item.approvalStatus === "rejected" && (
-                      <Text style={{ color: "#EF4444", marginTop: 8 }}>
-                        ❌ Rejected
-                      </Text>
-                    )}
-
                     {/* APPROVE / REJECT BUTTONS */}
                     {item.approvalStatus === "pending" && (
                       <View style={{
@@ -1184,7 +1205,10 @@ function VehicleDetailModal({ vehicle, onClose }) {
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                          onPress={() => handleIssueUpdate(index, "rejected")}
+                          onPress={() => {
+                            setSelectedIssueIndex(index);
+                            setRejectModalVisible(true);
+                          }}
                           style={{
                             backgroundColor: "#EF4444",
                             paddingVertical: 8,
@@ -1197,13 +1221,109 @@ function VehicleDetailModal({ vehicle, onClose }) {
                           </Text>
                         </TouchableOpacity>
                       </View>
+
+                    )}
+                    {item.approvalStatus === "approved" && (
+                      <View style={{ marginTop: 10 }}>
+                        <Text style={{ color: "#10B981", fontWeight: "600" }}>
+                          ✅ You Approved This Issue
+                        </Text>
+                      </View>
+                    )}
+
+                    {item.approvalStatus === "rejected" && (
+                      <View style={{ marginTop: 10 }}>
+                        <Text style={{ color: "#EF4444", fontWeight: "600" }}>
+                          ❌ You Rejected This Issue
+                        </Text>
+
+                        {item.rejectionReason && (
+                          <Text style={{ color: "#9CA3AF", marginTop: 4 }}>
+                            Reason: {item.rejectionReason}
+                          </Text>
+                        )}
+                      </View>
                     )}
                   </View>
                 ))}
               </>
             )}
 
-            <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
+            {/* Reject Reason Modal */}
+            <Modal
+              visible={rejectModalVisible}
+              transparent
+              animationType="fade"
+            >
+              <View style={{
+                flex: 1,
+                backgroundColor: "rgba(0,0,0,0.7)",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 20
+              }}>
+                <View style={{
+                  backgroundColor: "#0f172a",
+                  width: "100%",
+                  borderRadius: 16,
+                  padding: 20
+                }}>
+                  <Text style={{
+                    color: "#38bdf8",
+                    fontSize: 16,
+                    fontWeight: "700",
+                    marginBottom: 15
+                  }}>
+                    Enter Rejection Reason
+                  </Text>
+
+                  <TextInput
+                    placeholder="Enter reason..."
+                    placeholderTextColor="#9CA3AF"
+                    value={rejectReason}
+                    onChangeText={setRejectReason}
+                    multiline
+                    style={{
+                      backgroundColor: "#111827",
+                      color: "#fff",
+                      padding: 12,
+                      borderRadius: 12,
+                      minHeight: 80,
+                      marginBottom: 15
+                    }}
+                  />
+
+                  <TouchableOpacity
+                    onPress={confirmReject}
+                    style={{
+                      backgroundColor: "#EF4444",
+                      paddingVertical: 12,
+                      borderRadius: 12,
+                      alignItems: "center"
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontWeight: "700" }}>
+                      Confirm Reject
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => setRejectModalVisible(false)}
+                    style={{
+                      marginTop: 10,
+                      alignItems: "center"
+                    }}
+                  >
+                    <Text style={{ color: "#9CA3AF" }}>
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+
+                </View>
+              </View>
+            </Modal>
+
+            {/* <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
               <LinearGradient
                 colors={["#0EA5E9", "#2563EB"]}
                 start={{ x: 0, y: 0 }}
@@ -1212,7 +1332,7 @@ function VehicleDetailModal({ vehicle, onClose }) {
               >
                 <Text style={styles.gradientCloseText}>Close</Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
           </ScrollView>
         </View>
@@ -1907,4 +2027,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     letterSpacing: 0.5,
   },
+  stickyCloseButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  }
 });

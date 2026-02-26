@@ -183,11 +183,12 @@ function BookingDetailModal({ booking, onClose }) {
     <Modal visible transparent animationType="slide">
       <View style={styles.modalOverlay}>
         <View style={styles.modalCard}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Close Button */}
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Text style={{ color: "#fff", fontSize: 18 }}>✕</Text>
-            </TouchableOpacity>
+          {/* Close Button */}
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Text style={{ color: "#fff", fontSize: 18 }}>✕</Text>
+          </TouchableOpacity>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 40 }}>
+
 
             {/* Title */}
             <Text style={styles.modalTitle}>Booking Details</Text>
@@ -327,7 +328,7 @@ function BookingDetailModal({ booking, onClose }) {
             </View>
 
             {/* Close Button */}
-            <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
+            {/* <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
               <LinearGradient
                 colors={["#0EA5E9", "#2563EB"]}
                 start={{ x: 0, y: 0 }}
@@ -336,7 +337,7 @@ function BookingDetailModal({ booking, onClose }) {
               >
                 <Text style={styles.gradientCloseText}>Close</Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </ScrollView>
         </View>
       </View>
@@ -437,9 +438,15 @@ const styles = StyleSheet.create({
   },
 
   closeButton: {
-    alignSelf: "flex-end",
-    paddingVertical: 8,
-    paddingHorizontal: 8,
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   modalTitle: {
