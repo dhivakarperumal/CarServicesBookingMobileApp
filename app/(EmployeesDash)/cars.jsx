@@ -416,77 +416,77 @@
 //           />
 //         )}
 
-//         {/* 🔧 PARTS MODAL */}
-//         <Modal visible={partsModal} animationType="slide">
-//           <SafeAreaView style={styles.modal}>
-//             <TouchableOpacity
-//               onPress={() => setPartsModal(false)}
-//               style={styles.closeIcon}
-//             >
-//               <Ionicons name="close" size={26} color="#fff" />
+// {/* 🔧 PARTS MODAL */}
+// <Modal visible={partsModal} animationType="slide">
+//   <SafeAreaView style={styles.modal}>
+//     <TouchableOpacity
+//       onPress={() => setPartsModal(false)}
+//       style={styles.closeIcon}
+//     >
+//       <Ionicons name="close" size={26} color="#fff" />
+//     </TouchableOpacity>
+
+//     <Text style={styles.modalTitle}>Add Parts</Text>
+
+//     <ScrollView>
+//       {parts.map((item, index) => (
+//         <View key={index} style={styles.partCard}>
+//           <TextInput
+//             placeholder="Part name"
+//             placeholderTextColor="#64748b"
+//             value={item.partName}
+//             onChangeText={(v) => handlePartChange(index, "partName", v)}
+//             style={styles.input}
+//           />
+
+//           <View style={{ flexDirection: "row", gap: 8 }}>
+//             <TextInput
+//               placeholder="Qty"
+//               keyboardType="numeric"
+//               value={String(item.qty)}
+//               onChangeText={(v) => handlePartChange(index, "qty", v)}
+//               style={[styles.input, { flex: 1 }]}
+//             />
+
+//             <TextInput
+//               placeholder="Price"
+//               keyboardType="numeric"
+//               value={String(item.price)}
+//               onChangeText={(v) => handlePartChange(index, "price", v)}
+//               style={[styles.input, { flex: 1 }]}
+//             />
+//           </View>
+
+//           <Text style={styles.total}>
+//             Total: ₹{Number(item.qty) * Number(item.price)}
+//           </Text>
+
+//           {parts.length > 1 && (
+//             <TouchableOpacity onPress={() => removePartRow(index)}>
+//               <Text style={styles.remove}>Remove</Text>
 //             </TouchableOpacity>
+//           )}
+//         </View>
+//       ))}
 
-//             <Text style={styles.modalTitle}>Add Parts</Text>
+//       <TouchableOpacity style={styles.addRow} onPress={addPartRow}>
+//         <Text style={styles.updateText}>+ Add Part</Text>
+//       </TouchableOpacity>
+//     </ScrollView>
 
-//             <ScrollView>
-//               {parts.map((item, index) => (
-//                 <View key={index} style={styles.partCard}>
-//                   <TextInput
-//                     placeholder="Part name"
-//                     placeholderTextColor="#64748b"
-//                     value={item.partName}
-//                     onChangeText={(v) => handlePartChange(index, "partName", v)}
-//                     style={styles.input}
-//                   />
+//     <Text style={styles.grandTotal}>
+//       Parts Total: ₹{totalPartsCost}
+//     </Text>
 
-//                   <View style={{ flexDirection: "row", gap: 8 }}>
-//                     <TextInput
-//                       placeholder="Qty"
-//                       keyboardType="numeric"
-//                       value={String(item.qty)}
-//                       onChangeText={(v) => handlePartChange(index, "qty", v)}
-//                       style={[styles.input, { flex: 1 }]}
-//                     />
-
-//                     <TextInput
-//                       placeholder="Price"
-//                       keyboardType="numeric"
-//                       value={String(item.price)}
-//                       onChangeText={(v) => handlePartChange(index, "price", v)}
-//                       style={[styles.input, { flex: 1 }]}
-//                     />
-//                   </View>
-
-//                   <Text style={styles.total}>
-//                     Total: ₹{Number(item.qty) * Number(item.price)}
-//                   </Text>
-
-//                   {parts.length > 1 && (
-//                     <TouchableOpacity onPress={() => removePartRow(index)}>
-//                       <Text style={styles.remove}>Remove</Text>
-//                     </TouchableOpacity>
-//                   )}
-//                 </View>
-//               ))}
-
-//               <TouchableOpacity style={styles.addRow} onPress={addPartRow}>
-//                 <Text style={styles.updateText}>+ Add Part</Text>
-//               </TouchableOpacity>
-//             </ScrollView>
-
-//             <Text style={styles.grandTotal}>
-//               Parts Total: ₹{totalPartsCost}
-//             </Text>
-
-//             <TouchableOpacity style={styles.saveBtn} onPress={saveParts}>
-//               {savingParts ? (
-//                 <ActivityIndicator color="#fff" />
-//               ) : (
-//                 <Text style={styles.updateText}>Save Parts</Text>
-//               )}
-//             </TouchableOpacity>
-//           </SafeAreaView>
-//         </Modal>
+//     <TouchableOpacity style={styles.saveBtn} onPress={saveParts}>
+//       {savingParts ? (
+//         <ActivityIndicator color="#fff" />
+//       ) : (
+//         <Text style={styles.updateText}>Save Parts</Text>
+//       )}
+//     </TouchableOpacity>
+//   </SafeAreaView>
+// </Modal>
 //       </SafeAreaView>
 //     </KeyboardAvoidingView>
 //   );
@@ -770,25 +770,66 @@ export default function CarsScreen() {
     try {
       setSavingIssues(true);
 
-      const issuesRef = collection(
+      const assignedIssuesRef = collection(
         db,
         "assignedServices",
         selectedCar.id,
         "issues"
       );
 
+      const allServicesIssuesRef =
+        selectedCar.bookingDocId &&
+        collection(db, "allServices", selectedCar.bookingDocId, "issues");
+
+      const issuesArray = validIssues.map((i) => ({
+        issue: i.issue,
+        amount: Number(i.amount),
+        approvalStatus: "pending",
+        workStatus: "notStarted",
+      }));
+
+      /* 🔥 SAVE EACH ISSUE WITH DEFAULT STATUS */
       for (let i of validIssues) {
-        await addDoc(issuesRef, {
+        const issueData = {
           issue: i.issue,
           amount: Number(i.amount),
+          approvalStatus: "pending",
+          workStatus: "notStarted",
           createdAt: new Date(),
-        });
+        };
+
+        await addDoc(assignedIssuesRef, issueData);
+
+        if (allServicesIssuesRef) {
+          await addDoc(allServicesIssuesRef, issueData);
+        }
+      }
+
+      /* 🔥 DEFAULT STATUSES FOR MAIN DOC */
+      const approvalStatus = selectedCar.approvalStatus || "pending";
+      const workStatus = selectedCar.workStatus || "notStarted";
+
+      let serviceStatus = "Waiting For Issue Approval";
+
+      if (approvalStatus === "approved") {
+        if (workStatus === "notStarted") serviceStatus = "Work Pending";
+        else if (workStatus === "inProgress") serviceStatus = "Work In Progress";
+        else if (workStatus === "completed") serviceStatus = "Bill Pending";
       }
 
       const updateData = {
         issuesAdded: true,
         issuesTotalCost:
           Number(selectedCar.issuesTotalCost || 0) + totalIssueCost,
+
+        issuesDetails: [
+          ...(selectedCar.issuesDetails || []),
+          ...issuesArray,
+        ],
+
+        approvalStatus,
+        workStatus,
+        serviceStatus,
       };
 
       await updateDoc(doc(db, "assignedServices", selectedCar.id), updateData);
@@ -809,7 +850,6 @@ export default function CarsScreen() {
       setSavingIssues(false);
     }
   };
-
   /* 🎨 STATUS COLOR */
   const getStatusStyle = (status) => {
     switch (status) {
@@ -1003,63 +1043,146 @@ export default function CarsScreen() {
 
         {/* 🔧 ISSUES MODAL */}
         <Modal visible={issuesModal} animationType="slide">
+          <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+              style={{ flex: 1 }}
+            >
+              {/* 🔴 CLOSE BUTTON */}
+              <TouchableOpacity
+                onPress={() => setIssuesModal(false)}
+                style={styles.closeIcon}
+              >
+                <Ionicons name="close" size={26} color="#fff" />
+              </TouchableOpacity>
+
+              <Text style={styles.modalTitle}>Add Issues</Text>
+
+              {/* 🔥 SCROLLABLE FORM */}
+              <ScrollView
+                contentContainerStyle={{ paddingBottom: 140 }}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                {issues.map((item, index) => (
+                  <View key={index} style={styles.partCard}>
+                    <TextInput
+                      placeholder="Issue"
+                      placeholderTextColor="#64748b"
+                      value={item.issue}
+                      onChangeText={(v) => handleIssueChange(index, "issue", v)}
+                      style={styles.input}
+                    />
+
+                    <TextInput
+                      placeholder="Amount"
+                      keyboardType="numeric"
+                      value={String(item.amount)}
+                      onChangeText={(v) => handleIssueChange(index, "amount", v)}
+                      style={styles.input}
+                    />
+
+                    {issues.length > 1 && (
+                      <TouchableOpacity
+                        onPress={() => removeIssueRow(index)}
+                        style={{ marginTop: 6 }}
+                      >
+                        <Text style={styles.remove}>Remove</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ))}
+
+                <TouchableOpacity style={styles.addRow} onPress={addIssueRow}>
+                  <Text style={styles.updateText}>+ Add Issue</Text>
+                </TouchableOpacity>
+              </ScrollView>
+
+              {/* 🔥 FIXED TOTAL + SAVE BUTTON */}
+              <View style={styles.bottomBar}>
+                <Text style={styles.grandTotal}>
+                  Issues Total: ₹{totalIssueCost}
+                </Text>
+
+                <TouchableOpacity style={styles.saveBtn} onPress={saveIssues}>
+                  {savingIssues ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.updateText}>Save Issues</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </KeyboardAvoidingView>
+          </SafeAreaView>
+        </Modal>
+
+        {/* 🔧 PARTS MODAL */}
+        <Modal visible={partsModal} animationType="slide">
           <SafeAreaView style={styles.modal}>
             <TouchableOpacity
-              onPress={() => setIssuesModal(false)}
+              onPress={() => setPartsModal(false)}
               style={styles.closeIcon}
             >
               <Ionicons name="close" size={26} color="#fff" />
             </TouchableOpacity>
 
-            <Text style={styles.modalTitle}>Add Issues</Text>
+            <Text style={styles.modalTitle}>Add Parts</Text>
 
             <ScrollView>
-              {issues.map((item, index) => (
+              {parts.map((item, index) => (
                 <View key={index} style={styles.partCard}>
                   <TextInput
-                    placeholder="Issue"
+                    placeholder="Part name"
                     placeholderTextColor="#64748b"
-                    value={item.issue}
-                    onChangeText={(v) =>
-                      handleIssueChange(index, "issue", v)
-                    }
+                    value={item.partName}
+                    onChangeText={(v) => handlePartChange(index, "partName", v)}
                     style={styles.input}
                   />
 
-                  <TextInput
-                    placeholder="Amount"
-                    keyboardType="numeric"
-                    value={String(item.amount)}
-                    onChangeText={(v) =>
-                      handleIssueChange(index, "amount", v)
-                    }
-                    style={styles.input}
-                  />
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    <TextInput
+                      placeholder="Qty"
+                      keyboardType="numeric"
+                      value={String(item.qty)}
+                      onChangeText={(v) => handlePartChange(index, "qty", v)}
+                      style={[styles.input, { flex: 1 }]}
+                    />
 
-                  {issues.length > 1 && (
-                    <TouchableOpacity
-                      onPress={() => removeIssueRow(index)}
-                    >
+                    <TextInput
+                      placeholder="Price"
+                      keyboardType="numeric"
+                      value={String(item.price)}
+                      onChangeText={(v) => handlePartChange(index, "price", v)}
+                      style={[styles.input, { flex: 1 }]}
+                    />
+                  </View>
+
+                  <Text style={styles.total}>
+                    Total: ₹{Number(item.qty) * Number(item.price)}
+                  </Text>
+
+                  {parts.length > 1 && (
+                    <TouchableOpacity onPress={() => removePartRow(index)}>
                       <Text style={styles.remove}>Remove</Text>
                     </TouchableOpacity>
                   )}
                 </View>
               ))}
 
-              <TouchableOpacity style={styles.addRow} onPress={addIssueRow}>
-                <Text style={styles.updateText}>+ Add Issue</Text>
+              <TouchableOpacity style={styles.addRow} onPress={addPartRow}>
+                <Text style={styles.updateText}>+ Add Part</Text>
               </TouchableOpacity>
             </ScrollView>
 
             <Text style={styles.grandTotal}>
-              Issues Total: ₹{totalIssueCost}
+              Parts Total: ₹{totalPartsCost}
             </Text>
 
-            <TouchableOpacity style={styles.saveBtn} onPress={saveIssues}>
-              {savingIssues ? (
+            <TouchableOpacity style={styles.saveBtn} onPress={saveParts}>
+              {savingParts ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.updateText}>Save Issues</Text>
+                <Text style={styles.updateText}>Save Parts</Text>
               )}
             </TouchableOpacity>
           </SafeAreaView>
