@@ -9,8 +9,8 @@ import {
   onSnapshot,
   orderBy,
   query,
-  where,
-  updateDoc
+  updateDoc,
+  where
 } from "firebase/firestore";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -18,8 +18,9 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
-  View, TextInput
+  View
 } from "react-native";
 import { auth, db } from "../../firebase";
 
@@ -866,48 +867,47 @@ function BookingDetailModal({ booking, onClose }) {
 }
 
 function VehicleDetailModal({ vehicle, onClose }) {
+
+  const [actionLoadingIndex, setActionLoadingIndex] = useState(null);
+  const [localIssues, setLocalIssues] = useState(vehicle.issuesDetails || []);
+
   const normalizedStatus =
     STATUS_NORMALIZER[vehicle.serviceStatus] || vehicle.serviceStatus;
   const [rejectModalVisible, setRejectModalVisible] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [selectedIssueIndex, setSelectedIssueIndex] = useState(null);
+
   const handleIssueUpdate = async (issueIndex, newStatus) => {
     try {
+      setActionLoadingIndex(issueIndex);
+
+      // 🔥 Create updated copy
+      const updatedIssues = [...localIssues];
+      updatedIssues[issueIndex] = {
+        ...updatedIssues[issueIndex],
+        approvalStatus: newStatus,
+      };
+
+      // ✅ 1. Update UI immediately
+      setLocalIssues(updatedIssues);
+
+      // ✅ 2. Update Firestore in background
       const ref = doc(db, "allServices", vehicle.id);
-      const snap = await getDoc(ref);
-      if (!snap.exists()) return;
-
-      const data = snap.data();
-      const updatedIssues = [...data.issuesDetails];
-
-      updatedIssues[issueIndex].approvalStatus = newStatus;
-
-      // 🔥 check status logic
-      const allRejected = updatedIssues.every(
-        (item) => item.approvalStatus === "rejected"
-      );
-
-      const anyApproved = updatedIssues.some(
-        (item) => item.approvalStatus === "approved"
-      );
-
-      let newServiceStatus = "Waiting For Issue Approval";
-
-      if (allRejected) {
-        newServiceStatus = "All Issues Rejected";
-      } else if (anyApproved) {
-        newServiceStatus = "Approved - Work In Progress";
-      }
-
       await updateDoc(ref, {
         issuesDetails: updatedIssues,
-        serviceStatus: newServiceStatus,
       });
 
     } catch (error) {
       console.log(error);
+    } finally {
+      setActionLoadingIndex(null);
     }
   };
+
+  useEffect(() => {
+    setLocalIssues(vehicle.issuesDetails || []);
+  }, [vehicle]);
+
   const confirmReject = async () => {
     if (!rejectReason.trim()) {
       alert("Please enter rejection reason");
@@ -915,21 +915,20 @@ function VehicleDetailModal({ vehicle, onClose }) {
     }
 
     try {
-      const ref = doc(db, "allServices", vehicle.id);
-      const snap = await getDoc(ref);
-      if (!snap.exists()) return;
+      setActionLoadingIndex(selectedIssueIndex);
 
-      const data = snap.data();
-      const updatedIssues = [...data.issuesDetails];
-
+      const updatedIssues = [...localIssues];
       updatedIssues[selectedIssueIndex] = {
         ...updatedIssues[selectedIssueIndex],
         approvalStatus: "rejected",
-        rejectionReason: rejectReason
+        rejectionReason: rejectReason,
       };
 
+      setLocalIssues(updatedIssues);
+
+      const ref = doc(db, "allServices", vehicle.id);
       await updateDoc(ref, {
-        issuesDetails: updatedIssues
+        issuesDetails: updatedIssues,
       });
 
       setRejectModalVisible(false);
@@ -938,8 +937,12 @@ function VehicleDetailModal({ vehicle, onClose }) {
 
     } catch (error) {
       console.log(error);
+    } finally {
+      setActionLoadingIndex(null);
     }
   };
+
+
   return (
     <Modal visible transparent animationType="slide">
       <View style={styles.modalOverlay}>
@@ -1073,7 +1076,7 @@ function VehicleDetailModal({ vehicle, onClose }) {
               </View>
             )}
 
-                        {vehicle.issuesAdded && vehicle.issuesDetails?.length > 0 && (
+            {vehicle.issuesAdded && localIssues?.length > 0 && (
               <>
                 <Text style={{
                   color: "#38bdf8",
@@ -1084,7 +1087,7 @@ function VehicleDetailModal({ vehicle, onClose }) {
                   Spare Report Status
                 </Text>
 
-                {vehicle.issuesDetails.map((item, index) => (
+                {localIssues.map((item, index) => (
                   <View
                     key={index}
                     style={{
@@ -1106,26 +1109,31 @@ function VehicleDetailModal({ vehicle, onClose }) {
 
                     {/* APPROVE / REJECT BUTTONS */}
                     {item.approvalStatus === "pending" && (
-                      <View style={{
-                        flexDirection: "row",
-                        marginTop: 10
-                      }}>
+                      <View style={{ flexDirection: "row", marginTop: 10 }}>
+
                         <TouchableOpacity
+                          disabled={actionLoadingIndex === index}
                           onPress={() => handleIssueUpdate(index, "approved")}
                           style={{
                             backgroundColor: "#10B981",
                             paddingVertical: 8,
                             paddingHorizontal: 18,
                             borderRadius: 10,
-                            marginRight: 10
+                            marginRight: 10,
+                            opacity: actionLoadingIndex === index ? 0.6 : 1
                           }}
                         >
-                          <Text style={{ color: "#fff", fontWeight: "600" }}>
-                            Approve
-                          </Text>
+                          {actionLoadingIndex === index ? (
+                            <ActivityIndicator color="#fff" size="small" />
+                          ) : (
+                            <Text style={{ color: "#fff", fontWeight: "600" }}>
+                              Approve
+                            </Text>
+                          )}
                         </TouchableOpacity>
 
                         <TouchableOpacity
+                          disabled={actionLoadingIndex === index}
                           onPress={() => {
                             setSelectedIssueIndex(index);
                             setRejectModalVisible(true);
@@ -1134,15 +1142,16 @@ function VehicleDetailModal({ vehicle, onClose }) {
                             backgroundColor: "#EF4444",
                             paddingVertical: 8,
                             paddingHorizontal: 18,
-                            borderRadius: 10
+                            borderRadius: 10,
+                            opacity: actionLoadingIndex === index ? 0.6 : 1
                           }}
                         >
                           <Text style={{ color: "#fff", fontWeight: "600" }}>
                             Reject
                           </Text>
                         </TouchableOpacity>
-                      </View>
 
+                      </View>
                     )}
                     {item.approvalStatus === "approved" && (
                       <View style={{ marginTop: 10 }}>
