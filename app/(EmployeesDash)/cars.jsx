@@ -770,7 +770,6 @@ export default function CarsScreen() {
     try {
       setSavingIssues(true);
 
-      /* 🔥 REFERENCES */
       const assignedIssuesRef = collection(
         db,
         "assignedServices",
@@ -782,17 +781,20 @@ export default function CarsScreen() {
         selectedCar.bookingDocId &&
         collection(db, "allServices", selectedCar.bookingDocId, "issues");
 
-      /* 🔥 FORMAT ARRAY FOR MAIN DOCUMENT */
       const issuesArray = validIssues.map((i) => ({
         issue: i.issue,
         amount: Number(i.amount),
+        approvalStatus: "pending",
+        workStatus: "notStarted",
       }));
 
-      /* 🔥 SAVE EACH ISSUE IN SUBCOLLECTIONS */
+      /* 🔥 SAVE EACH ISSUE WITH DEFAULT STATUS */
       for (let i of validIssues) {
         const issueData = {
           issue: i.issue,
           amount: Number(i.amount),
+          approvalStatus: "pending",
+          workStatus: "notStarted",
           createdAt: new Date(),
         };
 
@@ -803,29 +805,35 @@ export default function CarsScreen() {
         }
       }
 
-      /* 🔥 CHECK IF AT LEAST ONE ISSUE EXISTS */
-      const hasIssues = validIssues.length > 0;
+      /* 🔥 DEFAULT STATUSES FOR MAIN DOC */
+      const approvalStatus = selectedCar.approvalStatus || "pending";
+      const workStatus = selectedCar.workStatus || "notStarted";
 
-      /* 🔥 UPDATE DATA */
+      let serviceStatus = "Waiting For Issue Approval";
+
+      if (approvalStatus === "approved") {
+        if (workStatus === "notStarted") serviceStatus = "Work Pending";
+        else if (workStatus === "inProgress") serviceStatus = "Work In Progress";
+        else if (workStatus === "completed") serviceStatus = "Bill Pending";
+      }
+
       const updateData = {
-        issuesAdded: hasIssues, // true only if at least one issue
+        issuesAdded: true,
         issuesTotalCost:
           Number(selectedCar.issuesTotalCost || 0) + totalIssueCost,
 
-        /* STORE FULL DETAILS FOR BILLING SCREEN */
         issuesDetails: [
           ...(selectedCar.issuesDetails || []),
           ...issuesArray,
         ],
 
-        /* AUTO MOVE STATUS */
-        serviceStatus: "Bill Pending",
+        approvalStatus,
+        workStatus,
+        serviceStatus,
       };
 
-      /* 🔥 UPDATE assignedServices */
       await updateDoc(doc(db, "assignedServices", selectedCar.id), updateData);
 
-      /* 🔥 UPDATE allServices */
       if (selectedCar.bookingDocId) {
         await updateDoc(
           doc(db, "allServices", selectedCar.bookingDocId),
@@ -842,7 +850,6 @@ export default function CarsScreen() {
       setSavingIssues(false);
     }
   };
-
   /* 🎨 STATUS COLOR */
   const getStatusStyle = (status) => {
     switch (status) {
