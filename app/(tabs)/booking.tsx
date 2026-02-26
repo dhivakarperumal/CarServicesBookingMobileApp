@@ -474,7 +474,7 @@ function Input({
         placeholderTextColor="#64748B"
         multiline={multiline}
         keyboardType={keyboardType}
-        maxLength={multiline ? undefined : 10}
+        maxLength={keyboardType === "numeric" ? 10 : undefined}
         style={[styles.input, multiline && { height: 90 }]}
       />
     </View>
