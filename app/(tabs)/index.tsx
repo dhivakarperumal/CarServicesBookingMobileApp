@@ -1184,19 +1184,6 @@ function VehicleDetailModal({ vehicle, onClose }) {
                       Amount: ₹{item.amount}
                     </Text>
 
-                    {/* STATUS DISPLAY */}
-                    {item.approvalStatus === "approved" && (
-                      <Text style={{ color: "#10B981", marginTop: 8 }}>
-                        ✅ Approved
-                      </Text>
-                    )}
-
-                    {item.approvalStatus === "rejected" && (
-                      <Text style={{ color: "#EF4444", marginTop: 8 }}>
-                        ❌ Rejected
-                      </Text>
-                    )}
-
                     {/* APPROVE / REJECT BUTTONS */}
                     {item.approvalStatus === "pending" && (
                       <View style={{
@@ -1234,6 +1221,28 @@ function VehicleDetailModal({ vehicle, onClose }) {
                             Reject
                           </Text>
                         </TouchableOpacity>
+                      </View>
+
+                    )}
+                    {item.approvalStatus === "approved" && (
+                      <View style={{ marginTop: 10 }}>
+                        <Text style={{ color: "#10B981", fontWeight: "600" }}>
+                          ✅ You Approved This Issue
+                        </Text>
+                      </View>
+                    )}
+
+                    {item.approvalStatus === "rejected" && (
+                      <View style={{ marginTop: 10 }}>
+                        <Text style={{ color: "#EF4444", fontWeight: "600" }}>
+                          ❌ You Rejected This Issue
+                        </Text>
+
+                        {item.rejectionReason && (
+                          <Text style={{ color: "#9CA3AF", marginTop: 4 }}>
+                            Reason: {item.rejectionReason}
+                          </Text>
+                        )}
                       </View>
                     )}
                   </View>
