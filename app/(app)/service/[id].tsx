@@ -56,8 +56,28 @@ export default function ServiceDetails() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* 🔥 PREMIUM BACK BUTTON */}
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => router.back()}
+        style={styles.backButton}
+      >
+        <LinearGradient
+          colors={["rgba(14,165,233,0.95)", "rgba(37,99,235,0.95)"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.backGradient}
+        >
+          <Ionicons name="arrow-back" size={18} color="#fff" />
+          <Text style={styles.backText}>Back</Text>
+        </LinearGradient>
+      </TouchableOpacity>
 
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingTop: 60 }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* HERO IMAGE */}
         <View style={styles.imageWrapper}>
           <Image source={{ uri: service.image }} style={styles.image} />
@@ -78,8 +98,6 @@ export default function ServiceDetails() {
           {/* DESCRIPTION */}
           <Text style={styles.sectionTitle}>DESCRIPTION</Text>
           <Text style={styles.description}>{service.description}</Text>
-
-
 
           {/* SUPPORTED BRANDS */}
           {service.supportedBrands?.length > 0 && (
@@ -123,7 +141,6 @@ export default function ServiceDetails() {
             </LinearGradient>
           </TouchableOpacity>
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );
@@ -135,6 +152,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#000",
+  },
+
+  backButton: {
+    position: "absolute",
+    top: 15,
+    left: 15,
+    zIndex: 100,
+  },
+
+  backGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    height: 42,
+    borderRadius: 25,
+
+    shadowColor: "#0EA5E9",
+    shadowOpacity: 0.6,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 10,
+  },
+
+  backText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+    marginLeft: 10,
+    letterSpacing: 0.5,
   },
 
   loader: {
@@ -149,13 +195,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     gap: 6,
-  },
-
-  backText: {
-    color: "#0EA5E9",
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 2,
   },
 
   imageWrapper: {
