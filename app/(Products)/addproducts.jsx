@@ -180,6 +180,12 @@ export default function AddProduct() {
       const data = {
         ...product,
 
+        // ✅ ADD THIS HERE
+        slug: product.name
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, ""),
+
         // ✅ Only set id for new product
         ...(productId && { id: productId }),
 
