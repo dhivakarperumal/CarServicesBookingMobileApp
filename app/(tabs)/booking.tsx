@@ -149,7 +149,10 @@ export default function BookingScreen() {
   };
 
   const handleChange = (key: string, value: string) => {
-    setFormData({ ...formData, [key]: value });
+    setFormData((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
   };
 
   const validate = () => {
