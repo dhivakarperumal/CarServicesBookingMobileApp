@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import BookedService from "../../components/BookedService";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import MyOrder from "../../components/MyOrder";
 import ManageAddress from "../../components/ManageAddress";
@@ -26,6 +26,7 @@ export default function AccountScreen() {
   const [profile, setProfile] = useState(null);
   const [activeTab, setActiveTab] = useState("servicestatus");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (params?.tab) {
@@ -59,6 +60,20 @@ export default function AccountScreen() {
     await signOut(auth);
   };
 
+  const handleDeleteAccount = async () => {
+    try {
+      if (!user) return;
+
+      await updateDoc(doc(db, "users", user.uid), {
+        status: "inactive",
+        updatedAt: new Date(),
+      });
+
+      await signOut(auth);
+    } catch (error) {
+      console.log("Delete account error:", error);
+    }
+  };
   const goToAdminDashboard = () => {
     router.push("/(adminTabs)/home");
   };
@@ -144,51 +159,106 @@ export default function AccountScreen() {
   return (
     <View style={styles.container}>
       {/* ===== FILTER DROPDOWN ===== */}
-{/* ===== FILTER DROPDOWN ===== */}
-<View style={styles.filterWrapper}>
-  <TouchableOpacity
-    onPress={() => setShowDropdown(!showDropdown)}
-    activeOpacity={0.8}
-  >
-    <LinearGradient
-      colors={["#0EA5E9", "#2563EB"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.gradientFilterBtn}
-    >
-      <Ionicons name="funnel-outline" size={18} color="#fff" />
-      <Text style={styles.filterLabel}>Filter</Text>
-    </LinearGradient>
-  </TouchableOpacity>
-
-  {showDropdown && (
-    <View style={styles.dropdown}>
-      {[
-        ["servicestatus", "Service"],
-        ["personal", "Profile"],
-        ["changepassword", "Change Password"],
-        ["orders", "Orders"],
-        ["address", "Address"],
-      ].map(([key, label]) => (
+      {/* ===== FILTER DROPDOWN ===== */}
+      <View style={styles.filterWrapper}>
         <TouchableOpacity
-          key={key}
-          style={styles.dropdownItem}
-          onPress={() => {
-            setActiveTab(key);
-            setShowDropdown(false);
-          }}
+          onPress={() => setShowDropdown(!showDropdown)}
+          activeOpacity={0.8}
         >
-          <Text style={styles.dropdownText}>{label}</Text>
+          <LinearGradient
+            colors={["#0EA5E9", "#2563EB"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientFilterBtn}
+          >
+            <Ionicons name="funnel-outline" size={18} color="#fff" />
+            <Text style={styles.filterLabel}>Filter</Text>
+          </LinearGradient>
         </TouchableOpacity>
-      ))}
-    </View>
-  )}
-</View>
+
+        {showDropdown && (
+          <View style={styles.dropdown}>
+            {[
+              ["servicestatus", "Service"],
+              ["personal", "Profile"],
+              ["changepassword", "Change Password"],
+              ["orders", "Orders"],
+              ["address", "Address"],
+            ].map(([key, label]) => (
+              <TouchableOpacity
+                key={key}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setActiveTab(key);
+                  setShowDropdown(false);
+                }}
+              >
+                <Text style={styles.dropdownText}>{label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
 
       {/* ===== CONTENT CARD ===== */}
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 20 }}>
-        {renderContent()}
+      <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 20 }}>
+          {renderContent()}
+        </View>
+
+        {/* FIXED BOTTOM DELETE BUTTON */}
+        <View style={styles.bottomDeleteWrapper}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => setShowDeleteModal(true)}
+          >
+            <LinearGradient
+              colors={["#ef4444", "#dc2626"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.deleteGradientBtn}
+            >
+              <Text style={styles.deleteText}>Delete Account</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
       </View>
+      {showDeleteModal && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Ionicons name="warning-outline" size={40} color="#ef4444" />
+
+            <Text style={styles.modalTitle}>Delete Account?</Text>
+
+            <Text style={styles.modalMessage}>
+              After deleting, your account will be removed.
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setShowDeleteModal(false)}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setShowDeleteModal(false);
+                  handleDeleteAccount();
+                }}
+              >
+                <LinearGradient
+                  colors={["#ef4444", "#dc2626"]}
+                  style={styles.confirmBtn}
+                >
+                  <Text style={styles.confirmText}>Yes, Delete</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -287,47 +357,130 @@ const styles = StyleSheet.create({
   },
 
   /* Filter Dropdown */
-/* Filter Wrapper */
-filterWrapper: {
-  alignItems: "flex-start",   // 👈 LEFT SIDE
-  paddingHorizontal: 16,
-  paddingTop: 16,
-  zIndex: 100,
-},
+  /* Filter Wrapper */
+  filterWrapper: {
+    alignItems: "flex-start",   // 👈 LEFT SIDE
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    zIndex: 100,
+  },
 
-gradientFilterBtn: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingVertical: 10,
-  paddingHorizontal: 18,
-  borderRadius: 50,           // pill style
-  gap: 6,
-},
+  gradientFilterBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 50,           // pill style
+    gap: 6,
+  },
 
-filterLabel: {
-  color: "#FFFFFF",
-  fontWeight: "700",
-  fontSize: 14,
-},
+  filterLabel: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 14,
+  },
 
-dropdown: {
-  position: "absolute",
-  top: 55,
-  left: 16,                   // 👈 dropdown aligned left
-  backgroundColor: "#1e293b",
-  borderRadius: 12,
-  paddingVertical: 8,
-  width: 180,
-  elevation: 5,
-},
+  dropdown: {
+    position: "absolute",
+    top: 55,
+    left: 16,                   // 👈 dropdown aligned left
+    backgroundColor: "#1e293b",
+    borderRadius: 12,
+    paddingVertical: 8,
+    width: 180,
+    elevation: 5,
+  },
 
-dropdownItem: {
-  paddingVertical: 12,
-  paddingHorizontal: 16,
-},
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
 
-dropdownText: {
-  color: "#fff",
-  fontWeight: "600",
-},
+  dropdownText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+  bottomDeleteWrapper: {
+    paddingVertical: 20,
+    alignItems: "center",
+    backgroundColor: "#0B1120",
+  },
+
+  deleteGradientBtn: {
+    width: 220,              // 👈 decreased width
+    paddingVertical: 12,
+    borderRadius: 50,        // 👈 pill style
+    alignItems: "center",
+  },
+
+  deleteText: {
+    textAlign: "center",
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
+  },
+
+  modalCard: {
+    backgroundColor: "#1e293b",
+    width: "85%",
+    borderRadius: 16,
+    padding: 24,
+    alignItems: "center",
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#fff",
+    marginTop: 12,
+  },
+
+  modalMessage: {
+    fontSize: 14,
+    color: "#cbd5e1",
+    textAlign: "center",
+    marginTop: 10,
+    lineHeight: 20,
+  },
+
+  modalButtons: {
+    flexDirection: "row",
+    marginTop: 20,
+    gap: 12,
+  },
+
+  cancelBtn: {
+    backgroundColor: "#334155",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+
+  cancelText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+
+  confirmBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+
+  confirmText: {
+    color: "#fff",
+    fontWeight: "700",
+  },
 });
