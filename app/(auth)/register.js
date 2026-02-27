@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import {
   createUserWithEmailAndPassword,
@@ -7,18 +8,18 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Image,
+  KeyboardAvoidingView, Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { auth, db } from "../../firebase";
-import Toast from "react-native-toast-message";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { KeyboardAvoidingView, Platform, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
+import Toast from "react-native-toast-message";
+import { auth, db } from "../../firebase";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -111,6 +112,7 @@ export default function RegisterScreen() {
         mobile,
         role,
         active: true,
+        status: "active",
         createdAt: serverTimestamp(),
       });
 
