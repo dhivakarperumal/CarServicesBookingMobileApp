@@ -418,7 +418,6 @@
 //   },
 // });
 
-
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -652,8 +651,11 @@ export default function Home() {
       {recentOrders.map((item) => (
         <View key={item.id} style={styles.listItem}>
           <Text style={styles.listTitle}>{item.orderId || "No ID"}</Text>
-          <Text style={styles.listSub}>
-            {item.name || item.email || "No Name"}
+
+          <Text style={styles.listSub}>{item.shipping?.name || "No Name"}</Text>
+
+          <Text style={{ color: "#64748b", fontSize: 11, marginTop: 4 }}>
+            {item.shipping?.phone || ""}
           </Text>
         </View>
       ))}
