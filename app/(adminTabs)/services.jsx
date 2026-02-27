@@ -1230,17 +1230,29 @@ export default function Services() {
                 Assign Mechanic
               </Text>
 
-              <Picker
-                selectedValue={selectedEmployeeId}
-                onValueChange={setSelectedEmployeeId}
-                dropdownIconColor="#38bdf8"
-                style={{ color: "#fff" }}
+              {/* 👨‍🔧 EMPLOYEE PICKER WITH BORDER */}
+              <View
+                style={{
+                  borderWidth: 1.5,
+                  borderColor: "#38bdf8",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  marginTop: 6,
+                  backgroundColor: "#0f172a",
+                }}
               >
-                <Picker.Item label="Select mechanic" value="" />
-                {availableEmployees.map((emp) => (
-                  <Picker.Item key={emp.id} label={emp.name} value={emp.id} />
-                ))}
-              </Picker>
+                <Picker
+                  selectedValue={selectedEmployeeId}
+                  onValueChange={setSelectedEmployeeId}
+                  dropdownIconColor="#38bdf8"
+                  style={{ color: "#fff" }}
+                >
+                  <Picker.Item label="Select mechanic" value="" />
+                  {availableEmployees.map((emp) => (
+                    <Picker.Item key={emp.id} label={emp.name} value={emp.id} />
+                  ))}
+                </Picker>
+              </View>
 
               <View style={{ flexDirection: "row", marginTop: 16 }}>
                 <Pressable
