@@ -184,6 +184,7 @@ export default function AddEditStaffScreen() {
           role: "mechanic",
           employeeId: employeeId,
           employeeDocId: empRef.id,
+          status: "active",
           createdAt: serverTimestamp(),
         });
       } else {
