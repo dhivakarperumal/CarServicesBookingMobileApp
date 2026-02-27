@@ -26,6 +26,7 @@ export default function AccountScreen() {
   const [profile, setProfile] = useState(null);
   const [activeTab, setActiveTab] = useState("servicestatus");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (params?.tab) {
@@ -63,20 +64,16 @@ export default function AccountScreen() {
     try {
       if (!user) return;
 
-      // Update status to inactive
       await updateDoc(doc(db, "users", user.uid), {
         status: "inactive",
         updatedAt: new Date(),
       });
 
-      // Logout immediately
       await signOut(auth);
-
     } catch (error) {
       console.log("Delete account error:", error);
     }
   };
-
   const goToAdminDashboard = () => {
     router.push("/(adminTabs)/home");
   };
@@ -204,18 +201,64 @@ export default function AccountScreen() {
       </View>
 
       {/* ===== CONTENT CARD ===== */}
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 20 }}>
-        {renderContent()}
+      <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 20 }}>
+          {renderContent()}
+        </View>
 
-        {/* DELETE ACCOUNT BUTTON */}
-        <TouchableOpacity
-          onPress={handleDeleteAccount}
-          activeOpacity={0.8}
-          style={styles.deleteBtn}
-        >
-          <Text style={styles.deleteText}>Delete Account</Text>
-        </TouchableOpacity>
+        {/* FIXED BOTTOM DELETE BUTTON */}
+        <View style={styles.bottomDeleteWrapper}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => setShowDeleteModal(true)}
+          >
+            <LinearGradient
+              colors={["#ef4444", "#dc2626"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.deleteGradientBtn}
+            >
+              <Text style={styles.deleteText}>Delete Account</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
       </View>
+      {showDeleteModal && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Ionicons name="warning-outline" size={40} color="#ef4444" />
+
+            <Text style={styles.modalTitle}>Delete Account?</Text>
+
+            <Text style={styles.modalMessage}>
+              After deleting, your account will be removed.
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setShowDeleteModal(false)}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setShowDeleteModal(false);
+                  handleDeleteAccount();
+                }}
+              >
+                <LinearGradient
+                  colors={["#ef4444", "#dc2626"]}
+                  style={styles.confirmBtn}
+                >
+                  <Text style={styles.confirmText}>Yes, Delete</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -357,12 +400,17 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
   },
-  deleteBtn: {
-    marginTop: 30,
-    marginBottom: 40,
-    backgroundColor: "#dc2626",
-    paddingVertical: 14,
-    borderRadius: 12,
+  bottomDeleteWrapper: {
+    paddingVertical: 20,
+    alignItems: "center",
+    backgroundColor: "#0B1120",
+  },
+
+  deleteGradientBtn: {
+    width: 220,              // 👈 decreased width
+    paddingVertical: 12,
+    borderRadius: 50,        // 👈 pill style
+    alignItems: "center",
   },
 
   deleteText: {
@@ -370,5 +418,69 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
     fontSize: 16,
+  },
+
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
+  },
+
+  modalCard: {
+    backgroundColor: "#1e293b",
+    width: "85%",
+    borderRadius: 16,
+    padding: 24,
+    alignItems: "center",
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#fff",
+    marginTop: 12,
+  },
+
+  modalMessage: {
+    fontSize: 14,
+    color: "#cbd5e1",
+    textAlign: "center",
+    marginTop: 10,
+    lineHeight: 20,
+  },
+
+  modalButtons: {
+    flexDirection: "row",
+    marginTop: 20,
+    gap: 12,
+  },
+
+  cancelBtn: {
+    backgroundColor: "#334155",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+
+  cancelText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+
+  confirmBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+
+  confirmText: {
+    color: "#fff",
+    fontWeight: "700",
   },
 });
