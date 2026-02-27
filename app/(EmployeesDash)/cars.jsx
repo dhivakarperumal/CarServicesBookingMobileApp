@@ -492,7 +492,6 @@
 //   );
 // }
 
-
 import { useEffect, useState, useMemo } from "react";
 import {
   View,
@@ -550,6 +549,9 @@ export default function CarsScreen() {
   const [issues, setIssues] = useState([{ issue: "", amount: 0 }]);
   const [savingIssues, setSavingIssues] = useState(false);
 
+  const [viewModal, setViewModal] = useState(false);
+  const [viewCar, setViewCar] = useState(null);
+
   /* 🔥 FETCH ONLY CURRENT MECHANIC SERVICES */
   useEffect(() => {
     const currentUid = auth.currentUser?.uid;
@@ -557,7 +559,7 @@ export default function CarsScreen() {
 
     const q = query(
       collection(db, "assignedServices"),
-      where("employeeAuthUid", "==", currentUid)
+      where("employeeAuthUid", "==", currentUid),
     );
 
     const unsub = onSnapshot(q, (snap) => {
@@ -597,15 +599,15 @@ export default function CarsScreen() {
     () =>
       parts.reduce(
         (sum, p) => sum + Number(p.qty || 0) * Number(p.price || 0),
-        0
+        0,
       ),
-    [parts]
+    [parts],
   );
 
   /* 🔥 TOTAL ISSUES COST */
   const totalIssueCost = useMemo(
     () => issues.reduce((sum, i) => sum + Number(i.amount || 0), 0),
-    [issues]
+    [issues],
   );
 
   /* 🔁 STATUS HELPERS */
@@ -618,7 +620,7 @@ export default function CarsScreen() {
   /* 🔁 STATUS UPDATE */
   const updateStatus = async (item, newStatus) => {
     const currentIndex = STATUS_FLOW.indexOf(
-      item.serviceStatus || "Processing"
+      item.serviceStatus || "Processing",
     );
     const newIndex = STATUS_FLOW.indexOf(newStatus);
 
@@ -707,7 +709,7 @@ export default function CarsScreen() {
         db,
         "assignedServices",
         selectedCar.id,
-        "parts"
+        "parts",
       );
 
       for (let p of validParts) {
@@ -745,11 +747,9 @@ export default function CarsScreen() {
     setIssuesModal(true);
   };
 
-  const addIssueRow = () =>
-    setIssues([...issues, { issue: "", amount: 0 }]);
+  const addIssueRow = () => setIssues([...issues, { issue: "", amount: 0 }]);
 
-  const removeIssueRow = (i) =>
-    setIssues(issues.filter((_, idx) => idx !== i));
+  const removeIssueRow = (i) => setIssues(issues.filter((_, idx) => idx !== i));
 
   const handleIssueChange = (i, field, value) => {
     const copy = [...issues];
@@ -774,7 +774,7 @@ export default function CarsScreen() {
         db,
         "assignedServices",
         selectedCar.id,
-        "issues"
+        "issues",
       );
 
       const allServicesIssuesRef =
@@ -813,7 +813,8 @@ export default function CarsScreen() {
 
       if (approvalStatus === "approved") {
         if (workStatus === "notStarted") serviceStatus = "Work Pending";
-        else if (workStatus === "inProgress") serviceStatus = "Work In Progress";
+        else if (workStatus === "inProgress")
+          serviceStatus = "Work In Progress";
         else if (workStatus === "completed") serviceStatus = "Bill Pending";
       }
 
@@ -822,10 +823,7 @@ export default function CarsScreen() {
         issuesTotalCost:
           Number(selectedCar.issuesTotalCost || 0) + totalIssueCost,
 
-        issuesDetails: [
-          ...(selectedCar.issuesDetails || []),
-          ...issuesArray,
-        ],
+        issuesDetails: [...(selectedCar.issuesDetails || []), ...issuesArray],
 
         approvalStatus,
         workStatus,
@@ -837,7 +835,7 @@ export default function CarsScreen() {
       if (selectedCar.bookingDocId) {
         await updateDoc(
           doc(db, "allServices", selectedCar.bookingDocId),
-          updateData
+          updateData,
         );
       }
 
@@ -870,72 +868,99 @@ export default function CarsScreen() {
 
   /* 🔥 CARD UI */
   const renderItem = ({ item }) => {
+    const hasApprovedIssue =
+      item.issuesDetails?.some(
+        (issue) => issue.approvalStatus === "approved",
+      ) || false;
+
     const statusStyle = getStatusStyle(item.serviceStatus);
 
     return (
-      <View style={styles.card}>
-        <Text style={styles.idText}>Booking ID: {item.bookingId || "N/A"}</Text>
-        <Text style={styles.number}>Service ID: {item.serviceId || "N/A"}</Text>
-
-        <Text style={styles.model}>
-          {item.carBrand} - {item.carModel}
-        </Text>
-
-        <Text style={styles.subText}>Customer: {item.customerName || "-"}</Text>
-        <Text style={styles.subText}>Phone: {item.customerPhone || "-"}</Text>
-        <Text style={styles.subText}>Email: {item.customerEmail || "-"}</Text>
-        <Text style={styles.subText}>Mechanic: {item.employeeName || "-"}</Text>
-
-        {item.partsTotalCost ? (
-          <Text style={styles.parts}>Parts Cost: ₹{item.partsTotalCost}</Text>
-        ) : null}
-
-        {item.issuesTotalCost ? (
-          <Text style={styles.parts}>
-            Issues Cost: ₹{item.issuesTotalCost}
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => {
+          if (mainTab === "addVehicle") {
+            setViewCar(item);
+            setViewModal(true);
+          }
+        }}
+      >
+        <View style={styles.card}>
+          <Text style={styles.idText}>
+            Booking ID: {item.bookingId || "N/A"}
           </Text>
-        ) : null}
-
-        <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
-          <Text style={[styles.statusText, { color: statusStyle.text }]}>
-            {item.serviceStatus || "Processing"}
+          <Text style={styles.number}>
+            Service ID: {item.serviceId || "N/A"}
           </Text>
+
+          <Text style={styles.model}>
+            {item.carBrand} - {item.carModel}
+          </Text>
+
+          <Text style={styles.subText}>
+            Customer: {item.customerName || "-"}
+          </Text>
+          <Text style={styles.subText}>Phone: {item.customerPhone || "-"}</Text>
+          <Text style={styles.subText}>Email: {item.customerEmail || "-"}</Text>
+          <Text style={styles.subText}>
+            Mechanic: {item.employeeName || "-"}
+          </Text>
+
+          {item.partsTotalCost ? (
+            <Text style={styles.parts}>Parts Cost: ₹{item.partsTotalCost}</Text>
+          ) : null}
+
+          {item.issuesTotalCost ? (
+            <Text style={styles.parts}>
+              Issues Cost: ₹{item.issuesTotalCost}
+            </Text>
+          ) : null}
+
+          <View
+            style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}
+          >
+            <Text style={[styles.statusText, { color: statusStyle.text }]}>
+              {item.serviceStatus || "Processing"}
+            </Text>
+          </View>
+
+          {item.serviceStatus !== "Service Completed" &&
+            (mainTab !== "addVehicle" || hasApprovedIssue) && (
+              <View style={styles.pickerWrapper}>
+                <Picker
+                  selectedValue={item.serviceStatus || "Processing"}
+                  dropdownIconColor="#38bdf8"
+                  style={{ color: "#fff" }}
+                  onValueChange={(value) => updateStatus(item, value)}
+                >
+                  {getNextStatuses(item.serviceStatus).map((status) => (
+                    <Picker.Item key={status} label={status} value={status} />
+                  ))}
+                </Picker>
+              </View>
+            )}
+
+          {/* PARTS BUTTON */}
+          {item.serviceStatus === "Service Going on" && !item.partsAdded && (
+            <TouchableOpacity
+              style={styles.partsBtn}
+              onPress={() => openPartsModal(item)}
+            >
+              <Text style={styles.updateText}>Add Parts</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* ISSUES BUTTON ONLY IN ADD VEHICLE TAB */}
+          {mainTab === "addVehicle" && !item.issuesAdded && (
+            <TouchableOpacity
+              style={styles.partsBtn}
+              onPress={() => openIssuesModal(item)}
+            >
+              <Text style={styles.updateText}>Add Issues</Text>
+            </TouchableOpacity>
+          )}
         </View>
-
-        <View style={styles.pickerWrapper}>
-          <Picker
-            enabled={item.serviceStatus !== "Service Completed"}
-            selectedValue={item.serviceStatus || "Processing"}
-            dropdownIconColor="#38bdf8"
-            style={{ color: "#fff" }}
-            onValueChange={(value) => updateStatus(item, value)}
-          >
-            {getNextStatuses(item.serviceStatus).map((status) => (
-              <Picker.Item key={status} label={status} value={status} />
-            ))}
-          </Picker>
-        </View>
-
-        {/* PARTS BUTTON */}
-        {item.serviceStatus === "Service Going on" && !item.partsAdded && (
-          <TouchableOpacity
-            style={styles.partsBtn}
-            onPress={() => openPartsModal(item)}
-          >
-            <Text style={styles.updateText}>Add Parts</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* ISSUES BUTTON ONLY IN ADD VEHICLE TAB */}
-        {mainTab === "addVehicle" && !item.issuesAdded && (
-          <TouchableOpacity
-            style={styles.partsBtn}
-            onPress={() => openIssuesModal(item)}
-          >
-            <Text style={styles.updateText}>Add Issues</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -980,8 +1005,7 @@ export default function CarsScreen() {
             style={{
               flex: 1,
               padding: 10,
-              backgroundColor:
-                mainTab === "addVehicle" ? "#38bdf8" : "#020617",
+              backgroundColor: mainTab === "addVehicle" ? "#38bdf8" : "#020617",
               borderRadius: 10,
               alignItems: "center",
               marginLeft: 6,
@@ -989,8 +1013,7 @@ export default function CarsScreen() {
           >
             <Text
               style={{
-                color:
-                  mainTab === "addVehicle" ? "#020617" : "#38bdf8",
+                color: mainTab === "addVehicle" ? "#020617" : "#38bdf8",
                 fontWeight: "700",
               }}
             >
@@ -1078,7 +1101,9 @@ export default function CarsScreen() {
                       placeholder="Amount"
                       keyboardType="numeric"
                       value={String(item.amount)}
-                      onChangeText={(v) => handleIssueChange(index, "amount", v)}
+                      onChangeText={(v) =>
+                        handleIssueChange(index, "amount", v)
+                      }
                       style={styles.input}
                     />
 
@@ -1185,6 +1210,65 @@ export default function CarsScreen() {
                 <Text style={styles.updateText}>Save Parts</Text>
               )}
             </TouchableOpacity>
+          </SafeAreaView>
+        </Modal>
+
+        {/* 🔍 VIEW ISSUE DETAILS MODAL */}
+        <Modal
+          visible={viewModal}
+          animationType="slide"
+          transparent={false}
+          onRequestClose={() => {
+            setViewModal(false);
+          }}
+        >
+          <SafeAreaView style={{ flex: 1, backgroundColor: "#020617" }}>
+            {/* Close Button */}
+            <TouchableOpacity
+              onPress={() => setViewModal(false)}
+              style={styles.closeIcon}
+            >
+              <Ionicons name="close" size={26} color="#fff" />
+            </TouchableOpacity>
+
+            <View style={{ padding: 20 }}>
+              <Text style={styles.modalTitle}>Issue Details</Text>
+
+              {!viewCar?.issuesDetails?.length ? (
+                <Text style={{ color: "#94a3b8", marginTop: 20 }}>
+                  No Issues Added
+                </Text>
+              ) : (
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  {viewCar.issuesDetails.map((issue, index) => (
+                    <View key={index} style={styles.issueViewCard}>
+                      <Text style={styles.issueTitle}>
+                        {index + 1}. {issue.issue}
+                      </Text>
+
+                      <Text style={styles.issueText}>
+                        Amount: ₹{issue.amount}
+                      </Text>
+
+                      <Text
+                        style={[
+                          styles.issueText,
+                          {
+                            color:
+                              issue.approvalStatus === "approved"
+                                ? "#10b981"
+                                : "#f59e0b",
+                          },
+                        ]}
+                      >
+                        Approval: {issue.approvalStatus}
+                      </Text>
+
+                    </View>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
           </SafeAreaView>
         </Modal>
       </SafeAreaView>
@@ -1364,16 +1448,20 @@ const styles = StyleSheet.create({
 
   /* 🔥 CARD */
   card: {
-    backgroundColor: "#0f172a",
-    padding: 16,
-    borderRadius: 18,
-    marginBottom: 14,
+    backgroundColor: "#0b1220",
+    padding: 18,
+    borderRadius: 22,
+    marginBottom: 18,
+
     borderWidth: 1,
-    borderColor: "#0b3b6f",
+    borderColor: "rgba(56,189,248,0.25)",
 
     shadowColor: "#38bdf8",
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
+    shadowOpacity: 0.25,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+
+    elevation: 8,
   },
 
   idText: {
@@ -1390,10 +1478,11 @@ const styles = StyleSheet.create({
   },
 
   model: {
-    fontWeight: "800",
-    fontSize: 18,
+    fontWeight: "900",
+    fontSize: 20,
     color: "#38bdf8",
-    marginTop: 6,
+    marginTop: 8,
+    letterSpacing: 0.5,
   },
 
   subText: {
@@ -1403,20 +1492,21 @@ const styles = StyleSheet.create({
   },
 
   parts: {
-    marginTop: 8,
-    fontSize: 14,
-    fontWeight: "800",
+    marginTop: 10,
+    fontSize: 15,
+    fontWeight: "900",
     color: "#10b981",
   },
   statusBadge: {
     position: "absolute",
-    top: 12,
-    right: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
+    top: 14,
+    right: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
   },
-
   statusText: {
     fontSize: 12,
     fontWeight: "900",
@@ -1442,5 +1532,34 @@ const styles = StyleSheet.create({
     right: 20,
     top: 20,
     zIndex: 50,
+  },
+  issueViewCard: {
+    backgroundColor: "#0b1220",
+    padding: 20,
+    borderRadius: 22,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.25)",
+
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.25,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+
+    elevation: 8,
+  },
+
+  issueTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#38bdf8",
+    marginBottom: 8,
+  },
+
+  issueText: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: "#cbd5f5",
+    marginBottom: 4,
   },
 });
