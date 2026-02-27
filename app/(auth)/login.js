@@ -49,15 +49,32 @@ export default function LoginScreen() {
       const userSnap = await getDoc(userRef);
 
       if (!userSnap.exists()) {
+        await auth.signOut();
         Toast.show({
           type: "error",
           text1: "Profile Not Found",
           text2: "User profile not found",
         });
+
         return;
       }
 
-      const role = userSnap.data().role?.toLowerCase();
+      const userData = userSnap.data();
+
+      // ✅ CHECK STATUS FIRST
+      if (userData.status !== "active") {
+        await auth.signOut();
+
+        Toast.show({
+          type: "error",
+          text1: "Account Disabled",
+          text2: "Your account has been disabled. Contact admin.",
+        });
+
+        return;
+      }
+
+      const role = userData.role?.toLowerCase();
 
       if (role === "admin") {
         router.replace("/(adminTabs)/home");

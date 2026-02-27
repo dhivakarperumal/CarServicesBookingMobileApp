@@ -1,9 +1,10 @@
 import { Stack, useRouter, useSegments } from "expo-router";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth, db } from "../firebase";
 import { useEffect, useState } from "react";
 import Toast from "react-native-toast-message";
 import { View, ActivityIndicator, Text } from "react-native";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function RootLayout() {
   const [user, setUser] = useState(undefined);
@@ -18,7 +19,44 @@ export default function RootLayout() {
     return unsub;
   }, []);
 
-  useEffect(() => { if (user === undefined) return; const inAuthGroup = segments[0] === "(auth)"; if (!user && !inAuthGroup) { router.replace("/(auth)/login"); } else if (user && inAuthGroup) { router.replace("/(tabs)"); } }, [user, segments]);
+  useEffect(() => {
+  if (user === undefined) return;
+
+  const checkUserStatus = async () => {
+    const inAuthGroup = segments[0] === "(auth)";
+
+    // Not logged in
+    if (!user && !inAuthGroup) {
+      router.replace("/(auth)/login");
+      return;
+    }
+
+    // Logged in → check Firestore status
+    if (user) {
+      try {
+        const snap = await getDoc(doc(db, "users", user.uid));
+
+        // ❌ No profile OR inactive
+        if (!snap.exists() || snap.data().status !== "active") {
+          await signOut(auth);
+          router.replace("/(auth)/login");
+          return;
+        }
+
+        // ✅ Active user
+        if (inAuthGroup) {
+          router.replace("/(tabs)");
+        }
+
+      } catch (error) {
+        await signOut(auth);
+        router.replace("/(auth)/login");
+      }
+    }
+  };
+
+  checkUserStatus();
+}, [user, segments]);
 
   // ✅ Loading screen instead of null
   if (user === undefined) {
