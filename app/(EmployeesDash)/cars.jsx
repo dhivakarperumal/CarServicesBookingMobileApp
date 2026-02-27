@@ -912,7 +912,7 @@ export default function CarsScreen() {
 
           {item.issuesTotalCost ? (
             <Text style={styles.parts}>
-              Issues Cost: ₹{item.issuesTotalCost}
+              Spares Cost: ₹{item.issuesTotalCost}
             </Text>
           ) : null}
 
@@ -956,7 +956,7 @@ export default function CarsScreen() {
               style={styles.partsBtn}
               onPress={() => openIssuesModal(item)}
             >
-              <Text style={styles.updateText}>Add Issues</Text>
+              <Text style={styles.updateText}>Add Spare</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -1079,7 +1079,7 @@ export default function CarsScreen() {
                 <Ionicons name="close" size={26} color="#fff" />
               </TouchableOpacity>
 
-              <Text style={styles.modalTitle}>Add Issues</Text>
+              <Text style={styles.modalTitle}>Add Spare</Text>
 
               {/* 🔥 SCROLLABLE FORM */}
               <ScrollView
@@ -1090,7 +1090,7 @@ export default function CarsScreen() {
                 {issues.map((item, index) => (
                   <View key={index} style={styles.partCard}>
                     <TextInput
-                      placeholder="Issue"
+                      placeholder="Spare"
                       placeholderTextColor="#64748b"
                       value={item.issue}
                       onChangeText={(v) => handleIssueChange(index, "issue", v)}
@@ -1099,6 +1099,7 @@ export default function CarsScreen() {
 
                     <TextInput
                       placeholder="Amount"
+                      placeholderTextColor="#64748b"
                       keyboardType="numeric"
                       value={String(item.amount)}
                       onChangeText={(v) =>
@@ -1119,21 +1120,21 @@ export default function CarsScreen() {
                 ))}
 
                 <TouchableOpacity style={styles.addRow} onPress={addIssueRow}>
-                  <Text style={styles.updateText}>+ Add Issue</Text>
+                  <Text style={styles.updateText}>+ Add Spare</Text>
                 </TouchableOpacity>
               </ScrollView>
 
               {/* 🔥 FIXED TOTAL + SAVE BUTTON */}
               <View style={styles.bottomBar}>
                 <Text style={styles.grandTotal}>
-                  Issues Total: ₹{totalIssueCost}
+                  Spares Total: ₹{totalIssueCost}
                 </Text>
 
                 <TouchableOpacity style={styles.saveBtn} onPress={saveIssues}>
                   {savingIssues ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
-                    <Text style={styles.updateText}>Save Issues</Text>
+                    <Text style={styles.updateText}>Save Spares</Text>
                   )}
                 </TouchableOpacity>
               </View>
@@ -1232,7 +1233,7 @@ export default function CarsScreen() {
             </TouchableOpacity>
 
             <View style={{ padding: 20 }}>
-              <Text style={styles.modalTitle}>Issue Details</Text>
+              <Text style={styles.modalTitle}>Spare Details</Text>
 
               {!viewCar?.issuesDetails?.length ? (
                 <Text style={{ color: "#94a3b8", marginTop: 20 }}>
