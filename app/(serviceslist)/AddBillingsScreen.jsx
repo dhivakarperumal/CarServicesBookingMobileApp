@@ -18,6 +18,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useRouter } from "expo-router";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 export default function AddBillingsScreen() {
   const router = useRouter();
@@ -143,11 +144,14 @@ export default function AddBillingsScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={{ paddingBottom: 140 }}
-        showsVerticalScrollIndicator={false}
-      >
+      <KeyboardAwareScrollView
+  style={styles.container}
+  contentContainerStyle={{ paddingBottom: 140 }}
+  showsVerticalScrollIndicator={false}
+  enableOnAndroid={true}
+  extraScrollHeight={20}
+  keyboardShouldPersistTaps="handled"
+>
         {/* SEARCH */}
         <TextInput
           placeholder="Search Booking / Name / Phone"
@@ -293,6 +297,7 @@ export default function AddBillingsScreen() {
           <>
             <TextInput
               placeholder="Labour Charges ₹"
+              placeholderTextColor="#64748b"
               keyboardType="numeric"
               value={labour}
               onChangeText={setLabour}
@@ -329,7 +334,7 @@ export default function AddBillingsScreen() {
             <Text style={styles.btnText}>Generate Invoice</Text>
           </TouchableOpacity>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }
