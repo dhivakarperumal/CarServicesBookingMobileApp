@@ -10,7 +10,8 @@ import {
   orderBy,
   query,
   updateDoc,
-  where
+  where,
+  getDocs
 } from "firebase/firestore";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -881,24 +882,58 @@ function VehicleDetailModal({ vehicle, onClose }) {
     try {
       setActionLoadingIndex(issueIndex);
 
-      // 🔥 Create updated copy
       const updatedIssues = [...localIssues];
+      const currentIssue = updatedIssues[issueIndex];
+
       updatedIssues[issueIndex] = {
-        ...updatedIssues[issueIndex],
+        ...currentIssue,
         approvalStatus: newStatus,
       };
 
-      // ✅ 1. Update UI immediately
       setLocalIssues(updatedIssues);
 
-      // ✅ 2. Update Firestore in background
-      const ref = doc(db, "allServices", vehicle.id);
-      await updateDoc(ref, {
+      // 1️⃣ Update allServices
+      const allServiceRef = doc(db, "allServices", vehicle.id);
+      await updateDoc(allServiceRef, {
         issuesDetails: updatedIssues,
       });
 
+      // 2️⃣ Find matching assignedServices document
+      const assignedQuery = query(
+        collection(db, "assignedServices"),
+        where("addVehicleId", "==", vehicle.addVehicleId)
+      );
+
+      const assignedSnap = await getDocs(assignedQuery);
+
+      if (!assignedSnap.empty) {
+        const assignedDoc = assignedSnap.docs[0];
+        const assignedDocRef = assignedDoc.ref;
+
+        // 3️⃣ Update assignedServices issuesDetails array
+        await updateDoc(assignedDocRef, {
+          issuesDetails: updatedIssues,
+        });
+
+        // 4️⃣ Update subcollection issue document (match by issue name)
+        const issuesQuery = query(
+          collection(db, "assignedServices", assignedDoc.id, "issues"),
+          where("issue", "==", currentIssue.issue)
+        );
+
+        const issuesSnap = await getDocs(issuesQuery);
+
+        if (!issuesSnap.empty) {
+          const issueDocRef = issuesSnap.docs[0].ref;
+
+          await updateDoc(issueDocRef, {
+            approvalStatus: newStatus,
+          });
+        }
+      }
+
     } catch (error) {
-      console.log(error);
+      console.log("Update error:", error);
     } finally {
       setActionLoadingIndex(null);
     }
@@ -918,30 +953,67 @@ function VehicleDetailModal({ vehicle, onClose }) {
       setActionLoadingIndex(selectedIssueIndex);
 
       const updatedIssues = [...localIssues];
+      const currentIssue = updatedIssues[selectedIssueIndex];
+
       updatedIssues[selectedIssueIndex] = {
-        ...updatedIssues[selectedIssueIndex],
+        ...currentIssue,
         approvalStatus: "rejected",
         rejectionReason: rejectReason,
       };
 
       setLocalIssues(updatedIssues);
 
-      const ref = doc(db, "allServices", vehicle.id);
-      await updateDoc(ref, {
+      // 1️⃣ Update allServices
+      const allServiceRef = doc(db, "allServices", vehicle.id);
+      await updateDoc(allServiceRef, {
         issuesDetails: updatedIssues,
       });
+
+      // 2️⃣ Find assignedServices document
+      const assignedQuery = query(
+        collection(db, "assignedServices"),
+        where("addVehicleId", "==", vehicle.addVehicleId)
+      );
+
+      const assignedSnap = await getDocs(assignedQuery);
+
+      if (!assignedSnap.empty) {
+        const assignedDoc = assignedSnap.docs[0];
+        const assignedDocRef = assignedDoc.ref;
+
+        // 3️⃣ Update assignedServices issuesDetails array
+        await updateDoc(assignedDocRef, {
+          issuesDetails: updatedIssues,
+        });
+
+        // 4️⃣ Update subcollection issue document
+        const issuesQuery = query(
+          collection(db, "assignedServices", assignedDoc.id, "issues"),
+          where("issue", "==", currentIssue.issue)
+        );
+
+        const issuesSnap = await getDocs(issuesQuery);
+
+        if (!issuesSnap.empty) {
+          const issueDocRef = issuesSnap.docs[0].ref;
+
+          await updateDoc(issueDocRef, {
+            approvalStatus: "rejected",
+            rejectionReason: rejectReason,
+          });
+        }
+      }
 
       setRejectModalVisible(false);
       setRejectReason("");
       setSelectedIssueIndex(null);
 
     } catch (error) {
-      console.log(error);
+      console.log("Reject error:", error);
     } finally {
       setActionLoadingIndex(null);
     }
   };
-
 
   return (
     <Modal visible transparent animationType="slide">
