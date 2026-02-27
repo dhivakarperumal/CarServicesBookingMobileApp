@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import BookedService from "../../components/BookedService";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import MyOrder from "../../components/MyOrder";
 import ManageAddress from "../../components/ManageAddress";
@@ -57,6 +57,24 @@ export default function AccountScreen() {
 
   const handleLogout = async () => {
     await signOut(auth);
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      if (!user) return;
+
+      // Update status to inactive
+      await updateDoc(doc(db, "users", user.uid), {
+        status: "inactive",
+        updatedAt: new Date(),
+      });
+
+      // Logout immediately
+      await signOut(auth);
+
+    } catch (error) {
+      console.log("Delete account error:", error);
+    }
   };
 
   const goToAdminDashboard = () => {
@@ -144,50 +162,59 @@ export default function AccountScreen() {
   return (
     <View style={styles.container}>
       {/* ===== FILTER DROPDOWN ===== */}
-{/* ===== FILTER DROPDOWN ===== */}
-<View style={styles.filterWrapper}>
-  <TouchableOpacity
-    onPress={() => setShowDropdown(!showDropdown)}
-    activeOpacity={0.8}
-  >
-    <LinearGradient
-      colors={["#0EA5E9", "#2563EB"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.gradientFilterBtn}
-    >
-      <Ionicons name="funnel-outline" size={18} color="#fff" />
-      <Text style={styles.filterLabel}>Filter</Text>
-    </LinearGradient>
-  </TouchableOpacity>
-
-  {showDropdown && (
-    <View style={styles.dropdown}>
-      {[
-        ["servicestatus", "Service"],
-        ["personal", "Profile"],
-        ["changepassword", "Change Password"],
-        ["orders", "Orders"],
-        ["address", "Address"],
-      ].map(([key, label]) => (
+      {/* ===== FILTER DROPDOWN ===== */}
+      <View style={styles.filterWrapper}>
         <TouchableOpacity
-          key={key}
-          style={styles.dropdownItem}
-          onPress={() => {
-            setActiveTab(key);
-            setShowDropdown(false);
-          }}
+          onPress={() => setShowDropdown(!showDropdown)}
+          activeOpacity={0.8}
         >
-          <Text style={styles.dropdownText}>{label}</Text>
+          <LinearGradient
+            colors={["#0EA5E9", "#2563EB"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientFilterBtn}
+          >
+            <Ionicons name="funnel-outline" size={18} color="#fff" />
+            <Text style={styles.filterLabel}>Filter</Text>
+          </LinearGradient>
         </TouchableOpacity>
-      ))}
-    </View>
-  )}
-</View>
+
+        {showDropdown && (
+          <View style={styles.dropdown}>
+            {[
+              ["servicestatus", "Service"],
+              ["personal", "Profile"],
+              ["changepassword", "Change Password"],
+              ["orders", "Orders"],
+              ["address", "Address"],
+            ].map(([key, label]) => (
+              <TouchableOpacity
+                key={key}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setActiveTab(key);
+                  setShowDropdown(false);
+                }}
+              >
+                <Text style={styles.dropdownText}>{label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
 
       {/* ===== CONTENT CARD ===== */}
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 20 }}>
         {renderContent()}
+
+        {/* DELETE ACCOUNT BUTTON */}
+        <TouchableOpacity
+          onPress={handleDeleteAccount}
+          activeOpacity={0.8}
+          style={styles.deleteBtn}
+        >
+          <Text style={styles.deleteText}>Delete Account</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -287,47 +314,61 @@ const styles = StyleSheet.create({
   },
 
   /* Filter Dropdown */
-/* Filter Wrapper */
-filterWrapper: {
-  alignItems: "flex-start",   // 👈 LEFT SIDE
-  paddingHorizontal: 16,
-  paddingTop: 16,
-  zIndex: 100,
-},
+  /* Filter Wrapper */
+  filterWrapper: {
+    alignItems: "flex-start",   // 👈 LEFT SIDE
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    zIndex: 100,
+  },
 
-gradientFilterBtn: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingVertical: 10,
-  paddingHorizontal: 18,
-  borderRadius: 50,           // pill style
-  gap: 6,
-},
+  gradientFilterBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 50,           // pill style
+    gap: 6,
+  },
 
-filterLabel: {
-  color: "#FFFFFF",
-  fontWeight: "700",
-  fontSize: 14,
-},
+  filterLabel: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 14,
+  },
 
-dropdown: {
-  position: "absolute",
-  top: 55,
-  left: 16,                   // 👈 dropdown aligned left
-  backgroundColor: "#1e293b",
-  borderRadius: 12,
-  paddingVertical: 8,
-  width: 180,
-  elevation: 5,
-},
+  dropdown: {
+    position: "absolute",
+    top: 55,
+    left: 16,                   // 👈 dropdown aligned left
+    backgroundColor: "#1e293b",
+    borderRadius: 12,
+    paddingVertical: 8,
+    width: 180,
+    elevation: 5,
+  },
 
-dropdownItem: {
-  paddingVertical: 12,
-  paddingHorizontal: 16,
-},
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
 
-dropdownText: {
-  color: "#fff",
-  fontWeight: "600",
-},
+  dropdownText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+  deleteBtn: {
+    marginTop: 30,
+    marginBottom: 40,
+    backgroundColor: "#dc2626",
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+
+  deleteText: {
+    textAlign: "center",
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+  },
 });
