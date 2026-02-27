@@ -118,6 +118,7 @@ export default function AddServiceVehicle() {
           phone: formData.phone,
           role: "user",
           active: true,
+          status: "active", 
           createdAt: serverTimestamp(),
         });
       }
